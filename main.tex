@@ -1,0 +1,154 @@
+\documentclass[12pt,italian]{report}
+\usepackage{tesi}
+
+\def\myCDL{Corso di Laurea magistrale in\\Informatica}
+
+% TITOLO TESI:
+\def\myTitle{Studio e Sviluppo di un Sistema di Passthrough per TEE tra QEMU e Linux su Piattaforme ARM}
+
+% AUTORE:
+\def\myName{Marco Cutecchia}
+\def\myMat{Matr. Nr. 983828}
+
+% RELATORE E CORRELATORE:
+\def\myRefereeA{Prof. Danilo Bruschi}
+
+% ANNO ACCADEMICO
+\def\myYY{2022-2023}
+
+% Il seguente comando introduce un elenco delle figure dopo l'indice (facoltativo)
+%\figurespagetrue
+
+% Il seguente comando introduce un elenco delle tabelle dopo l'indice (facoltativo)
+%\tablespagetrue
+
+\usepackage[a4paper]{geometry}		% Formato del foglio
+\usepackage[italian]{babel}			% Supporto per l'italiano
+\usepackage[utf8]{inputenc}			% Supporto per UTF-8
+\usepackage[a-1b]{pdfx}				% File conforme allo standard PDF-A (obbligatorio per la consegna)
+
+\usepackage{graphicx}				% Funzioni avanzate per le immagini
+\usepackage{hologo}					% Bibtex logo with \hologo{BibTeX}
+%\usepackage{epsfig}				% Permette immagini in EPS
+%\usepackage{xcolor}				% Gestione avanzata dei colori
+\usepackage{amssymb,amsmath,amsthm} % Simboli matematici
+\usepackage{listings}				% Scrittura di codice
+\usepackage{url}					% Visualizza e rendere interattii gli URL
+\usepackage{hyperref}				% Rende interattivi i collegamenti interni
+
+
+\begin{document}
+
+\frontespizio
+\afterpreface
+
+\chapter{Introduzione}
+\label{cap:introduzione}
+% + Breve spiegazione di cosa è un TEE
+% + Molto diffusi su mobile, inizia ad esserci interesse su piattaforme cloud (trusted computing)
+% + Esistono soluzioni ma sono solo su piattaforme x86 via intel SGX che è una implementazione molto particolare(approfondire)
+% + Con il crescente interesse nell'uso di ARM sui server vogliamo scoprire come integrare un TEE implementato via TrustZone in ambienti virtualizzati
+% + Implementato un prototipo tramite QEMU, Linux ed utilizzando OP-TEE come test case di TEE
+% + Piccolo risultato di "assaggio" 
+
+\chapter{Trusted Execution Environment}
+\label{sec:tee}
+
+% Descrizione dettagliata di cosa è un TEE
+	% + Ambiente in cui è garantita l'integrita del codice in esecuzione
+	% + Root of Trust
+	% + Isolazione rispetto al kernel, superficie di attacco minore
+	% + Livello di privilegio superiore al kernel, può nascondere la presenza di device ad esso
+
+\section{Applicazioni dei TEE}
+\label{sec:applicazioni-tee}
+% Oggi: DRM, Secure Storage, Secure Boot, Crypto Accelerator
+% Domani: Remote Attestation, ???
+
+\section{TEE Disponibili}
+\label{sec:tee-disponibili}
+% Parli di OP-TEE, AMD PSP, Apple Secure Enclave, Samsung Knox, Trusty...
+% Parli della segretezza delle info disponibili
+
+\section{Trusted Computing Initiative}
+\label{sec:trusted-computing-initiative}
+% Obiettivo: permettere ai clienti di piattaforme cloud di potersi fidare dei risultati
+% TEE è un componente fondamentale
+% Al momento le soluzioni disponibili sono solo su x86 con Intel SGX
+% Descrizione di come funzionano in questo caso
+
+\section{Questioni Etiche nell'Uso dei TEE}
+\label{sec:etica-tee}
+% Una root of trust intagliata nell'hardware significa che non abbiamo il pieno controllo sul SW in esecuzione sulla nostra macchina
+% La maggior parte dei vendor tiene un velo di segretezza rispetto ai propri TEE
+% Un TEE può avere controllo su tutto il computer senza che l'OS possa notarlo
+% Un malintenzionato che prende controllo di un TEE può insediarsi in un computer in modo da essere impossibile da intercettare
+% Sarebbe interessante studiare modi di garantire la root of trust mantenendo l'inspectability (codice Open source prob non basta)
+
+\chapter{Passthrough per TEE tra QEMU e Linux}
+\label{chap:passthrough-tee-qemu-linux}
+ciao test \cite{lim2019web}.
+% Breve intro a QEMU
+% Descrizione di quello che vogliamo fare (permettere ad un TEE generico di offrire servizi a macchine virtuali)
+% Interessante sia in ambito "casalingo" sia in ambito cloud per i provider
+
+\section{ARM TrustZone}
+\label{sec:arm-trustzone}
+% Cosa è
+% Come funziona
+% Non c'è supporto alla virtualizzazione prima di ARM v8-B (che non è ancora uscito)
+
+\section{GlobalPlatform API}
+\label{sec:global-platform-api}
+% Cosa è, cosa chiede di implementare
+% (?) Forse poco per una sezione?
+
+\section{Il Sottosistema TEE per Linux}
+\label{sec:sottosistema-tee-per-linux}
+% Cosa è, perchè lo usiamo (perchè è una interfaccia comune)
+% Funzionamento via ioctl
+
+\section{Implementazione tramite l'Estensione del Kernel}
+\label{sec:implementazione-passthrough-tramite-kernel-module}
+% Descrizione del modulo Linux, modifiche a QEMU
+% Comunicazione via MMIO
+% Conversione di indirizzi virt/phys
+% Gestione della shared memory
+% Pro: è esplicito l'uso di un passthrough, facilmente cambiabile il passthrough sopra
+% Contro: necessario estendere il kernel con un modulo
+
+\section{Implementazione tramite l'Emulazione di OP-TEE}
+\label{sec:implementazione-passthrough-tramite-bootloader}
+% Cosa è OP-TEE
+% Bootloader custom
+% Descrizione del passaggio di parametri tra OP-TEE e bootloader
+% Pro: passthrough invisibile, non serve estendere il kernel
+% Contro: legato strettamente ad una singola versione di OP-TEE
+
+\section{Verifica Funzionale tramite Test Suite di OP-TEE}
+\label{sec:verifica-funzionale-via-optee}
+% Utilizzo della test suite di OP TEE per verificare la correttezza funzionale
+
+\chapter{Conclusioni}
+\label{chap:conclusioni}
+
+
+\section{Sviluppi Futuri}
+\label{sec:sviluppi-futuri}
+
+\appendix
+\chapter{FakeTEE: Simulatore di TEE per aiutare nello sviluppo}
+% + Durante lo sviluppo era necessario avere un TEE ispezionabile facilmente
+% + Con QEMU è possibile emularlo ma dato che volevo avere un TEE sull'host
+%	accessibile da una VM guest sarebbe stato necessario avere una VM dentro
+%	la VM durante lo sviluppo (scomodo!)
+% + FakeTEE è un piccolo modulo per il kernel linux che si attacca al TEE subsystem
+%	e finge la presenza di un TEE
+% + Fa tutto in kernel space, non mantiene stato ed è facilmente modificabile e reloadable
+% + Utile durante lo sviluppo di sw legato ai TEE 
+
+\bibliographystyle{unsrt}
+\bibliography{bibliografia}
+\addcontentsline{toc}{chapter}{Bibliografia}
+
+\end{document}

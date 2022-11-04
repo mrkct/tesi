@@ -1,0 +1,32 @@
+name: Build LaTeX document
+on: [push]
+jobs:
+  build_latex:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Git repository
+        uses: actions/checkout@v2
+      - name: lualatex main
+        uses: dante-ev/latex-action@latest
+        with:
+          root_file: main.tex
+          compiler: lualatex
+          args: -interaction=nonstopmode -shell-escape
+      - name: bibtex main
+        uses: dante-ev/latex-action@latest
+        with:
+          root_file: main.aux
+          compiler: bibtex
+          args: 
+      - name: lualatex main
+        uses: dante-ev/latex-action@latest
+        with:
+          root_file: main.tex
+          compiler: lualatex
+          args: -interaction=nonstopmode -shell-escape
+      - name: Upload PDF to releases
+        uses: svenstaro/upload-release-action@v2
+        with:
+          file: main.pdf
+          asset_name: main.pdf
+          overwrite: true
