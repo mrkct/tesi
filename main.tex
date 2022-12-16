@@ -1,6 +1,20 @@
 \documentclass[12pt,italian]{report}
 \usepackage{tesi}
 
+\usepackage[a4paper]{geometry}		% Formato del foglio
+\usepackage[italian]{babel}			% Supporto per l'italiano
+\usepackage[utf8]{inputenc}			% Supporto per UTF-8
+\usepackage[a-1b]{pdfx}				% File conforme allo standard PDF-A (obbligatorio per la consegna)
+
+\usepackage{graphicx}				% Funzioni avanzate per le immagini
+\usepackage{hologo}					% Bibtex logo with \hologo{BibTeX}
+%\usepackage{epsfig}				% Permette immagini in EPS
+%\usepackage{xcolor}				% Gestione avanzata dei colori
+\usepackage{amssymb,amsmath,amsthm} % Simboli matematici
+\usepackage{listings}				% Scrittura di codice
+\usepackage{url}					% Visualizza e rendere interattii gli URL
+\usepackage{hyperref}				% Rende interattivi i collegamenti interni
+
 \def\myCDL{Corso di Laurea magistrale in\\Informatica}
 
 % TITOLO TESI:
@@ -22,21 +36,6 @@
 % Il seguente comando introduce un elenco delle tabelle dopo l'indice (facoltativo)
 %\tablespagetrue
 
-\usepackage[a4paper]{geometry}		% Formato del foglio
-\usepackage[italian]{babel}			% Supporto per l'italiano
-\usepackage[utf8]{inputenc}			% Supporto per UTF-8
-\usepackage[a-1b]{pdfx}				% File conforme allo standard PDF-A (obbligatorio per la consegna)
-
-\usepackage{graphicx}				% Funzioni avanzate per le immagini
-\usepackage{hologo}					% Bibtex logo with \hologo{BibTeX}
-%\usepackage{epsfig}				% Permette immagini in EPS
-%\usepackage{xcolor}				% Gestione avanzata dei colori
-\usepackage{amssymb,amsmath,amsthm} % Simboli matematici
-\usepackage{listings}				% Scrittura di codice
-\usepackage{url}					% Visualizza e rendere interattii gli URL
-\usepackage{hyperref}				% Rende interattivi i collegamenti interni
-
-
 \begin{document}
 
 \frontespizio
@@ -44,26 +43,254 @@
 
 \chapter{Introduzione}
 \label{cap:introduzione}
+
+% + Chiediamo più servizi e dunque aumenta la superficie di attacco, ma un
+%   buco anche in servizi non critici rischia di mettere a rischio l'intero
+%   sistema
+L'aumento dei servizi che vengono richiesti dai moderni dispositivi di
+computazione ha creato un quesito: l'aspetto di sicurezza è diventato più
+importante di prima, ma l'aumento dei servizi richiesti ha anche
+significativamente aumentato la superficie di attacco di tali dispositivi.
+
 % + Breve spiegazione di cosa è un TEE
-% + Molto diffusi su mobile, inizia ad esserci interesse su piattaforme cloud (trusted computing)
-% + Esistono soluzioni ma sono solo su piattaforme x86 via intel SGX che è una implementazione molto particolare(approfondire)
-% + Con il crescente interesse nell'uso di ARM sui server vogliamo scoprire come integrare un TEE implementato via TrustZone in ambienti virtualizzati
-% + Implementato un prototipo tramite QEMU, Linux ed utilizzando OP-TEE come test case di TEE
-% + Piccolo risultato di "assaggio" 
+Proprio sotto questa idea di ridurre questa superficie di attacco e isolare
+i servizi critici dal punto di vista della sicurezza, nascono i
+\textit{Trusted Execution Environment(TEE)}, degli ambienti di computazione
+isolati dal sistema operativo principale in cui eseguire quei servizi critici
+dal punto di vista della sicurezza.
+
+% + Molto diffusi su mobile, inizia ad esserci interesse su piattaforme cloud
+%   (trusted computing)
+Dato che gli smartphone stanno diventando sempre più critici per la nostra vita
+i TEE sono estremamente diffusi in ambito mobile, dove la piattaforma ARM fa da
+padrona, e ormai presenti su praticamente tutti i cellulari ma inizia a esserci
+un crescente interesse al loro uso anche in ambito Desktop e, in particolare,
+anche sui server grazie all'iniziativa \textit{Trusted Computing}.
+
+% + Esistono soluzioni ma sono solo su piattaforme x86 via intel SGX che è una
+%   implementazione molto particolare(approfondire)
+% + Con il crescente interesse nell'uso di ARM sui server vogliamo scoprire
+%   come integrare un TEE implementato via TrustZone in ambienti virtualizzati
+Al momento di scrittura di questa tesi, il mercato server è principalmente
+dominato da processori basati sull'architettura x86\_64, esiste però un
+interesse nell'uso di processori basati su architettura ARM grazie alla loro
+particolare efficienza energetica.
+Lo scopo di questa tesi è studiare come è possibile rendere disponibili i
+servizi offerti da un TEE conforme alla specifica GlobalPlatform anche ad
+ambienti virtualizzati.
+
+% + Implementato un prototipo tramite QEMU, Linux ed utilizzando OP-TEE come
+%   test case di TEE
+Il risultato è stato quello di una versione modificata dell'emulatore QEMU
+per aggiungere un device virtuale per la comunicazione tra il guest e il TEE
+disponibile all'host. Inoltre è stato sviluppato un driver per sistemi Linux
+e testato su piattaforma ARM usando OP-TEE come TEE di prova.
 
 \chapter{Trusted Execution Environment}
 \label{sec:tee}
+% + Ambiente in cui è garantita l'integrita del codice in esecuzione
+Un \textit{Trusted Execution Environment}(TEE) è un ambiente all'interno di
+un dispositivo dove può essere eseguito del software con necessità di sicurezza
+critiche.
+Un software eseguito dentro un TEE prende il nome di
+\textit{Trusted Application}(TA) e può offrire dei servizi a dei client
+esterni al TEE, che prendono il nome di \textit{Client Application}(CA).
+L'ambiente esterno al TEE, che prende il nome di
+\textit{Rich Execution Environment}(REE), non può in alcun modo interferire
+con il TEE; dunque il TEE è un ambiente isolato rispetto al REE.
 
-% Descrizione dettagliata di cosa è un TEE
-	% + Ambiente in cui è garantita l'integrita del codice in esecuzione
-	% + Root of Trust
-	% + Isolazione rispetto al kernel, superficie di attacco minore
-	% + Livello di privilegio superiore al kernel, può nascondere la presenza di device ad esso
+Questa definizione è piuttosto generica, nella pratica il "come" questi
+ambienti vengano realizzati, e quali proprietà di sicurezza vengano garantite
+può variare significativamente tra i prodotti.
+
+Una possibile definizione dei requisiti di sicurezza che ci si aspetta da un
+TEE è quella proposta da GlobalPlatform(GP), un consorzio di stakeholder nel
+mondo TEE interessati a standardizzarne diversi aspetti per aiutarne la
+diffusione.
+Nel loro \textit{security profile}\cite{gp2020securityprofile} un TEE deve
+poter garantire le seguenti proprietà:
+
+% FIXME: Questa è una traduzione letterale da GPD_TEE_SystemArchitecture pagina 6
+\begin{itemize}
+	\item \textbf{Autenticità}: Tutto il codice eseguito dentro un TEE deve
+	essere autenticato
+	\item \textbf{Integrità}: A meno di condivisioni esplicite da parte di
+	entità interne al TEE, l'integrità di tutti gli asset interni al TEE deve
+	essere garantita
+	\item \textbf{Confidenzialità dei dati}: A meno di condivisioni esplicite
+	da parte di entità interne al TEE, deve essere garantita la confidenzialità
+	di tutti i dati interni al TEE
+	\item \textbf{Confidenzialità del codice}: 
+	\item \textbf{Resistenza ad attacchi conosciuti}: Questi includono attacchi
+	software, remoti e hardware elencati nel security profile.
+	\item \textbf{Impedire debugging e tracing non autorizzati}
+\end{itemize}
+
+GlobalPlatform pubblica anche delle specifiche per delle API interne
+\cite{gp2020internalapi} a uso delle TA, API esterne per le CA
+\cite{gp2020externalapi} e anche una architettura interna per il TEE
+\cite{gp2020internalarchitecture}.
+Sfortunatamente, nonostante la grande diffusione dei TEE in ambito mobile,
+sono molto pochi i TEE che rispettano completamente queste interfacce, di
+conseguenza è raro vedere TA non sviluppate dagli stessi produttori dei TEE.
+
+Nonostante questo, in \cite{sabt2015tee} e \cite{???} vengono notati alcuni
+aspetti comuni tra tutte le implementazioni di TEE in circolazione,
+in particolare la presenza di un \textit{separation kernel} e di una
+completa \textit{chain of trust} per l'esecuzione del codice all'interno del
+TEE.
+
+% TODO: Leggi per davvero l'articolo di rushby
+% + Isolazione rispetto al kernel, superficie di attacco minore
+Un \textit{separation kernel}\cite{rushby1981separationkernel} è un componente
+hardware/software fidato che ha il compito di separare il sistema in zone
+isolate che non possono interferire tra di loro e di mediare le comunicazioni
+tra di esse.
+% FIXME: Sembra tanto l'idea di microkernel, bisogna approfondire la differenza
+L'idea non è nuova, infatti venne proposta da Rushby nel 1981 dove propose
+di vedere ogni singola macchina come un sistema distribuito di componenti
+indipendenti, in questo modo un errore in un singolo componente non avrebbe
+compromesso l'intero sistema.
+
+Questa idea viene ripresa nel mondo dei TEE allo scopo di ridurre la
+potenziale superficie di attacco del sistema, in questo modo se un
+attaccante riesce a compromettere un singolo componente gli altri rimangono
+intatti, assumendo che il \textit{separation kernel} non venga anch'esso
+compromesso.
+
+Nei sistemi operativi oggi in uso, come Linux o Windows, la superficie di
+attacco è molto vasta a causa dell'enorme quantità di hardware che devono
+supportare e il numero elevato di servizi, anche non critici per la sicurezza,
+che offrono ai programmi utente.
+Un attaccante che riesce a penetrare nel kernel ottiene il massimo livello di
+controllo sulla macchina, diventa dunque sensata l'idea di separare quei
+servizi importanti per la sicurezza e d'isolarli dal resto del sistema in
+un ambiente sicuro.
+
+Seppur sia possibile avere molteplici TEE sullo stesso sistema, nella pratica
+tutte le implementazioni si limitano a un singolo TEE, dunque il
+"sistema distribuito" immaginato da Rushby è composto solamente da due
+componenti, il TEE e il REE.
+
+% + Root of Trust
+Il secondo aspetto importante e comune a tutti i TEE è quello di poter
+garantire una piena \textit{chain of trust}; tutto il codice nel TEE è stato
+autenticato e verificato integro.
+Questa verifica solitamente avviene grazie a un hash incluso nelle TA,
+crittografato usando una chiave pubblica di un ente fidato (spesso il
+produttore del dispositivo).
+Prima di caricare ed eseguire una TA, il TEE calcola l'hash del codice della TA
+e lo confronta con l'hash decrittografato incluso con il codice, se questi
+combaciano allora l'autenticità della TA è verificata e dunque è sicuro eseguire
+la TA.
+Per poter verificare l'hash incluso con ogni TA è necessario che il TEE
+possegga la chiave di decrittazione, è inoltre necessario che il TEE possa
+fidarsi di questa chiave; altrimenti un attaccante potrebbe sostituirla con
+una sua chiave scelta e firmarsi da solo le TA.
+Per questo motivo la chiave viene stampata sull'hardware, si cerca inoltre
+di rendere l'estrazione di essa proibitiva generando chiavi uniche per
+ogni dispositivo e rendendo distruttiva l'operazione di estrazione, 
+per esempio stampando la chiave nello stesso packaging della CPU, in modo
+che aprendola anche questa venga distrutta.
 
 \section{Applicazioni dei TEE}
 \label{sec:applicazioni-tee}
-% Oggi: DRM, Secure Storage, Secure Boot, Crypto Accelerator
-% Domani: Remote Attestation, ???
+I TEE sono largamente diffusi in ambito mobile al giorno d'oggi, seppur
+raramente pubblicizzati.
+Le applicazioni dei TEE sono molteplici ma sfortunatamente la grande
+maggioranza dei produttori di dispositivi mobili non supportano l'installazione di
+TA aggiuntive dopo la configurazione iniziale del TEE, inoltre la mancanza
+d'interfacce standard per gli sviluppatori hanno reso molto difficile
+sviluppare TA compatibili con TEE diversi.
+
+Con la specifica dell'interfaccia GlobalPlatform TEE per gli sviluppatori di
+TA, lo sviluppo di TEE open-source come OP-TEE e lo sforzo di player come
+Google, Softonic e Apple per rendere i propri TEE conformi, potremmo vedere
+nei prossimi anni un uso più grande dei TEE.
+
+\paragraph{Secure Storage e salvataggio di chiavi crittografiche}
+
+Una delle feature più comuni è l'uso dei TEE per la creazione del
+\textit{Secure Storage}, una zona di memoria non volatile che possa rimanere
+al sicuro anche quando il dispositivo è spento.
+Questa area viene crittografata utilizzando una chiave conosciuta solamente
+all'interno del TEE, inoltre è protetta da attacchi di tipo rollback.
+
+% FIXME: Da riscrivere
+Li dentro si salvano chiavi crittografiche ma anche informazioni non
+necessariamente private ma di cui si vuole proteggere l'integrità, per esempio
+il numero di tentativi fatti per accedere al dispositivo.
+
+Un utilizzo molto comune di questa area sicura è il salvataggio di dati
+come l'impronta digitale degli utenti, token per mantenere l'accesso a
+servizi online oppure la gestione delle chiavi crittografiche.
+Molti sviluppatori di applicazioni mobile Android e iOS utilizzano questa
+funzionalità grazie ad API che, se presenti, utilizzano delle TA come ad
+esempio "Keystore"\cite{androidkeystore} in Android.
+
+Alcuni produttori, ad esempio AMD con il suo
+\textit{Platform Security Processor}\cite{amd2020ftpm}, utilizzano queste
+funzionalità per implementare un \textit{Trusted Platform Module}(TPM)
+software, un co-processore dedicato a varie operazioni di crittografia, come
+la generazione e salvataggio di chiavi e la verifica dell'integrità del
+software in esecuzione sul sistema.
+Grazie ai TEE i produttori possono potenzialmente risparmiare il costo di un
+TPM hardware.
+
+\paragraph{Protezione dei diritti di autore(DRM)}
+
+Un'altra applicazione molto diffusa dei TEE è il loro utilizzo per la protezione
+dei diritti di autore (DRM). Con la diffusione dei servizi di streaming, i
+produttori di contenuti esitano a mettere a disposizione dei loro contenuti
+perché temono che questi vengano condivisi con utenti che non hanno pagato
+per accedervi.
+Effettivamente sarebbe molto semplice per un utente utilizzare un software per
+registrare il proprio schermo mentre guarda un film acquistato legalmente, per
+poi condividerlo con altri utenti senza che questi debbano acquistarlo.
+
+Sistemi come Widevine\cite{widevine} e PlayReady\cite{playready} vengono
+integrati dai distributori di contenuti digitali allo scopo di impedire, o
+almeno ostacolare, l'estrazione dei contenuti e la loro condivisione.
+Questi sistemi hanno diversi livelli di protezione dei contenuti in base alle
+capacità hardware del dispositivo; i produttori di contenuti possono richiedere
+che un dispositivo supporti almeno un certo livello di sicurezza prima di
+concedergli l'accesso ai propri contenuti.
+Per esempio, alcuni servizi di streaming basati su Widevine richiedono che il
+dispositivo raggiunga il livello L1 per poter usufruire di contenuti in alta
+definizione; questo livello è raggiungibile solamente se presente un TEE con
+la TA Widevine installata.
+
+Il livello più alto di protezione che questi sistemi offrono è basato sui TEE,
+che vengono usati per molteplici scopi tra cui: il provisioning di una chiave
+crittografica condivisa tra server e client, la verifica delle licenze digitali
+online e offline, la decrittazione degli stream audio/video e per mostrare
+a schermo il video senza però che applicazioni esterne al TEE possano leggerne
+i contenuti.
+Per quest'ultima feature è necessario che sia presente un canale di
+comunicazione fidato tra TEE e display, cioè che non dipenda dal REE, in modo
+che un attaccante non possa leggere i pixel in chiaro che verranno mostrati poi
+sullo schermo. 
+
+\paragraph{Proposte esterne}
+
+In letteratura sono state proposte diverse applicazioni dei TEE nelle più svariate aree.
+
+% FIXME: Leggi meglio e comprendi l'articolo
+In Javet, Anciaux et all\cite{edgeletcomputing} viene proposto di utilizzare i
+TEE per realizzare un sistema di computazione "on the edge" sopra
+"Opportunistic Networks"(OppNet), ovvero reti che sfruttano i
+pattern di movimento degli utenti per creare reti temporanee.
+In questo modello i TEE vengono usati per implementare un meccanismo di
+attestazione remota per permettere ai dispositivi di verificare l'autenticità
+dei dati ricevuti da altri dispositivi.
+
+La rete XXX\cite{???} utilizza i TEE per implementare un meccanismo di consenso distribuito
+blockchain blabla.
+
+Infine \cite{??} pagamenti offline con TEE.
+
+\section{Hardware a Supporto dei TEE}
+\label{sec:hardware-supporto-tee}
 
 \section{TEE Disponibili}
 \label{sec:tee-disponibili}
@@ -79,11 +306,16 @@
 
 \section{Questioni Etiche nell'Uso dei TEE}
 \label{sec:etica-tee}
-% Una root of trust intagliata nell'hardware significa che non abbiamo il pieno controllo sul SW in esecuzione sulla nostra macchina
-% La maggior parte dei vendor tiene un velo di segretezza rispetto ai propri TEE
-% Un TEE può avere controllo su tutto il computer senza che l'OS possa notarlo
-% Un malintenzionato che prende controllo di un TEE può insediarsi in un computer in modo da essere impossibile da intercettare
-% Sarebbe interessante studiare modi di garantire la root of trust mantenendo l'inspectability (codice Open source prob non basta)
+% + Una root of trust intagliata nell'hardware significa che non abbiamo il
+%   pieno controllo sul SW in esecuzione sulla nostra macchina
+% + La maggior parte dei vendor tiene un velo di segretezza rispetto ai
+%   propri TEE
+% + Un TEE può avere controllo su tutto il computer senza che l'OS possa
+%   notarlo
+% + Un malintenzionato che prende controllo di un TEE può insediarsi in un
+%   computer in modo da essere impossibile da intercettare
+% + Sarebbe interessante studiare modi di garantire la root of trust
+%   mantenendo l'inspectability (codice Open source prob non basta)
 
 \chapter{Passthrough per TEE tra QEMU e Linux}
 \label{chap:passthrough-tee-qemu-linux}

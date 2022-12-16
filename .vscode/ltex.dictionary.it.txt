@@ -4,3 +4,10 @@ Environment
 Computing
 Initiative
 Passthrough
+Cutecchia
+kernel
+Rich
+Operating
+System
+isolazione
+hash
