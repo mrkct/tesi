@@ -306,16 +306,62 @@ Infine \cite{??} pagamenti offline con TEE.
 
 \section{Questioni Etiche nell'Uso dei TEE}
 \label{sec:etica-tee}
+I Trusted Execution Environment introducono una serie di questioni etiche
+non ancora affrontate.
+In letteratura nessuno ha ancora affrontato queste questioni rispetto ai TEE,
+ma dato che TEE e Confidential Computing possono essere visti come una
+evoluzione dei Trusted Platform Module (TPM) e del Trusted Computing 
+% FIXME: cit. required
+è possibile applicare le stesse considerazioni fatte per questi ultimi.
+Nonostante ciò le analisi presenti rimangono poche; Stallman in
+\cite{stallman2021tpm} fa notare che il concetto di Trusted Computing può
+essere usato per limitare le azioni dell'utente e, nel suo breve articolo,
+propone alcuni scenari in cui questo potrebbe accadere. 
+
 % + Una root of trust intagliata nell'hardware significa che non abbiamo il
 %   pieno controllo sul SW in esecuzione sulla nostra macchina
-% + La maggior parte dei vendor tiene un velo di segretezza rispetto ai
-%   propri TEE
+Questo è vero; un TEE può garantire le sue proprietà di sicurezza solamente
+perché tutto il codice in esecuzione al suo interno è stato prima verificato
+e firmato da una entità fidata.
+Un singolo software insicuro può compromettere permanentemente la sicurezza
+di un TEE, e quindi di tutto il sistema; non è possibile dunque permettere
+l'esecuzione di qualunque software al suo interno.
+Questa responsabilità è troppo grande per essere affidata a un utente,
+in un certo senso dunque un TEE toglie all'utente la libertà di eseguire
+qualunque software sulla propria macchina, richiedendo prima che questo
+sia stato approvato da un ente già presente nel TEE.
+
 % + Un TEE può avere controllo su tutto il computer senza che l'OS possa
 %   notarlo
-% + Un malintenzionato che prende controllo di un TEE può insediarsi in un
-%   computer in modo da essere impossibile da intercettare
+La situazione diventa ancora più problematica quando consideriamo che
+molte piattaforme hardware, come ARM TrustZone, permettono d'interferire
+con il sistema operativo in esecuzione sul REE. % FIXME: Cit. required
+Un TEE ha accesso diretto all'hardware per poter implementare le sue proprietà
+di sicurezza ma nulla gli impedisce, se non la buona volontà dei suoi
+sviluppatori, di abusare di questo accesso per poter spiare il REE senza che
+questo possa notarlo.
+Un TEE può quindi avere il controllo totale del sistema e, dato che garantisce
+la proprietà di confidenzialità sia delle memorie volatili che non, non è
+possibile ispezionare il suo codice e la sua memoria mentre è in esecuzione.
+
+% + La maggior parte dei vendor tiene un velo di segretezza rispetto ai
+%   propri TEE
+La maggior parte dei produttori non rilascia il codice sorgente dei propri TEE,
+ma anche se così non fosse questo non garantisce che il codice in esecuzione
+sia quello rilasciato, in quanto il TEE installato sul dispositivo potrebbe
+essere stato modificato prima dell'installazione.
+Non è neanche possibile per un utente ricompilare il TEE e installarlo
+sul proprio dispositivo dato che, per design, la chiave per firmare il firmware
+non dovrebbe essere può essere esportata dal produttore.
+
 % + Sarebbe interessante studiare modi di garantire la root of trust
 %   mantenendo l'inspectability (codice Open source prob non basta)
+Un aspetto interessante, ma sfortunatamente non ancora esplorato in letteratura,
+è come permettere agli utilizzatori di un TEE di verificarne il codice senza
+comprometterne la sicurezza.
+Seppur questo non risolva la questione della perdita di controllo sulla
+propria macchina, almeno permetterebbe di avere un'idea di cosa stia eseguendo
+il TEE.
 
 \chapter{Passthrough per TEE tra QEMU e Linux}
 \label{chap:passthrough-tee-qemu-linux}
