@@ -297,12 +297,73 @@ Infine \cite{??} pagamenti offline con TEE.
 % Parli di OP-TEE, AMD PSP, Apple Secure Enclave, Samsung Knox, Trusty...
 % Parli della segretezza delle info disponibili
 
-\section{Trusted Computing Initiative}
-\label{sec:trusted-computing-initiative}
-% Obiettivo: permettere ai clienti di piattaforme cloud di potersi fidare dei risultati
-% TEE è un componente fondamentale
-% Al momento le soluzioni disponibili sono solo su x86 con Intel SGX
-% Descrizione di come funzionano in questo caso
+\section{TEE e Cloud Computing}
+\label{sec:tee-e-cloud-computing}
+% + La situazione al momento: i dati sono al sicuro a macchina spenta ed in
+%	transito, ma non quando sono caricati in memoria
+Il modello di computing cloud permette di sfruttare le risorse di calcolo
+disponibili in maniera efficiente e scalabile, ma allo stesso tempo introduce
+nuovi problemi di sicurezza.
+Questo modello richiede di permettere al cloud provider di controllare la
+nostra macchina per poterla gestire e monitorare; se da un lato questo solleva
+gli sviluppatori dal dover occuparsi di gestire le macchine, dall'altro ciò
+comporta un rischio di sicurezza.
+Infatti, se il cloud provider è in grado di controllare la nostra macchina,
+questo significa che può anche leggere i dati in memoria, che sono al sicuro
+solo quando la macchina è spenta o in transito.
+% + Questo è potenzialmente un problema quando consideriamo che un attaccante
+%   che riesce ad uscire dalla propria VM potrebbe leggere i dati in memoria
+%   degli altri utenti sulla macchina
+La situazione diventa ancora più problematica quando consideriamo che su
+una singola macchina fisica i provider eseguono più macchine virtuali, ciascuna
+di clienti diversi ma che condividono la stessa memoria fisica.
+Ci sono stati molti esempi in passato di attaccanti che sono riusciti a eludere
+le misure di sicurezza per isolare la propria VM dalle altre. % FIXME: Cit required
+Questi attaccanti avrebbero avuto la possibilità non solo di spiare le altre
+VM dei clienti che hanno avuto la sfortuna di risiedere sullo stesso server in
+quel momento, ma anche di manipolare il loro codice per i loro scopi.
+% + Non soltanto, vorremmo una maggiore sicurezza del fatto che il nostro software
+%	è effettivamente quello in esecuzione sulla macchina nel cloud, cioè non
+%	è stato modificato. Questo è il ben noto problema della attestazione
+%   remota, uno dei problemi driver per la creazione dei TEE
+Una organizzazione che dipende dal cloud e con particolari requisiti in
+termini di sicurezza potrebbe dunque volere una sorta di garanzia che il
+software che sta eseguendo sia quello che è stato consegnato al provider.
+Questo è il ben noto problema della attestazione remota, uno dei problemi
+driver per la creazione dei TEE. % FIXME: Cit. required
+% + Confidential Computing Initiative è un consorzio di grandi aziende nel mondo
+%	cloud che lavora a questo problema e che, al momento, trova nei TEE il modo
+%	per risolverlo
+La Confidential Computing Initiative\cite{confidential-computing-initiative}
+è un consorzio di grandi aziende nel mondo cloud che lavora a questo problema
+e che, al momento, trova nei TEE il modo per risolverlo.
+Lo scopo dell'organizzazione è proprio quello di supportare lo sviluppo
+di strumenti open source per garantire la sicurezza dei dati in memoria.
+Questo è un campo di ricerca molto attivo e con molti progetti in corso ma
+ancora poche soluzioni concrete e implementate.
+
+Le soluzioni disponibili sul mercato fanno uso di Intel SGX
+o AMD SEV, che descriviamo rispettivamente in \ref{sec:intel-sgx} e
+\ref{sec:amd-sev}. Queste tecnologie sono disponibili solamente su processori
+con architettura x86\_64 dei rispettivi produttori hardware.
+Con un maggior interesse nell'utilizzo dell'architettura ARM lato server, % FIXME: Cit required
+grazie alla sua maggior efficienza energetica, % FIXME: Cit required
+vogliamo dunque trovare una soluzione equivalente per questa architettura.
+% + Il modello standard dei TEE come implementato sui dispositivi mobile
+%   non può essere trasposto direttamente, richiede di risolvere dei nuovi
+%	problemi nati dal nuovo ambiente
+Fino a oggi la gran parte degli sforzi rispetto all'uso dei TEE su ARM
+si è concentrata su dispositivi mobile, ma il modello dei TEE come implementato
+su questi dispositivi non può essere trasposto direttamente sui server,
+richiede di risolvere dei nuovi problemi nati dal diverso ambiente.
+In particolare i TEE dei dispositivi mobile sono pensati per essere usati
+da un solo utente, mentre in un ambiente cloud è necessario che più utenti
+possano usare la stessa macchina fisica e dunque che il TEE possa essere
+condiviso.
+Inoltre, il modello dei TEE mobile assume che il software rimanga legato a
+un unico TEE per tutta la sua esecuzione; questa assunzione cade in ambito
+cloud dato che una VM potrebbe essere trasferita su in qualunque momento su
+una macchina fisica diversa, e dunque su un TEE diverso.
 
 \section{Questioni Etiche nell'Uso dei TEE}
 \label{sec:etica-tee}
