@@ -49,15 +49,16 @@
 %   sistema
 L'aumento dei servizi che vengono richiesti dai moderni dispositivi di
 computazione ha creato un quesito: l'aspetto di sicurezza è diventato più
-importante di prima, ma l'aumento dei servizi richiesti ha anche
-significativamente aumentato la superficie di attacco di tali dispositivi.
+importante di prima, ma con la maggiore complessità di tali sistemi aumenta
+anche la superficie di attacco.
+Rimuovere funzionalità dal sistema principale per renderlo più sicuro non
+è accettabile, ma è possibile isolare i servizi critici dal punto di vista
+della sicurezza in ambienti di computazione separati.
 
-% + Breve spiegazione di cosa è un TEE
-Proprio sotto questa idea di ridurre questa superficie di attacco e isolare
-i servizi critici dal punto di vista della sicurezza, nascono i
-\textit{Trusted Execution Environment(TEE)}, degli ambienti di computazione
-isolati dal sistema operativo principale in cui eseguire quei servizi critici
-dal punto di vista della sicurezza.
+Questa è l'idea alla base dei \textit{Trusted Execution Environment(TEE)},
+creare un ambiente di computazione nel processore, isolato dal resto del
+mondo non sicuro e dedicato solamente a quei software con requisiti di
+sicurezza stringenti.
 
 % + Molto diffusi su mobile, inizia ad esserci interesse su piattaforme cloud
 %   (trusted computing)
@@ -90,8 +91,10 @@ e testato su piattaforma ARM usando OP-TEE come TEE di prova.
 \label{sec:tee}
 % + Ambiente in cui è garantita l'integrita del codice in esecuzione
 Un \textit{Trusted Execution Environment}(TEE) è un ambiente all'interno di
-un dispositivo dove può essere eseguito del software con necessità di sicurezza
-critiche.
+un dispositivo dove può essere eseguito del software con necessità di
+sicurezza critiche.
+Esempi di TEE includono Samsung Knox, Qualcomm QSEE,
+AMD Platform Security Processor e OP-TEE.
 Un software eseguito dentro un TEE prende il nome di
 \textit{Trusted Application}(TA) e può offrire dei servizi a dei client
 esterni al TEE, che prendono il nome di \textit{Client Application}(CA).
@@ -216,15 +219,15 @@ un piccolo chip dedicato a operazioni crittografiche.
 I TEE sono largamente diffusi in ambito mobile al giorno d'oggi, seppur
 raramente pubblicizzati.
 Le applicazioni dei TEE sono molteplici ma sfortunatamente la grande
-maggioranza dei produttori di dispositivi mobili non supportano l'installazione di
-TA aggiuntive dopo la configurazione iniziale del TEE, inoltre la mancanza
-d'interfacce standard per gli sviluppatori hanno reso molto difficile
-sviluppare TA compatibili con TEE diversi.
+maggioranza dei produttori di dispositivi mobili non supportano
+l'installazione di TA aggiuntive dopo la configurazione iniziale del TEE,
+inoltre la mancanza d'interfacce standard per gli sviluppatori hanno reso
+molto difficile sviluppare TA compatibili con TEE diversi.
 
-Con la specifica dell'interfaccia GlobalPlatform TEE per gli sviluppatori di
-TA, lo sviluppo di TEE open-source come OP-TEE e lo sforzo di player come
-Google, Softonic e Apple per rendere i propri TEE conformi, potremmo vedere
-nei prossimi anni un uso più grande dei TEE.
+Con la specifica dell'interfaccia GlobalPlatform TEE % FIXME: Cite spec
+per gli sviluppatori di TA, lo sviluppo di TEE open-source come OP-TEE e lo
+sforzo di player come Google, Softonic e Apple per rendere i propri TEE
+conformi, potremmo vedere nei prossimi anni un uso più ampio dei TEE.
 
 \paragraph{Secure Storage e salvataggio di chiavi crittografiche}
 
