@@ -102,50 +102,34 @@ con il TEE; dunque il TEE è un ambiente isolato rispetto al REE.
 Questa definizione è piuttosto generica, nella pratica il "come" questi
 ambienti vengano realizzati, e quali proprietà di sicurezza vengano garantite
 può variare significativamente tra i prodotti.
+In questa tesi faremo riferimento ai documenti di specifica TEE di
+GlobalPlatform, una organizzazione che si occupa di standardizzare sistemi
+hardware per la sicurezza informatica.
+In particolare, nel loro
+\textit{TEE Security Profile}\cite{gp2020securityprofile}, GlobalPlatform
+descrive il tipo di attacchi a cui un TEE deve resistere per essere
+considerato conforme alla specifica.
 
-Una possibile definizione dei requisiti di sicurezza che ci si aspetta da un
-TEE è quella proposta da GlobalPlatform(GP), un consorzio di stakeholder nel
-mondo TEE interessati a standardizzarne diversi aspetti per aiutarne la
-diffusione.
-Nel loro \textit{security profile}\cite{gp2020securityprofile} un TEE deve
-poter garantire le seguenti proprietà:
+Una analisi dettagliata di questi documenti è fuori dallo scopo di questa
+tesi, ma in generale è possibile affermare che un TEE, per essere conforme
+alla specifica GlobalPlatform, deve poter garantire la proprietà di esecuzione
+isolata rispetto al REE e le proprietà d'integrità e confidenzialità sia del
+codice sia degli assets generati da esso.
 
-% FIXME: Questa è una traduzione letterale da GPD_TEE_SystemArchitecture pagina 6
-\begin{itemize}
-	\item \textbf{Autenticità}: Tutto il codice eseguito dentro un TEE deve
-	essere autenticato
-	\item \textbf{Integrità}: A meno di condivisioni esplicite da parte di
-	entità interne al TEE, l'integrità di tutti gli asset interni al TEE deve
-	essere garantita
-	\item \textbf{Confidenzialità dei dati}: A meno di condivisioni esplicite
-	da parte di entità interne al TEE, deve essere garantita la confidenzialità
-	di tutti i dati interni al TEE
-	\item \textbf{Confidenzialità del codice}: 
-	\item \textbf{Resistenza ad attacchi conosciuti}: Questi includono attacchi
-	software, remoti e hardware elencati nel security profile.
-	\item \textbf{Impedire debugging e tracing non autorizzati}
-\end{itemize}
+Le specifiche GlobalPlatform non restringono come queste proprietà devono
+essere raggiunte, seppur proponga alcune soluzioni pratiche.
+Nonostante ciò esistono comunque degli aspetti comuni alla maggior parte dei
+TEE, come ad esempio l'uso di supporto hardware per realizzare l'isolamento
+oppure l'uso di firme digitali per garantire l'autenticità del codice.
 
-GlobalPlatform pubblica anche delle specifiche per delle API interne
-\cite{gp2020internalapi} a uso delle TA, API esterne per le CA
-\cite{gp2020externalapi} e anche una architettura interna per il TEE
-\cite{gp2020internalarchitecture}.
-Sfortunatamente, nonostante la grande diffusione dei TEE in ambito mobile,
-sono molto pochi i TEE che rispettano completamente queste interfacce, di
-conseguenza è raro vedere TA non sviluppate dagli stessi produttori dei TEE.
-
-Nonostante questo, in \cite{sabt2015tee} e \cite{???} vengono notati alcuni
-aspetti comuni tra tutte le implementazioni di TEE in circolazione,
-in particolare la presenza di un \textit{separation kernel} e di una
-completa \textit{chain of trust} per l'esecuzione del codice all'interno del
-TEE.
-
+\paragraph{Isolamento:}
 % TODO: Leggi per davvero l'articolo di rushby
-% + Isolazione rispetto al kernel, superficie di attacco minore
-Un \textit{separation kernel}\cite{rushby1981separationkernel} è un componente
-hardware/software fidato che ha il compito di separare il sistema in zone
-isolate che non possono interferire tra di loro e di mediare le comunicazioni
-tra di esse.
+Per garantire la proprietà d'isolamento dal REE, \cite{sabt2015tee} nota
+che tutti i TEE implementano un \textit{separation kernel}
+\cite{rushby1981separationkernel}. 
+Un \textit{separation kernel} è un componente hardware e/o software fidato che
+ha il compito di separare il sistema in zone isolate che non possono
+interferire tra di loro e di mediare le comunicazioni tra di esse.
 % FIXME: Sembra tanto l'idea di microkernel, bisogna approfondire la differenza
 L'idea non è nuova, infatti venne proposta da Rushby nel 1981 dove propose
 di vedere ogni singola macchina come un sistema distribuito di componenti
@@ -162,36 +146,70 @@ Nei sistemi operativi oggi in uso, come Linux o Windows, la superficie di
 attacco è molto vasta a causa dell'enorme quantità di hardware che devono
 supportare e il numero elevato di servizi, anche non critici per la sicurezza,
 che offrono ai programmi utente.
+% FIXME: Qualche dato sulla dimensione di Linux/Windows? Dati sugli exploit in quali parte del sistema(driver)?
 Un attaccante che riesce a penetrare nel kernel ottiene il massimo livello di
 controllo sulla macchina, diventa dunque sensata l'idea di separare quei
 servizi importanti per la sicurezza e d'isolarli dal resto del sistema in
 un ambiente sicuro.
 
+Per questo motivo è importante che il \textit{separation kernel} sia
+il più semplice possibile, in modo che sia verificabile facilmente che non
+contenga falle di sicurezza.
 Seppur sia possibile avere molteplici TEE sullo stesso sistema, nella pratica
 tutte le implementazioni si limitano a un singolo TEE, dunque il
 "sistema distribuito" immaginato da Rushby è composto solamente da due
 componenti, il TEE e il REE.
 
-% + Root of Trust
-Il secondo aspetto importante e comune a tutti i TEE è quello di poter
-garantire una piena \textit{chain of trust}; tutto il codice nel TEE è stato
-autenticato e verificato integro.
-Questa verifica solitamente avviene grazie a un hash incluso nelle TA,
-crittografato usando una chiave pubblica di un ente fidato (spesso il
-produttore del dispositivo).
-Prima di caricare ed eseguire una TA, il TEE calcola l'hash del codice della TA
-e lo confronta con l'hash decrittografato incluso con il codice, se questi
-combaciano allora l'autenticità della TA è verificata e dunque è sicuro eseguire
-la TA.
-Per poter verificare l'hash incluso con ogni TA è necessario che il TEE
-possegga la chiave di decrittazione, è inoltre necessario che il TEE possa
-fidarsi di questa chiave; altrimenti un attaccante potrebbe sostituirla con
-una sua chiave scelta e firmarsi da solo le TA.
-Per questo motivo la chiave viene stampata sull'hardware, si cerca inoltre
-di rendere l'estrazione di essa proibitiva generando chiavi uniche per
-ogni dispositivo e rendendo distruttiva l'operazione di estrazione, 
-per esempio stampando la chiave nello stesso packaging della CPU, in modo
-che aprendola anche questa venga distrutta.
+Esempi pratici di \textit{separation kernel} sono ARM TrustZone e
+Trusted Firmware-A, blablabla.
+% FIXME: Aggiungi e describi brevemente meglio esempi
+
+\paragraph{Integrità e autenticità:}
+I benefici ottenibili tramite l'isolazione del TEE vengono annullati se
+l'integrità e l'autenticità del codice e assets all'interno del TEE non
+vengono garantite. Se così non fosse, un attaccante potrebbe modificare
+il codice del TEE mentre il dispositivo è spento per poi riaccenderlo con
+il codice compromesso.
+
+Queste proprietà devono essere garantite nell'intero ciclo di vita del
+sistema, non è accettabile che esse non vengano assicurate fin dal primo boot,
+o che queste proprietà vengano temporaneamente non garantite, pena
+l'impossibilità di poter dichiarare il sistema come non compromesso.
+
+Una soluzione per assicurare l'integrità e autenticità del codice consiste
+nell'implementare un meccanismo di autenticazione usando delle chiavi
+private conosciute solamente da enti fidati.
+Ogni software, prima di poter essere caricato dentro il TEE, dovrà prima
+passare un processo di autenticazione che consiste nel confrontare un hash
+calcolato sul codice con un hash firmato incluso con il software.
+Questo hash deve essere firmato utilizzando una chiave privata riconosciuta
+dal TEE, in questo modo esso può verificare che un ente fidato ha approvato
+l'esecuzione del codice.
+
+Unica eccezione a questa regola è il primissimo software mandato in esecuzione
+sul sistema; questo non può essere autenticato perché non è ancora presente
+alcun software in esecuzione che possa effettuare il processo di verifica.
+Per ovviare al problema, questo software viene caricato da una memoria
+impossibile da sovrascrivere, come ad esempio le PROM, in questo modo è
+possibile assumere comunque che il software non sia stato compromesso.
+
+Questo meccanismo di autenticazione è molto simile a quello utilizzato per
+implementare il \textit{Secure Boot}; la differenza con quest ultimo è che
+nel \textit{Secure Boot} la catena di verifica del software termina con
+l'avvio del sistema operativo, questo perché \textit{Secure Boot} si prefigge
+di autenticare solamente processo di avvio del sistema operativo.
+In un TEE, invece, si spinge più in avanti e si verificano anche i programmi
+eseguiti al suo interno.
+
+In entrambi i casi, però, è necessario che il firmware di un dispositivo
+conosca le chiavi pubbliche per poter verificare la firma dei software
+da caricare. Come queste chiavi vengano ottenute dal firmware è un dettaglio
+implementativo, dunque altamente dipendente dal sistema.
+
+Per esempio, su PC che implementano \textit{UEFI Secure Boot} queste chiavi
+vengono spesse memorizzate su una piccola memoria inclusa nella scheda madre % FIXME: Cit. required
+oppure dentro un \textit{Trusted Platform Module}, % FIXME: Cit. required (si usano i TPM per questo scopo?)
+un piccolo chip dedicato a operazioni crittografiche.
 
 \section{Applicazioni dei TEE}
 \label{sec:applicazioni-tee}
