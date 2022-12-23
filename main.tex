@@ -67,7 +67,7 @@ Dato che gli smartphone stanno diventando sempre più critici per la nostra vita
 i TEE sono estremamente diffusi in ambito mobile, dove la piattaforma ARM fa da
 padrona, e ormai presenti su praticamente tutti i cellulari ma inizia a esserci
 un crescente interesse al loro uso anche in ambito Desktop e, in particolare,
-anche sui server grazie all'iniziativa \textit{Trusted Computing}.
+anche sui server grazie all'iniziativa \textit{Confidential Computing}.
 
 % + Esistono soluzioni ma sono solo su piattaforme x86 via intel SGX che è una
 %   implementazione molto particolare(approfondire)
@@ -155,7 +155,7 @@ compromesso.
 Nei sistemi operativi oggi in uso, come Linux o Windows, la superficie di
 attacco è molto vasta a causa dell'enorme quantità di hardware che devono
 supportare e il numero elevato di servizi, anche non critici per la sicurezza,
-che offrono ai programmi utente.
+che offrono ai programmi utente. 
 % FIXME: Qualche dato sulla dimensione di Linux/Windows? Dati sugli exploit in quali parte del sistema(driver)?
 Un attaccante che riesce a penetrare nel kernel ottiene il massimo livello di
 controllo sulla macchina, diventa dunque sensata l'idea di separare quei
@@ -317,14 +317,77 @@ blockchain blabla.
 
 Infine \cite{??} pagamenti offline con TEE.
 
-\section{Hardware a Supporto dei TEE}
-\label{sec:hardware-supporto-tee}
+\section{TEE conformi GlobalPlatform}
+\label{sec:tee-conformi-globalplatform}
+GlobalPlatform è un consorzio di stakeholder interessati alla
+standardizzazione di tecnologie per l'implementazione di servizi digitali
+sicuri. L'organizzazione comprende produttori di hardware, sviluppatori di
+sistemi operativi e applicazioni allo scopo di produrre dei documenti di
+specifica allo scopo di favorire la collaborazione tra aziende e la
+diffusione di nuove tecnologie nell'ambito della sicurezza informatica.
 
-% + Chi è GlobalPlatform
-% + Non tutti lo rispettano, ma si sta diffondendo
-% + Architettura di un TEE conforme GlobalPlatform
-% + Interfaccia unificata per permettere il porting delle TA su TEE diversi
-% + Spulcia i documenti GlobalPlatform per idee
+Nel 2010 GlobalPlatform ha pubblicato la prima versione dei documenti di
+specifica per i TEE, oggi arrivati alla versione 1.3 pubblicati nel 2020.
+Questi documenti, oltre al già citato \textit{Security Profile}, definiscono
+una architettura generica di un TEE, API per la comunicazione tra CA e TA
+e anche delle interfacce per permettere lo sviluppo di TA portabili tra TEE
+diversi. Inoltre, GlobalPlatform pubblica anche delle raccomandazioni per
+l'implementazione degli aspetti crittografici di un TEE.
+
+% FIXME: Considera tradurre il testo in questa figura
+% GPT TEE PP => Protection Profile
+\begin{figure}
+    \centering
+    \includegraphics[width=1\textwidth]{immagini/tee-system-architecture}
+    \caption{
+        Architettura di un TEE conforme GlobalPlatform. 
+        Da \textit{TEE System Architecture v1.3 (pag. 28)}
+        \cite{gp2020systemarchitecture}
+    }
+    \label{fig:tee-system-architecture}
+\end{figure}
+
+In \figurename~\ref{fig:tee-system-architecture} una possibile architettura
+software di un TEE conforme GlobalPlatform. 
+In questa figura è possibile notare una barriera che divide TEE e REE; i due
+mondi non possono accedere all'altro direttamente.
+Client Application e Trusted Application possono condividere dei buffer di
+memoria, ma questa è una astrazione implementata dal sistema sopra un
+protocollo molto più semplice basato sullo scambio di messaggi.
+
+Il passaggio dei messaggi avviene tramite il supporto dell'hardware, che in
+questa architettura rappresenta il \textit{Separation Kernel} citato
+precedentemente.
+
+In entrambi i mondi è presente un sistema operativo che può mandare in
+esecuzione dei processi e che contengono dei driver per l'accesso alle
+periferiche. Queste si dividono in:
+\begin{itemize}
+    \item \textit{Periferiche Fidate}: L'accesso a queste periferiche è
+    consentito solamente dal TEE. Esempi di queste periferiche sono i
+    sensori biometrici oppure memorie segrete % FIXME: Sensori biometrici? Memorie segrete? non ne sono sicuro 
+    \item \textit{Periferiche Fidate Condivise}: L'accesso a queste
+    periferiche di default è consentito solamente dal TEE, ma questo può
+    decidere temporaneamente di condividere l'accesso con il REE. Esempi di
+    queste periferiche sono il display e la tastiera.
+    \item \textit{Periferiche Pubbliche}: L'accesso diretto a queste
+    periferiche avviene dal REE, ma nulla impedisce a quest'ultimo di
+    permettere l'accesso anche al TEE tramite un driver. Esempi di queste
+    periferiche sono gli altoparlanti.
+\end{itemize}
+
+Il flusso di esecuzione solito è il seguente: una Client Application richiede
+un servizio a una Trusted Application, per fare ciò utilizza una API che
+nasconde l'invio di un messaggio al \textit{TEE Communication Agent}.
+Quest'ultimo inoltra il messaggio alla TA richiesta, inizializzandola se
+questa non era già in esecuzione. La TA risponde con un messaggio che viene
+inoltrato direttamente alla CA, che è rimasta in attesa nel frattempo.
+
+% TODO: Parla del REE Communication Agent
+%   * Permette comunicazione asincrona dato che normalmente sono sempre le CA ad iniziare
+%   * Riceve le richieste dalle TA per tipo per leggere i file da disco
+
+% TODO: Parla dell'internal core
 
 \section{TEE e Cloud Computing}
 \label{sec:tee-e-cloud-computing}
@@ -478,6 +541,13 @@ il TEE.
 % Descrizione di quello che vogliamo fare (permettere ad un TEE generico di offrire servizi a macchine virtuali)
 % Interessante sia in ambito "casalingo" sia in ambito cloud per i provider
 
+\section{OP-TEE}
+\label{sec:architettura-op-tee}
+% Descrizione di OP-TEE
+% Cosa fa, perchè lo abbiamo scelto
+% Architettura di OP-TEE, è molto simile a quella GlobalPlatform dunque parla
+% dei confronti ed eventuali differenze (tipo: c'è il TF-A)
+
 \section{GlobalPlatform API}
 \label{sec:global-platform-api}
 % Cosa è, cosa chiede di implementare
@@ -526,6 +596,7 @@ il TEE.
 
 \appendix
 \chapter{FakeTEE: Simulatore di TEE per aiutare nello sviluppo}
+\label{chap:faketee}
 % + Durante lo sviluppo era necessario avere un TEE ispezionabile facilmente
 % + Con QEMU è possibile emularlo ma dato che volevo avere un TEE sull'host
 %	accessibile da una VM guest sarebbe stato necessario avere una VM dentro
@@ -534,6 +605,9 @@ il TEE.
 %	e finge la presenza di un TEE
 % + Fa tutto in kernel space, non mantiene stato ed è facilmente modificabile e reloadable
 % + Utile durante lo sviluppo di sw legato ai TEE 
+
+\chapter{Impostazione dell'ambiente di sviluppo e testing}
+\label{chap:impostazione-ambiente-sviluppo-testing}
 
 \bibliographystyle{unsrt}
 \bibliography{bibliografia}
