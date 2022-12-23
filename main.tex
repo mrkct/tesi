@@ -41,8 +41,9 @@
 \frontespizio
 \afterpreface
 
-\chapter{Introduzione}
-\label{cap:introduzione}
+% FIXME: Non compare sull'indice
+\chapter*{Sommario}
+\label{cap:sommario}
 
 % + Chiediamo più servizi e dunque aumenta la superficie di attacco, ma un
 %   buco anche in servizi non critici rischia di mettere a rischio l'intero
@@ -86,6 +87,12 @@ Il risultato è stato quello di una versione modificata dell'emulatore QEMU
 per aggiungere un device virtuale per la comunicazione tra il guest e il TEE
 disponibile all'host. Inoltre è stato sviluppato un driver per sistemi Linux
 e testato su piattaforma ARM usando OP-TEE come TEE di prova.
+
+% TODO: PARLA DI PROBLEMI
+
+\chapter{Introduzione}
+\label{sec:introduzione}
+
 
 \chapter{Trusted Execution Environment}
 \label{sec:tee}
@@ -313,10 +320,11 @@ Infine \cite{??} pagamenti offline con TEE.
 \section{Hardware a Supporto dei TEE}
 \label{sec:hardware-supporto-tee}
 
-\section{TEE Disponibili}
-\label{sec:tee-disponibili}
-% Parli di OP-TEE, AMD PSP, Apple Secure Enclave, Samsung Knox, Trusty...
-% Parli della segretezza delle info disponibili
+% + Chi è GlobalPlatform
+% + Non tutti lo rispettano, ma si sta diffondendo
+% + Architettura di un TEE conforme GlobalPlatform
+% + Interfaccia unificata per permettere il porting delle TA su TEE diversi
+% + Spulcia i documenti GlobalPlatform per idee
 
 \section{TEE e Cloud Computing}
 \label{sec:tee-e-cloud-computing}
@@ -445,25 +453,37 @@ Seppur questo non risolva la questione della perdita di controllo sulla
 propria macchina, almeno permetterebbe di avere un'idea di cosa stia eseguendo
 il TEE.
 
-\chapter{Passthrough per TEE tra QEMU e Linux}
-\label{chap:passthrough-tee-qemu-linux}
-ciao test \cite{lim2019web}.
-% Breve intro a QEMU
-% Descrizione di quello che vogliamo fare (permettere ad un TEE generico di offrire servizi a macchine virtuali)
-% Interessante sia in ambito "casalingo" sia in ambito cloud per i provider
+\chapter{Hardware a supporto dei TEE}
+\label{chap:hardware-supporto-tee}
 
 \section{ARM TrustZone}
 \label{sec:arm-trustzone}
-% Cosa è
-% Come funziona
-% Non c'è supporto alla virtualizzazione prima di ARM v8-B (che non è ancora uscito)
+
+\section{Intel SGX e TXT}
+\label{sec:intel-sgx-txt}
+
+\section{Processori esterni}
+\label{sec:processori-esterni}
+% AMD PSP
+% Apple Secure Enclave
+% Google Titan
+
+\section{RISC-V}
+\label{sec:risc-v}
+
+
+\chapter{Passthrough per TEE tra QEMU e Linux}
+\label{chap:passthrough-tee-qemu-linux}
+% Breve intro a QEMU
+% Descrizione di quello che vogliamo fare (permettere ad un TEE generico di offrire servizi a macchine virtuali)
+% Interessante sia in ambito "casalingo" sia in ambito cloud per i provider
 
 \section{GlobalPlatform API}
 \label{sec:global-platform-api}
 % Cosa è, cosa chiede di implementare
 % (?) Forse poco per una sezione?
 
-\section{Il Sottosistema TEE per Linux}
+\section{Il sottosistema TEE per Linux}
 \label{sec:sottosistema-tee-per-linux}
 % Cosa è, perchè lo usiamo (perchè è una interfaccia comune)
 % Funzionamento via ioctl
@@ -485,9 +505,17 @@ ciao test \cite{lim2019web}.
 % Pro: passthrough invisibile, non serve estendere il kernel
 % Contro: legato strettamente ad una singola versione di OP-TEE
 
-\section{Verifica Funzionale tramite Test Suite di OP-TEE}
-\label{sec:verifica-funzionale-via-optee}
-% Utilizzo della test suite di OP TEE per verificare la correttezza funzionale
+\chapter{Testing}
+\label{chap:testing}
+
+\section{Setup dell'ambiente}
+\label{sec:setup-ambiente}
+
+\section{Preparazione della test suite}
+\label{sec:preparazione-test-suite}
+
+\section{Performance}
+\label{sec:performance}
 
 \chapter{Conclusioni}
 \label{chap:conclusioni}
