@@ -156,7 +156,8 @@ Nei sistemi operativi oggi in uso, come Linux o Windows, la superficie di
 attacco è molto vasta a causa dell'enorme quantità di hardware che devono
 supportare e il numero elevato di servizi, anche non critici per la sicurezza,
 che offrono ai programmi utente. 
-% FIXME: Qualche dato sulla dimensione di Linux/Windows? Dati sugli exploit in quali parte del sistema(driver)?
+% FIXME: Qualche dato sulla dimensione di Linux/Windows? 
+% Dati sugli exploit in quali parte del sistema(driver)?
 Un attaccante che riesce a penetrare nel kernel ottiene il massimo livello di
 controllo sulla macchina, diventa dunque sensata l'idea di separare quei
 servizi importanti per la sicurezza e d'isolarli dal resto del sistema in
@@ -386,18 +387,35 @@ periferiche. Queste si dividono in:
     periferiche sono gli altoparlanti.
 \end{itemize}
 
-Il flusso di esecuzione solito è il seguente: una Client Application richiede
-un servizio a una Trusted Application, per fare ciò utilizza una API che
-nasconde l'invio di un messaggio al \textit{TEE Communication Agent}.
-Quest'ultimo inoltra il messaggio alla TA richiesta, inizializzandola se
-questa non era già in esecuzione. La TA risponde con un messaggio che viene
-inoltrato direttamente alla CA, che è rimasta in attesa nel frattempo.
+In entrambi i mondi troviamo dei \textit{Communication Agent}: questi 
+hanno il compito d'inoltrare i messaggi tra CA e TA e, solo per il
+\textit{TEE Communication Agent}, anche tra TA a TA.
+I \textit{Communication Agent} possono prendere diverse forme nella pratica,
+possono essere processi, componenti del sistema operativo ma anche semplici
+librerie che vengono linkate alle applicazioni.
+Seppur nello schema siano visti come solo due componenti, nella realtà il loro
+ruolo può essere svolto usando più sotto-componenti.
 
-% TODO: Parla del REE Communication Agent
-%   * Permette comunicazione asincrona dato che normalmente sono sempre le CA ad iniziare
-%   * Riceve le richieste dalle TA per tipo per leggere i file da disco
+Il flusso di esecuzione solito è il seguente: una CA richiede un servizio a
+una TA, per fare ciò utilizza la \textit{Client API} che astrae l'invio di un
+messaggio al \textit{TEE Communication Agent}.
+Questo primo messaggio apre una \textit{sessione} tra la CA e la TA, che
+indica l'inizio di uno o più \textit{Function Invocation}.
+Un messaggio di \textit{Function Invocation} contiene semplicemente un ID
+che identifica la funzione da invocare e degli eventuali parametri,
+il mapping tra ID e funzione è definito dalla \textit{Trusted Application}.
+La TA esegue la funzione richiesta e risponde con un messaggio che contiene
+l'esito dell'operazione e eventuali dati di ritorno.
 
-% TODO: Parla dell'internal core
+Queste chiamate sono sincrone, ma è possibile costruire delle chiamate
+asincrone tramite un meccanismo di polling.
+
+Le TA all'interno del TEE possono far uso del \textit{Trusted Core Framework}
+che fornisce una interfaccia per operazioni comuni come il salvataggio
+di file in modo sicuro, l'accesso al timer e altre funzionalità descritte nel
+\textit{Trusted Core Framework API Specification v1.3}\cite{gp2020internalapi}.
+Questa interfaccia dovrebbe permettere di rendere portabili su TEE diversi
+le TA.
 
 \section{TEE e Cloud Computing}
 \label{sec:tee-e-cloud-computing}
