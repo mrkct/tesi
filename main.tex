@@ -203,6 +203,16 @@ Per ovviare al problema, questo software viene caricato da una memoria
 impossibile da sovrascrivere, come ad esempio le PROM, in questo modo è
 possibile assumere comunque che il software non sia stato compromesso.
 
+\begin{figure}
+\centering
+\includegraphics[width=0.8\textwidth]{immagini/tee-boot-sequence}
+\caption{
+    Sequenza di boot sicuro in un sistema con TEE. 
+    Da \textit{GlobalPlatform TEE System Architecture pag. 73}
+    \cite{2020gpsystemarchitecture}
+}
+\end{figure}
+
 Questo meccanismo di autenticazione è molto simile a quello utilizzato per
 implementare il \textit{Secure Boot}; la differenza con quest ultimo è che
 nel \textit{Secure Boot} la catena di verifica del software termina con
