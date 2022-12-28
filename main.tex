@@ -90,47 +90,221 @@ e testato su piattaforma ARM usando OP-TEE come TEE di prova.
 
 % TODO: PARLA DI PROBLEMI
 
+% Le soluzioni disponibili sul mercato fanno uso di Intel SGX
+% o AMD SEV, che descriviamo rispettivamente in \ref{sec:intel-sgx} e
+% \ref{sec:amd-sev}. Queste tecnologie sono disponibili solamente su processori
+% con architettura x86\_64 dei rispettivi produttori hardware.
+% Con un maggior interesse nell'utilizzo dell'architettura ARM lato server, % FIXME: Cit required
+% grazie alla sua maggior efficienza energetica, % FIXME: Cit required
+% vogliamo dunque trovare una soluzione equivalente per questa architettura.
+% 
+% Fino a oggi la gran parte degli sforzi rispetto all'uso dei TEE su ARM
+% si è concentrata su dispositivi mobile, ma il modello dei TEE come implementato
+% su questi dispositivi non può essere trasposto direttamente sui server,
+% richiede di risolvere dei nuovi problemi nati dal diverso ambiente.
+% In particolare i TEE dei dispositivi mobile sono pensati per essere usati
+% da un solo utente, mentre in un ambiente cloud è necessario che più utenti
+% possano usare la stessa macchina fisica e dunque che il TEE possa essere
+% condiviso.
+% Inoltre, il modello dei TEE mobile assume che il software rimanga legato a
+% un unico TEE per tutta la sua esecuzione; questa assunzione cade in ambito
+% cloud dato che una VM potrebbe essere trasferita su in qualunque momento su
+% una macchina fisica diversa, e dunque su un TEE diverso.
+
+
 \chapter{Introduzione}
 \label{sec:introduzione}
 
 
 \chapter{Trusted Execution Environment}
 \label{sec:tee}
-% + Ambiente in cui è garantita l'integrita del codice in esecuzione
-Un \textit{Trusted Execution Environment}(TEE) è un ambiente all'interno di
-un dispositivo dove può essere eseguito del software con necessità di
-sicurezza critiche.
-Esempi di TEE includono Samsung Knox, Qualcomm QSEE,
-AMD Platform Security Processor e OP-TEE.
-Un software eseguito dentro un TEE prende il nome di
-\textit{Trusted Application}(TA) e può offrire dei servizi a dei client
-esterni al TEE, che prendono il nome di \textit{Client Application}(CA).
-L'ambiente esterno al TEE, che prende il nome di
-\textit{Rich Execution Environment}(REE), non può in alcun modo interferire
-con il TEE; dunque il TEE è un ambiente isolato rispetto al REE.
+Un \textit{Trusted Execution Environment} (TEE) è un'area protetta in un
+dispositivo che può essere utilizzata per eseguire codice autenticato in modo
+più sicuro e attendibile rispetto al resto del sistema.
 
-Questa definizione è piuttosto generica, nella pratica il "come" questi
-ambienti vengano realizzati, e quali proprietà di sicurezza vengano garantite
-può variare significativamente tra i prodotti.
-In questa tesi faremo riferimento ai documenti di specifica TEE di
-GlobalPlatform, una organizzazione che si occupa di standardizzare sistemi
-hardware per la sicurezza informatica.
-In particolare, nel loro
-\textit{TEE Security Profile}\cite{gp2020securityprofile}, GlobalPlatform
-descrive il tipo di attacchi a cui un TEE deve resistere per essere
-considerato conforme alla specifica.
+I TEE stanno diventando sempre più importanti man mano che i dispositivi
+diventano più connessi e vulnerabili agli attacchi.
+Forniscono un modo per proteggere i dati e le operazioni sensibili
+dall'accesso o dalla modifica da parte di parti non autorizzate e possono
+essere utilizzati per rendere possibili una vasta gamma di applicazioni
+in molti ambiti, di cui parliamo in \ref{sec:applicazioni-tee}.
+
+Data l'importanza che i dispositivi mobile stanno assumendo nella nostra
+vita di tutti i giorni non dovrebbe sorprendere il fatto che i TEE sono
+presenti su praticamente tutti i cellulari, grazie anche agli sforzi
+pionieristici di ARM con la loro piattaforma \textit{TrustZone}.
+Gli esempi di TEE in questo ambito sono numerosi, alcuni nomi noti sono
+Samsung Knox, Qualcomm QSEE, Google Titan-M e Apple Secure Enclave.
+
+L'utilizzo dei TEE non è assolutamente prerogativa solo del mondo mobile.
+L'interesse verso i TEE sta crescendo anche in ambito IoT, Desktop e Server 
+dove iniziamo a vedere sul mercato le prime soluzioni che permettono di
+eseguire software in un ambiente protetto anche su queste piattaforme.
+
+In questo capitolo illustriamo le caratteristiche chiave dei TEE e come
+possono essere utilizzati per migliorare la sicurezza e l'affidabilità di
+vari tipi di dispositivi e sistemi.
+
+\section{TEE conformi GlobalPlatform}
+\label{sec:tee-conformi-globalplatform}
+I Trusted Execution Environment sono la combinazione di hardware e software
+dedicato allo scopo di creare un ambiente di computazione protetto e sicuro.
+Nonostante questa definizione, il termine "TEE" è piuttosto generico
+e viene applicato a una vasta gamma di prodotti che hanno garanzie di sicurezza
+e dettagli d'implementazione significativamente diversi.
+
+La mancanza di una definizione comune e standardizzata dei TEE non solo rischia
+di confondere i consumatori, ma può anche essere un ostacolo per gli sviluppatori
+interessati a creare applicazioni che possono essere eseguite su più TEE
+dato che devono gestire una vasta gamma di differenze in termini di come i
+TEE sono implementati e quali garanzie di sicurezza effettivamente offrono.
+
+Allo scopo proprio di risolvere questi problemi, nel 2010 il consorzio
+GlobalPlatform ha pubblicato la prima versione dei documenti di specifica
+per i TEE, oggi arrivati alla versione 1.3 pubblicati nel 2020.
+Questi standard definiscono un set comune di guide linea e requisiti per la
+creazione di TEE progettati per essere interoperabili e sicuri.
+
+Più nel dettaglio, tra queste specifiche troviamo una architettura
+generica per i TEE, un profilo di sicurezza e delle interfacce per
+programmatori che permettono lo sviluppo di applicazioni portabili tra TEE
+diversi. 
+
+Diverse aziende e organizzazioni hanno adottato questi standard
+ed hanno adattato le loro soluzioni per essere conformi alla specifica
+GlobalPlatform.
+Seppur esistano ancora sul mercato soluzioni non conformi non è difficile
+prevedere che nel breve futuro la maggior parte dei TEE lo saranno.
+
+Per questo motivo e altri motivi la discussione in questa tesi sarà limitata
+ai TEE conformi GlobalPlatform.
+
+\subsection{Architettura TEE}
+\label{subsec:architettura-tee}
+
+La specifica GlobalPlatform non detta una architettura per i TEE ma offre
+comunque degli esempi che possono essere utili a comprendere quali sono
+i componenti fondamentali di un TEE GlobalPlatform e come collaborano
+tra di loro per l'implementazione.
+
+% FIXME: Considera tradurre il testo in questa figura
+% GPT TEE PP => Protection Profile
+\begin{figure}
+    \centering
+    \includegraphics[width=1\textwidth]{immagini/tee-system-architecture}
+    \caption{
+        Architettura di un TEE conforme GlobalPlatform. 
+        Da \textit{TEE System Architecture v1.3 (pag. 28)}
+        \cite{gp2020systemarchitecture}
+    }
+    \label{fig:tee-system-architecture}
+\end{figure}
+
+In \figurename~\ref{fig:tee-system-architecture} è illustrata una possibile
+architettura software di un sistema con un singolo TEE conforme
+GlobalPlatform. Questa è solo una delle tante possibili architetture, inoltre
+nulla vieta che un sistema possa avere più TEE, seppur nella pratica
+questo non è molto comune.
+
+In tale figura è possibile notare una barriera che divide il sistema in due
+mondi: il mondo del \textit{Trusted Execution Environment} (TEE) a destra
+e il mondo del \textit{Regular Execution Environment} (REE) a sinistra, cioè
+il mondo a cui siamo abituati a lavorare con i sistemi operativi classici.
+
+In entrambi i mondi troviamo un sistema operativo che gestisce le risorse
+hardware e schedula l'esecuzione di processi. Un programma in esecuzione
+dentro il TEE prende il nome di \textit{Trusted Application}(TA) e può
+offrire dei servizi ad altre TA oppure alle applicazioni in esecuzione nel REE,
+che prendono il nome di \textit{Client Application}(CA).
+
+Le TA all'interno del TEE possono far uso del \textit{Trusted Core Framework}
+che fornisce una interfaccia per operazioni comuni come il salvataggio
+di file in modo sicuro, l'accesso al timer e altre funzionalità descritte
+nella
+\textit{Trusted Core Framework API Specification}\cite{gp2020internalapi}.
+Questa interfaccia dovrebbe permettere di poter portare una TA su TEE diversi
+senza doverne modificare il codice.
+
+I due mondi non possono accedere direttamente all'altro, ma possono
+comunicare solo tramite uno scambio di messaggi mediato dall'hardware.
+Su questo meccanismo di comunicazione è possibile costruire meccanismi di
+comunicazione a livello più alto, come ad esempio la condivisione di buffer
+di memoria tra CA e TA.
+
+\bigbreak \noindent
+
+Il flusso di esecuzione solito è il seguente: una CA richiede un servizio a
+una TA, per fare ciò utilizza la \textit{Client API} che astrae l'invio di un
+messaggio al \textit{TEE Communication Agent}.
+Questo primo messaggio apre una \textit{sessione} tra la CA e la TA, che
+indica l'inizio di uno o più \textit{Function Invocation}.
+Un messaggio di \textit{Function Invocation} contiene semplicemente un ID
+che identifica la funzione da invocare e degli eventuali parametri;
+il mapping tra ID e funzione è definito dalla \textit{Trusted Application}.
+La TA esegue la funzione richiesta e risponde con un messaggio che contiene
+l'esito dell'operazione ed eventuali dati di ritorno.
+
+Queste chiamate sono sincrone, ma è possibile costruire delle chiamate
+asincrone tramite un meccanismo di polling.
+
+In entrambi i mondi troviamo dei \textit{Communication Agent}: questi 
+hanno il compito d'inoltrare i messaggi tra CA e TA e, solo per il
+\textit{TEE Communication Agent}, anche tra TA a TA.
+I \textit{Communication Agent} possono prendere diverse forme nella pratica:
+possono essere processi, componenti del sistema operativo ma anche semplici
+librerie che vengono linkate alle applicazioni.
+Seppur nello schema siano visti come solo due componenti, nella realtà il loro
+ruolo può essere svolto usando più sotto-componenti.
+
+\bigbreak
+
+\noindent Infine, le periferiche hardware vengono suddivise in tre categorie:
+\begin{itemize}
+    \item \textit{Periferiche Fidate}: L'accesso a queste periferiche è
+    consentito solamente dal TEE. Esempi di queste periferiche sono i
+    sensori biometrici oppure memorie segrete % FIXME: Sensori biometrici? Memorie segrete? non ne sono sicuro 
+    \item \textit{Periferiche Fidate Condivise}: L'accesso a queste
+    periferiche di default è consentito solamente dal TEE, ma questo può
+    decidere temporaneamente di condividere l'accesso con il REE. Esempi di
+    queste periferiche sono il display e la tastiera.
+    \item \textit{Periferiche Pubbliche}: L'accesso diretto a queste
+    periferiche avviene dal REE, ma nulla impedisce a quest'ultimo di
+    permettere l'accesso anche al TEE tramite un driver. Esempi di queste
+    periferiche sono gli altoparlanti.
+\end{itemize}
+
+\subsection{Garanzie di sicurezza}
+\label{subsec:garanzie-sicurezza}
+
+% - I TEE non possono essere considerati tutti uguali perchè implementati in maniera diversa
+% - Nonostante questo GP definisce un set di proprietà minime che devono essere garantite da tutti i TEE
+% - Queste proprietà sono elencate nel PP
+% - I TEE possono garantire anche proprietà aggiuntive, ma non sono obbligatoriamente garantite da tutti i TEE
+% - Sono 3 proprietà importanti: Isolation, Confidentiality, Integrity
+
+I Trusted Execution Environment possono essere implementati in maniera
+diversa tra di loro, di conseguenza non sarebbe corretto considerarli tutti
+uguali dal punto di vista della sicurezza.
+Per questo motivo, GlobalPlatform ha definito un set di proprietà che
+devono essere garantite da tutti i TEE, queste sono elencate nel
+\textit{Protection Profile}\cite{gp2020protectionprofile}.
+Un TEE per essere certificato deve garantire almeno queste proprietà, ma
+può garantire anche proprietà aggiuntive; questo vuol dire che rimane
+comunque sensata l'osservazione che non tutti i TEE sono uguali, seppur
+adesso sia possibile almeno stabilire una baseline minima. 
 
 Una analisi dettagliata di questi documenti è fuori dallo scopo di questa
-tesi, ma in generale è possibile affermare che un TEE, per essere conforme
-alla specifica GlobalPlatform, deve poter garantire la proprietà di esecuzione
-isolata rispetto al REE e le proprietà d'integrità e confidenzialità sia del
-codice sia degli assets generati da esso.
+tesi, ma in generale è possibile affermare che un TEE deve poter garantire
+la proprietà di esecuzione isolata rispetto al REE e le proprietà d'integrità
+e confidenzialità sia del codice sia degli assets generati da esso.
 
 Le specifiche GlobalPlatform non restringono come queste proprietà devono
 essere raggiunte, seppur proponga alcune soluzioni pratiche.
 Nonostante ciò esistono comunque degli aspetti comuni alla maggior parte dei
 TEE, come ad esempio l'uso di supporto hardware per realizzare l'isolamento
 oppure l'uso di firme digitali per garantire l'autenticità del codice.
+
+% FIXME: Sarebbe interessante una sotto-sezione "Cosa non garantiscono i TEE"(side-channel, attacchi di tipo hardware, ecc)
 
 \paragraph{Isolamento:}
 % TODO: Leggi per davvero l'articolo di rushby
@@ -234,59 +408,70 @@ un piccolo chip dedicato a operazioni crittografiche.
 
 \section{Applicazioni dei TEE}
 \label{sec:applicazioni-tee}
-I TEE sono largamente diffusi in ambito mobile al giorno d'oggi, seppur
-raramente pubblicizzati.
+I Trusted Execution Environment diventano più utilizzati di anno in anno. % FIXME: Cit required
+Oggi i TEE sono largamente diffusi in ambito mobile, seppur non sempre
+pubblicizzati, ma il loro utilizzo spazia in diversi settori.
+
 Le applicazioni dei TEE sono molteplici ma sfortunatamente la grande
-maggioranza dei produttori di dispositivi mobili non supportano
-l'installazione di TA aggiuntive dopo la configurazione iniziale del TEE,
-inoltre la mancanza d'interfacce standard per gli sviluppatori hanno reso
-molto difficile sviluppare TA compatibili con TEE diversi.
+maggioranza dei produttori di dispositivi non supportano
+l'installazione di applicazioni aggiuntive dentro il TEE dopo la
+configurazione iniziale.
 
-Con la specifica dell'interfaccia GlobalPlatform TEE % FIXME: Cite spec
-per gli sviluppatori di TA, lo sviluppo di TEE open-source come OP-TEE e lo
-sforzo di player come Google, Softonic e Apple per rendere i propri TEE
-conformi, potremmo vedere nei prossimi anni un uso più ampio dei TEE.
+Questo potrebbe cambiare nei prossimi anni a seguito dell'adozione da
+più vendor degli standard TEE GlobalPlatform e lo sviluppo di TEE open-source
+come OP-TEE; di conseguenza potremmo vedere nei prossimi anni un uso più
+ampio di questa tecnologia.
 
-\paragraph{Secure Storage e salvataggio di chiavi crittografiche}
+% FIXME: Forse una breve discussione sulla Remote Attestation, perchè è quella che abilita molte applicazioni
 
+\subsection{Secure Storage}
+\label{subsec:secure-storage}
 Una delle feature più comuni è l'uso dei TEE per la creazione del
 \textit{Secure Storage}, una zona di memoria non volatile che possa rimanere
 al sicuro anche quando il dispositivo è spento.
-Questa area viene crittografata utilizzando una chiave conosciuta solamente
-all'interno del TEE, inoltre è protetta da attacchi di tipo rollback.
 
-% FIXME: Da riscrivere
-Li dentro si salvano chiavi crittografiche ma anche informazioni non
-necessariamente private ma di cui si vuole proteggere l'integrità, per esempio
-il numero di tentativi fatti per accedere al dispositivo.
+Questa area viene crittografata utilizzando una chiave conosciuta solamente
+all'interno del TEE, la decifratura dei dati avviene solamente a seguito di
+un controllo degli accessi da parte del TEE.
 
 Un utilizzo molto comune di questa area sicura è il salvataggio di dati
-come l'impronta digitale degli utenti, token per mantenere l'accesso a
-servizi online oppure la gestione delle chiavi crittografiche.
-Molti sviluppatori di applicazioni mobile Android e iOS utilizzano questa
-funzionalità grazie ad API che, se presenti, utilizzano delle TA come ad
-esempio "Keystore"\cite{androidkeystore} in Android.
+come l'impronta digitale degli utenti, dati di accesso a servizi online
+oppure la gestione delle chiavi crittografiche.
+Molti sviluppatori di applicazioni mobile Android e iOS utilizzano
+quest'ultima funzionalità grazie ad API che, se presenti, utilizzano delle
+TA, come ad esempio "Keystore"\cite{androidkeystore} in Android.
 
 Alcuni produttori, ad esempio AMD con il suo
-\textit{Platform Security Processor}\cite{amd2020ftpm}, utilizzano queste
-funzionalità per implementare un \textit{Trusted Platform Module}(TPM)
-software, un co-processore dedicato a varie operazioni di crittografia, come
-la generazione e salvataggio di chiavi e la verifica dell'integrità del
-software in esecuzione sul sistema.
-Grazie ai TEE i produttori possono potenzialmente risparmiare il costo di un
-TPM hardware.
+\textit{Platform Security Processor}\cite{amd2020ftpm}, utilizzano la
+funzionalità di \textit{Secure Storage} per implementare un
+\textit{Trusted Platform Module}(TPM) software.
+Questo è normalmente un chip dedicato al salvataggio sicuro di chiavi crittografiche
+ed allo svolgimento di varie operazioni di crittografia; re-implementando
+queste operazioni dentro un TEE è dunque possibile per i produttori risparmiare
+il costo dell'hardware normalmente necessario per un chip TPM.
 
-\paragraph{Protezione dei diritti di autore(DRM)}
+Il \textit{Secure Storage} viene utilizzato non solo per salvare
+informazioni di cui vogliamo mantenere la confidenzialità ma anche per
+informazioni per cui vogliamo assicurarci che un attaccante non possa
+modificare a suo piacere.
+Un esempio di quest ultimo caso è il numero i tentativi fatti per sbloccare
+un telefono: questa non è una informazione privata, ma non vogliamo che un
+attaccante possa modificare questo valore per darsi più tentativi ed evitare
+che il dispositivo si blocchi.
 
-Un'altra applicazione molto diffusa dei TEE è il loro utilizzo per la protezione
-dei diritti di autore (DRM). Con la diffusione dei servizi di streaming, i
-produttori di contenuti esitano a mettere a disposizione dei loro contenuti
-perché temono che questi vengano condivisi con utenti che non hanno pagato
-per accedervi.
+% FIXME: È comunque vulnerabile a rollback attack
+
+\subsection{Protezione dei diritti di autore}
+\label{subsec:drm}
+Con la diffusione dei servizi di streaming, i produttori di contenuti esitano
+a mettere a disposizione dei loro contenuti perché temono che questi vengano
+condivisi con utenti che non hanno pagato per accedervi.
 Effettivamente sarebbe molto semplice per un utente utilizzare un software per
 registrare il proprio schermo mentre guarda un film acquistato legalmente, per
 poi condividerlo con altri utenti senza che questi debbano acquistarlo.
 
+Una applicazione molto diffusa dei TEE è il loro utilizzo per la protezione
+dei diritti di autore (DRM). 
 Sistemi come Widevine\cite{widevine} e PlayReady\cite{playready} vengono
 integrati dai distributori di contenuti digitali allo scopo di impedire, o
 almeno ostacolare, l'estrazione dei contenuti e la loro condivisione.
@@ -308,10 +493,50 @@ i contenuti.
 Per quest'ultima feature è necessario che sia presente un canale di
 comunicazione fidato tra TEE e display, cioè che non dipenda dal REE, in modo
 che un attaccante non possa leggere i pixel in chiaro che verranno mostrati poi
-sullo schermo. 
+sullo schermo.
 
-\paragraph{Proposte esterne}
+\subsection{Internet of Things}
+\label{subsec:iot}
 
+
+\subsection{Protezione dati nel Cloud}
+\label{subsec:protezione-dati-cloud}
+Il modello di computing cloud permette di sfruttare le risorse di calcolo
+disponibili in maniera efficiente e scalabile, ma allo stesso tempo introduce
+nuovi problemi di sicurezza.
+Questo modello richiede di permettere al cloud provider di controllare la
+nostra macchina per poterla gestire e monitorare; se da un lato questo solleva
+gli sviluppatori dal dover occuparsi di gestire le macchine, dall'altro ciò
+comporta un rischio di sicurezza.
+Infatti, se il cloud provider è in grado di controllare la nostra macchina,
+questo significa che può anche leggere i dati in memoria, che sono al sicuro
+solo quando la macchina è spenta o in transito.
+
+La situazione diventa ancora più problematica quando consideriamo che su
+una singola macchina fisica i provider eseguono più macchine virtuali, ciascuna
+di clienti diversi ma che condividono la stessa memoria fisica.
+Ci sono stati molti esempi in passato di attaccanti che sono riusciti a eludere
+le misure di sicurezza per isolare la propria VM dalle altre. % FIXME: Cit required
+Questi attaccanti avrebbero avuto la possibilità non solo di spiare le altre
+VM dei clienti che hanno avuto la sfortuna di risiedere sullo stesso server in
+quel momento, ma anche di manipolare il loro codice per i loro scopi.
+
+Una organizzazione che dipende dal cloud e con particolari requisiti in
+termini di sicurezza potrebbe dunque volere una sorta di garanzia che il
+software che sta eseguendo sia quello che è stato consegnato al provider.
+Questo è il ben noto problema della attestazione remota, uno dei problemi
+driver per la creazione dei TEE. % FIXME: Cit. required
+
+La Confidential Computing Initiative\cite{confidential-computing-initiative}
+è un consorzio di grandi aziende nel mondo cloud che lavora a questo problema
+e che, al momento, trova nei TEE il modo per risolverlo.
+Lo scopo dell'organizzazione è proprio quello di supportare lo sviluppo
+di strumenti open source per garantire la sicurezza dei dati in memoria.
+Questo è un campo di ricerca molto attivo e con molti progetti in corso ma
+ancora poche soluzioni concrete e implementate.
+
+\subsection{Altre proposte}
+\label{subsec:altre-proposte}
 In letteratura sono state proposte diverse applicazioni dei TEE nelle più svariate aree.
 
 % FIXME: Leggi meglio e comprendi l'articolo
@@ -328,162 +553,6 @@ blockchain blabla.
 
 Infine \cite{??} pagamenti offline con TEE.
 
-\section{TEE conformi GlobalPlatform}
-\label{sec:tee-conformi-globalplatform}
-GlobalPlatform è un consorzio di stakeholder interessati alla
-standardizzazione di tecnologie per l'implementazione di servizi digitali
-sicuri. L'organizzazione comprende produttori di hardware, sviluppatori di
-sistemi operativi e applicazioni allo scopo di produrre dei documenti di
-specifica allo scopo di favorire la collaborazione tra aziende e la
-diffusione di nuove tecnologie nell'ambito della sicurezza informatica.
-
-Nel 2010 GlobalPlatform ha pubblicato la prima versione dei documenti di
-specifica per i TEE, oggi arrivati alla versione 1.3 pubblicati nel 2020.
-Questi documenti, oltre al già citato \textit{Security Profile}, definiscono
-una architettura generica di un TEE, API per la comunicazione tra CA e TA
-e anche delle interfacce per permettere lo sviluppo di TA portabili tra TEE
-diversi. Inoltre, GlobalPlatform pubblica anche delle raccomandazioni per
-l'implementazione degli aspetti crittografici di un TEE.
-
-% FIXME: Considera tradurre il testo in questa figura
-% GPT TEE PP => Protection Profile
-\begin{figure}
-    \centering
-    \includegraphics[width=1\textwidth]{immagini/tee-system-architecture}
-    \caption{
-        Architettura di un TEE conforme GlobalPlatform. 
-        Da \textit{TEE System Architecture v1.3 (pag. 28)}
-        \cite{gp2020systemarchitecture}
-    }
-    \label{fig:tee-system-architecture}
-\end{figure}
-
-In \figurename~\ref{fig:tee-system-architecture} una possibile architettura
-software di un TEE conforme GlobalPlatform. 
-In questa figura è possibile notare una barriera che divide TEE e REE; i due
-mondi non possono accedere all'altro direttamente.
-Client Application e Trusted Application possono condividere dei buffer di
-memoria, ma questa è una astrazione implementata dal sistema sopra un
-protocollo molto più semplice basato sullo scambio di messaggi.
-
-Il passaggio dei messaggi avviene tramite il supporto dell'hardware, che in
-questa architettura rappresenta il \textit{Separation Kernel} citato
-precedentemente.
-
-In entrambi i mondi è presente un sistema operativo che può mandare in
-esecuzione dei processi e che contengono dei driver per l'accesso alle
-periferiche. Queste si dividono in:
-\begin{itemize}
-    \item \textit{Periferiche Fidate}: L'accesso a queste periferiche è
-    consentito solamente dal TEE. Esempi di queste periferiche sono i
-    sensori biometrici oppure memorie segrete % FIXME: Sensori biometrici? Memorie segrete? non ne sono sicuro 
-    \item \textit{Periferiche Fidate Condivise}: L'accesso a queste
-    periferiche di default è consentito solamente dal TEE, ma questo può
-    decidere temporaneamente di condividere l'accesso con il REE. Esempi di
-    queste periferiche sono il display e la tastiera.
-    \item \textit{Periferiche Pubbliche}: L'accesso diretto a queste
-    periferiche avviene dal REE, ma nulla impedisce a quest'ultimo di
-    permettere l'accesso anche al TEE tramite un driver. Esempi di queste
-    periferiche sono gli altoparlanti.
-\end{itemize}
-
-In entrambi i mondi troviamo dei \textit{Communication Agent}: questi 
-hanno il compito d'inoltrare i messaggi tra CA e TA e, solo per il
-\textit{TEE Communication Agent}, anche tra TA a TA.
-I \textit{Communication Agent} possono prendere diverse forme nella pratica,
-possono essere processi, componenti del sistema operativo ma anche semplici
-librerie che vengono linkate alle applicazioni.
-Seppur nello schema siano visti come solo due componenti, nella realtà il loro
-ruolo può essere svolto usando più sotto-componenti.
-
-Il flusso di esecuzione solito è il seguente: una CA richiede un servizio a
-una TA, per fare ciò utilizza la \textit{Client API} che astrae l'invio di un
-messaggio al \textit{TEE Communication Agent}.
-Questo primo messaggio apre una \textit{sessione} tra la CA e la TA, che
-indica l'inizio di uno o più \textit{Function Invocation}.
-Un messaggio di \textit{Function Invocation} contiene semplicemente un ID
-che identifica la funzione da invocare e degli eventuali parametri,
-il mapping tra ID e funzione è definito dalla \textit{Trusted Application}.
-La TA esegue la funzione richiesta e risponde con un messaggio che contiene
-l'esito dell'operazione e eventuali dati di ritorno.
-
-Queste chiamate sono sincrone, ma è possibile costruire delle chiamate
-asincrone tramite un meccanismo di polling.
-
-Le TA all'interno del TEE possono far uso del \textit{Trusted Core Framework}
-che fornisce una interfaccia per operazioni comuni come il salvataggio
-di file in modo sicuro, l'accesso al timer e altre funzionalità descritte nel
-\textit{Trusted Core Framework API Specification v1.3}\cite{gp2020internalapi}.
-Questa interfaccia dovrebbe permettere di rendere portabili su TEE diversi
-le TA.
-
-\section{TEE e Cloud Computing}
-\label{sec:tee-e-cloud-computing}
-% + La situazione al momento: i dati sono al sicuro a macchina spenta ed in
-%	transito, ma non quando sono caricati in memoria
-Il modello di computing cloud permette di sfruttare le risorse di calcolo
-disponibili in maniera efficiente e scalabile, ma allo stesso tempo introduce
-nuovi problemi di sicurezza.
-Questo modello richiede di permettere al cloud provider di controllare la
-nostra macchina per poterla gestire e monitorare; se da un lato questo solleva
-gli sviluppatori dal dover occuparsi di gestire le macchine, dall'altro ciò
-comporta un rischio di sicurezza.
-Infatti, se il cloud provider è in grado di controllare la nostra macchina,
-questo significa che può anche leggere i dati in memoria, che sono al sicuro
-solo quando la macchina è spenta o in transito.
-% + Questo è potenzialmente un problema quando consideriamo che un attaccante
-%   che riesce ad uscire dalla propria VM potrebbe leggere i dati in memoria
-%   degli altri utenti sulla macchina
-La situazione diventa ancora più problematica quando consideriamo che su
-una singola macchina fisica i provider eseguono più macchine virtuali, ciascuna
-di clienti diversi ma che condividono la stessa memoria fisica.
-Ci sono stati molti esempi in passato di attaccanti che sono riusciti a eludere
-le misure di sicurezza per isolare la propria VM dalle altre. % FIXME: Cit required
-Questi attaccanti avrebbero avuto la possibilità non solo di spiare le altre
-VM dei clienti che hanno avuto la sfortuna di risiedere sullo stesso server in
-quel momento, ma anche di manipolare il loro codice per i loro scopi.
-% + Non soltanto, vorremmo una maggiore sicurezza del fatto che il nostro software
-%	è effettivamente quello in esecuzione sulla macchina nel cloud, cioè non
-%	è stato modificato. Questo è il ben noto problema della attestazione
-%   remota, uno dei problemi driver per la creazione dei TEE
-Una organizzazione che dipende dal cloud e con particolari requisiti in
-termini di sicurezza potrebbe dunque volere una sorta di garanzia che il
-software che sta eseguendo sia quello che è stato consegnato al provider.
-Questo è il ben noto problema della attestazione remota, uno dei problemi
-driver per la creazione dei TEE. % FIXME: Cit. required
-% + Confidential Computing Initiative è un consorzio di grandi aziende nel mondo
-%	cloud che lavora a questo problema e che, al momento, trova nei TEE il modo
-%	per risolverlo
-La Confidential Computing Initiative\cite{confidential-computing-initiative}
-è un consorzio di grandi aziende nel mondo cloud che lavora a questo problema
-e che, al momento, trova nei TEE il modo per risolverlo.
-Lo scopo dell'organizzazione è proprio quello di supportare lo sviluppo
-di strumenti open source per garantire la sicurezza dei dati in memoria.
-Questo è un campo di ricerca molto attivo e con molti progetti in corso ma
-ancora poche soluzioni concrete e implementate.
-
-Le soluzioni disponibili sul mercato fanno uso di Intel SGX
-o AMD SEV, che descriviamo rispettivamente in \ref{sec:intel-sgx} e
-\ref{sec:amd-sev}. Queste tecnologie sono disponibili solamente su processori
-con architettura x86\_64 dei rispettivi produttori hardware.
-Con un maggior interesse nell'utilizzo dell'architettura ARM lato server, % FIXME: Cit required
-grazie alla sua maggior efficienza energetica, % FIXME: Cit required
-vogliamo dunque trovare una soluzione equivalente per questa architettura.
-% + Il modello standard dei TEE come implementato sui dispositivi mobile
-%   non può essere trasposto direttamente, richiede di risolvere dei nuovi
-%	problemi nati dal nuovo ambiente
-Fino a oggi la gran parte degli sforzi rispetto all'uso dei TEE su ARM
-si è concentrata su dispositivi mobile, ma il modello dei TEE come implementato
-su questi dispositivi non può essere trasposto direttamente sui server,
-richiede di risolvere dei nuovi problemi nati dal diverso ambiente.
-In particolare i TEE dei dispositivi mobile sono pensati per essere usati
-da un solo utente, mentre in un ambiente cloud è necessario che più utenti
-possano usare la stessa macchina fisica e dunque che il TEE possa essere
-condiviso.
-Inoltre, il modello dei TEE mobile assume che il software rimanga legato a
-un unico TEE per tutta la sua esecuzione; questa assunzione cade in ambito
-cloud dato che una VM potrebbe essere trasferita su in qualunque momento su
-una macchina fisica diversa, e dunque su un TEE diverso.
 
 \section{Questioni Etiche nell'Uso dei TEE}
 \label{sec:etica-tee}
