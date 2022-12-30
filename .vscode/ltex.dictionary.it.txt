@@ -13,3 +13,4 @@ isolazione
 hash
 Confidential
 Architecture
+vendor

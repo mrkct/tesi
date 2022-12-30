@@ -276,12 +276,6 @@ ruolo può essere svolto usando più sotto-componenti.
 \subsection{Garanzie di sicurezza}
 \label{subsec:garanzie-sicurezza}
 
-% - I TEE non possono essere considerati tutti uguali perchè implementati in maniera diversa
-% - Nonostante questo GP definisce un set di proprietà minime che devono essere garantite da tutti i TEE
-% - Queste proprietà sono elencate nel PP
-% - I TEE possono garantire anche proprietà aggiuntive, ma non sono obbligatoriamente garantite da tutti i TEE
-% - Sono 3 proprietà importanti: Isolation, Confidentiality, Integrity
-
 I Trusted Execution Environment possono essere implementati in maniera
 diversa tra di loro, di conseguenza non sarebbe corretto considerarli tutti
 uguali dal punto di vista della sicurezza.
@@ -304,7 +298,8 @@ Nonostante ciò esistono comunque degli aspetti comuni alla maggior parte dei
 TEE, come ad esempio l'uso di supporto hardware per realizzare l'isolamento
 oppure l'uso di firme digitali per garantire l'autenticità del codice.
 
-% FIXME: Sarebbe interessante una sotto-sezione "Cosa non garantiscono i TEE"(side-channel, attacchi di tipo hardware, ecc)
+% FIXME: Sarebbe interessante una sotto-sezione "Cosa non garantiscono i TEE"
+%        (side-channel, attacchi di tipo hardware, ecc)
 
 \paragraph{Isolamento:}
 % TODO: Leggi per davvero l'articolo di rushby
@@ -345,9 +340,9 @@ tutte le implementazioni si limitano a un singolo TEE, dunque il
 "sistema distribuito" immaginato da Rushby è composto solamente da due
 componenti, il TEE e il REE.
 
-Esempi pratici di \textit{separation kernel} sono ARM TrustZone e
-Trusted Firmware-A, blablabla.
 % FIXME: Aggiungi e describi brevemente meglio esempi
+% Esempi pratici di \textit{separation kernel} sono ARM TrustZone e
+% Trusted Firmware-A, blablabla.
 
 \paragraph{Integrità e autenticità:}
 I benefici ottenibili tramite l'isolazione del TEE vengono annullati se
@@ -406,23 +401,28 @@ vengono spesse memorizzate su una piccola memoria inclusa nella scheda madre % F
 oppure dentro un \textit{Trusted Platform Module}, % FIXME: Cit. required (si usano i TPM per questo scopo?)
 un piccolo chip dedicato a operazioni crittografiche.
 
+% FIXME: È un po' strano chiudere qui parlando di secure boot invece di TEE
+
 \section{Applicazioni dei TEE}
 \label{sec:applicazioni-tee}
-I Trusted Execution Environment diventano più utilizzati di anno in anno. % FIXME: Cit required
-Oggi i TEE sono largamente diffusi in ambito mobile, seppur non sempre
-pubblicizzati, ma il loro utilizzo spazia in diversi settori.
+I Trusted Execution Environment, con le loro maggiori garanzie d'integrità
+e confidenzialità, non solo vengono utilizzati per aumentare la sicurezza
+di applicazioni già esistenti, ma permettono lo sviluppo di nuove
+applicazioni che non sarebbero possibili senza di essi.
 
-Le applicazioni dei TEE sono molteplici ma sfortunatamente la grande
+Oggi i TEE sono largamente diffusi in ambito mobile, seppur non sempre
+pubblicizzati, ma il loro utilizzo non è assolutamente limitato a tale ambito.
+Le loro applicazioni sono molteplici ma sfortunatamente la grande
 maggioranza dei produttori di dispositivi non supportano
-l'installazione di applicazioni aggiuntive dentro il TEE dopo la
+l'installazione di software aggiuntivo dentro il TEE dopo la
 configurazione iniziale.
 
-Questo potrebbe cambiare nei prossimi anni a seguito dell'adozione da
-più vendor degli standard TEE GlobalPlatform e lo sviluppo di TEE open-source
-come OP-TEE; di conseguenza potremmo vedere nei prossimi anni un uso più
-ampio di questa tecnologia.
-
-% FIXME: Forse una breve discussione sulla Remote Attestation, perchè è quella che abilita molte applicazioni
+Questo però potrebbe cambiare nei prossimi anni: proposte come
+\cite{kohlbrenner2020opentees} o \cite{penglai} aprono a più sviluppatori la
+possibilità di implementare i propri TEE.
+Inoltre, a seguito dell'adozione da più vendor degli standard GlobalPlatform,
+e lo sviluppo di TEE open-source come OP-TEE, potremmo vedere nei prossimi
+anni un uso più ampio di questa tecnologia e aperto a tutti.
 
 \subsection{Secure Storage}
 \label{subsec:secure-storage}
@@ -442,9 +442,9 @@ quest'ultima funzionalità grazie ad API che, se presenti, utilizzano delle
 TA, come ad esempio "Keystore"\cite{androidkeystore} in Android.
 
 Alcuni produttori, ad esempio AMD con il suo
-\textit{Platform Security Processor}\cite{amd2020ftpm}, utilizzano la
+\textit{Platform Security Processor}, utilizzano la
 funzionalità di \textit{Secure Storage} per implementare un
-\textit{Trusted Platform Module}(TPM) software.
+\textit{Trusted Platform Module}(TPM) software\cite{amd2020ftpm}.
 Questo è normalmente un chip dedicato al salvataggio sicuro di chiavi crittografiche
 ed allo svolgimento di varie operazioni di crittografia; re-implementando
 queste operazioni dentro un TEE è dunque possibile per i produttori risparmiare
@@ -460,6 +460,10 @@ attaccante possa modificare questo valore per darsi più tentativi ed evitare
 che il dispositivo si blocchi.
 
 % FIXME: È comunque vulnerabile a rollback attack
+
+\subsection{Remote Attestation}
+\label{subsec:remote-attestation}
+
 
 \subsection{Protezione dei diritti di autore}
 \label{subsec:drm}
@@ -495,10 +499,6 @@ comunicazione fidato tra TEE e display, cioè che non dipenda dal REE, in modo
 che un attaccante non possa leggere i pixel in chiaro che verranno mostrati poi
 sullo schermo.
 
-\subsection{Internet of Things}
-\label{subsec:iot}
-
-
 \subsection{Protezione dati nel Cloud}
 \label{subsec:protezione-dati-cloud}
 Il modello di computing cloud permette di sfruttare le risorse di calcolo
@@ -516,7 +516,8 @@ La situazione diventa ancora più problematica quando consideriamo che su
 una singola macchina fisica i provider eseguono più macchine virtuali, ciascuna
 di clienti diversi ma che condividono la stessa memoria fisica.
 Ci sono stati molti esempi in passato di attaccanti che sono riusciti a eludere
-le misure di sicurezza per isolare la propria VM dalle altre. % FIXME: Cit required
+le misure di sicurezza per isolare la propria VM dalle altre
+\cite{vmescape1}\cite{vmescape2}\cite{vmescape3}.
 Questi attaccanti avrebbero avuto la possibilità non solo di spiare le altre
 VM dei clienti che hanno avuto la sfortuna di risiedere sullo stesso server in
 quel momento, ma anche di manipolare il loro codice per i loro scopi.
@@ -524,20 +525,24 @@ quel momento, ma anche di manipolare il loro codice per i loro scopi.
 Una organizzazione che dipende dal cloud e con particolari requisiti in
 termini di sicurezza potrebbe dunque volere una sorta di garanzia che il
 software che sta eseguendo sia quello che è stato consegnato al provider.
-Questo è il ben noto problema della attestazione remota, uno dei problemi
-driver per la creazione dei TEE. % FIXME: Cit. required
+Questo è il problema della attestazione remota, per cui abbiamo già discusso
+in \ref{subsec:remote-attestation} come i TEE possono aiutare.
 
 La Confidential Computing Initiative\cite{confidential-computing-initiative}
 è un consorzio di grandi aziende nel mondo cloud che lavora a questo problema
 e che, al momento, trova nei TEE il modo per risolverlo.
 Lo scopo dell'organizzazione è proprio quello di supportare lo sviluppo
-di strumenti open source per garantire la sicurezza dei dati in memoria.
+di strumenti open source per garantire la s icurezza dei dati in memoria.
 Questo è un campo di ricerca molto attivo e con molti progetti in corso ma
 ancora poche soluzioni concrete e implementate.
 
 \subsection{Altre proposte}
 \label{subsec:altre-proposte}
-In letteratura sono state proposte diverse applicazioni dei TEE nelle più svariate aree.
+In letteratura sono state proposte diverse applicazioni dei TEE nelle più
+svariate aree. Di seguito ne elenchiamo alcune per dare un'idea di come
+possano essere utilizzati nelle applicazioni più disparate.
+
+\bigbreak \noindent
 
 % FIXME: Leggi meglio e comprendi l'articolo
 In Javet, Anciaux et all\cite{edgeletcomputing} viene proposto di utilizzare i
@@ -548,11 +553,31 @@ In questo modello i TEE vengono usati per implementare un meccanismo di
 attestazione remota per permettere ai dispositivi di verificare l'autenticità
 dei dati ricevuti da altri dispositivi.
 
-La rete XXX\cite{???} utilizza i TEE per implementare un meccanismo di consenso distribuito
-blockchain blabla.
+\bigbreak \noindent
 
-Infine \cite{??} pagamenti offline con TEE.
+Nel mondo blockchain sono state proposte diverse soluzioni per implementare
+un sistema di consenso distribuito più efficiente utilizzando i TEE.
+Per esempio, in \cite{tee-blockchain} viene proposto di utilizzare i TEE per
+implementare una serie di primitive sulla quale poi viene costruito un
+algoritmo di consenso che richiede solo $O(n)$ scambi di messaggi tra i nodi.
 
+Un'altra proposta, sempre in questo mondo, è quella di \cite{tee-smartcontract}
+che cerca di migliorare l'efficienza nell'esecuzione degli smart contract.
+Gli smart contract sono dei programmi salvati sulla blockchain e che vengono
+eseguiti in modo automatico da tutti i nodi quando delle condizioni vengono
+soddisfatte.
+In \cite{teeuses_smartcontract} viene proposto di eseguire gli smart contract
+direttamente sui TEE dei nodi e di far verificare la correttezza del risultato
+dall'esterno tramite il meccanismo di attestazione remota.
+
+\bigbreak \noindent
+
+Infine in \cite{teeuses_vehicles} viene proposto di utilizzare i TEE per
+implementare un protocollo per il coordinamento di veicoli a guida
+autonoma in modalità Vehicle-to-Vehicle (V2V).
+L'utilizzo dei TEE in questo protocollo permette di evitare che i veicoli
+possano essere manipolati da attaccanti esterni e che i dati vengano
+intercettati e utilizzati per tracciare gli spostamenti delle persone. 
 
 \section{Questioni Etiche nell'Uso dei TEE}
 \label{sec:etica-tee}
