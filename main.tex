@@ -379,7 +379,7 @@ possibile assumere comunque che il software non sia stato compromesso.
 \caption{
     Sequenza di boot sicuro in un sistema con TEE. 
     Da \textit{GlobalPlatform TEE System Architecture pag. 73}
-    \cite{2020gpsystemarchitecture}
+    \cite{gp2020systemarchitecture}
 }
 \end{figure}
 
@@ -528,7 +528,7 @@ software che sta eseguendo sia quello che è stato consegnato al provider.
 Questo è il problema della attestazione remota, per cui abbiamo già discusso
 in \ref{subsec:remote-attestation} come i TEE possono aiutare.
 
-La Confidential Computing Initiative\cite{confidential-computing-initiative}
+La Confidential Computing Initiative\cite{confidential_computing_initiative}
 è un consorzio di grandi aziende nel mondo cloud che lavora a questo problema
 e che, al momento, trova nei TEE il modo per risolverlo.
 Lo scopo dell'organizzazione è proprio quello di supportare lo sviluppo
@@ -545,8 +545,8 @@ possano essere utilizzati nelle applicazioni più disparate.
 \bigbreak \noindent
 
 % FIXME: Leggi meglio e comprendi l'articolo
-In Javet, Anciaux et all\cite{edgeletcomputing} viene proposto di utilizzare i
-TEE per realizzare un sistema di computazione "on the edge" sopra
+In Javet, Anciaux et all\cite{teeuses_edgeletcomputing} viene proposto di
+utilizzare i TEE per realizzare un sistema di computazione "on the edge" sopra
 "Opportunistic Networks"(OppNet), ovvero reti che sfruttano i
 pattern di movimento degli utenti per creare reti temporanee.
 In questo modello i TEE vengono usati per implementare un meccanismo di
@@ -557,12 +557,12 @@ dei dati ricevuti da altri dispositivi.
 
 Nel mondo blockchain sono state proposte diverse soluzioni per implementare
 un sistema di consenso distribuito più efficiente utilizzando i TEE.
-Per esempio, in \cite{tee-blockchain} viene proposto di utilizzare i TEE per
+Per esempio, in \cite{teeuses_blockchainconsent} viene proposto di utilizzare i TEE per
 implementare una serie di primitive sulla quale poi viene costruito un
 algoritmo di consenso che richiede solo $O(n)$ scambi di messaggi tra i nodi.
 
-Un'altra proposta, sempre in questo mondo, è quella di \cite{tee-smartcontract}
-che cerca di migliorare l'efficienza nell'esecuzione degli smart contract.
+Un'altra proposta, sempre in questo mondo, cerca di migliorare l'efficienza
+nell'esecuzione degli smart contract.
 Gli smart contract sono dei programmi salvati sulla blockchain e che vengono
 eseguiti in modo automatico da tutti i nodi quando delle condizioni vengono
 soddisfatte.
