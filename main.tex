@@ -719,14 +719,47 @@ il TEE.
 \appendix
 \chapter{FakeTEE: Simulatore di TEE per aiutare nello sviluppo}
 \label{chap:faketee}
-% + Durante lo sviluppo era necessario avere un TEE ispezionabile facilmente
-% + Con QEMU è possibile emularlo ma dato che volevo avere un TEE sull'host
-%	accessibile da una VM guest sarebbe stato necessario avere una VM dentro
-%	la VM durante lo sviluppo (scomodo!)
-% + FakeTEE è un piccolo modulo per il kernel linux che si attacca al TEE subsystem
-%	e finge la presenza di un TEE
-% + Fa tutto in kernel space, non mantiene stato ed è facilmente modificabile e reloadable
-% + Utile durante lo sviluppo di sw legato ai TEE 
+Sviluppare applicazioni che utilizzano un Trusted Execution Environment può
+essere difficile non solo per l'attenzione necessaria a non violare
+le restrizioni imposte dal TEE, ma anche per l'assenza di un ambiente di
+sviluppo che permetta di testare il software in un ambiente controllato.
+
+Come precedentemente discusso nella tesi, la maggior parte dei TEE al giorno
+d'oggi non consente di installare applicazioni di terze parti, inoltre
+a causa della scarsità di informazioni sulle implementazioni dei TEE
+è spesso difficile capire se le interazioni del nostro software con quello
+del TEE sono corrette.
+
+L'utilizzo di una macchina virtuale per emulare un sistema provvisto di TEE
+riprogrammabile e ispezionabile è una alternativa funzionale, ma
+l'esperienza di sviluppo con questa soluzione può essere frustrante per
+diversi motivi, tra cui: la necessità di dover gestire un secondo sistema
+operativo durante lo sviluppo, dover avviare una macchina virtuale per ogni
+test, la necessità di cross-compilare il software per la macchina virtuale
+e dover spostare ripetutamente file tra la macchina virtuale e il sistema
+host.
+
+In questo progetto abbiamo sviluppato un modulo del kernel di Linux chiamato
+"FakeTEE" per evitare questa strada. FakeTEE si aggancia al sottosistema TEE
+di Linux e finge di essere un TEE reale precaricato con delle
+Trusted Application scritte direttamente nel suo codice.
+
+FakeTEE ovviamente non può assolutamente offrire alcuna garanzia di sicurezza
+perché non è un TEE reale, ma è utile per lo sviluppo di software che
+interagisce con un TEE, in quanto non solo permette di testare il software
+direttamente sul proprio sistema sprovvisto di TEE, ma logga una serie di
+informazioni utili al debugging sulla console del sistema.
+
+Il codice di FakeTEE è relativamente semplice e di piccole dimensioni, per
+questo motivo è facile da modificare e ricaricare durante lo sviluppo.
+Il modulo di default contiene delle semplici Trusted Application per provare
+le funzionalità base dell'interfaccia GlobalPlatform.
+Queste sono utili per testare funzionalità come il passaggio di parametri o
+l'uso di memoria condivisa tra TEE e applicazione, ma possono essere
+facilmente modificate o sostituite con altre applicazioni.
+
+FakeTEE è disponibile su GitHub all'indirizzo
+\url{https://github.com/mrkct/faketee}.
 
 \chapter{Impostazione dell'ambiente di sviluppo e testing}
 \label{chap:impostazione-ambiente-sviluppo-testing}
