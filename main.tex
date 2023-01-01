@@ -43,8 +43,8 @@
 
 % FIXME: Non compare sull'indice
 \chapter*{Sommario}
+\addcontentsline{toc}{chapter}{Sommario}  
 \label{cap:sommario}
-
 % + Chiediamo più servizi e dunque aumenta la superficie di attacco, ma un
 %   buco anche in servizi non critici rischia di mettere a rischio l'intero
 %   sistema
@@ -275,7 +275,6 @@ ruolo può essere svolto usando più sotto-componenti.
 
 \subsection{Garanzie di sicurezza}
 \label{subsec:garanzie-sicurezza}
-
 I Trusted Execution Environment possono essere implementati in maniera
 diversa tra di loro, di conseguenza non sarebbe corretto considerarli tutti
 uguali dal punto di vista della sicurezza.
@@ -647,6 +646,9 @@ il TEE.
 \section{Intel SGX e TXT}
 \label{sec:intel-sgx-txt}
 
+\section{AMD Secure Encrypted Virtualization}
+\label{sec:amd-sev}
+
 \section{Processori esterni}
 \label{sec:processori-esterni}
 % AMD PSP
@@ -655,7 +657,6 @@ il TEE.
 
 \section{RISC-V}
 \label{sec:risc-v}
-
 
 \chapter{Passthrough per TEE tra QEMU e Linux}
 \label{chap:passthrough-tee-qemu-linux}
@@ -689,14 +690,6 @@ il TEE.
 % Pro: è esplicito l'uso di un passthrough, facilmente cambiabile il passthrough sopra
 % Contro: necessario estendere il kernel con un modulo
 
-\section{Implementazione tramite l'Emulazione di OP-TEE}
-\label{sec:implementazione-passthrough-tramite-bootloader}
-% Cosa è OP-TEE
-% Bootloader custom
-% Descrizione del passaggio di parametri tra OP-TEE e bootloader
-% Pro: passthrough invisibile, non serve estendere il kernel
-% Contro: legato strettamente ad una singola versione di OP-TEE
-
 \chapter{Testing}
 \label{chap:testing}
 
@@ -711,7 +704,6 @@ il TEE.
 
 \chapter{Conclusioni}
 \label{chap:conclusioni}
-
 
 \section{Sviluppi Futuri}
 \label{sec:sviluppi-futuri}
