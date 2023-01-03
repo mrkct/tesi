@@ -650,7 +650,34 @@ che il dispositivo si blocchi.
 
 \subsection{Remote Attestation}
 \label{subsec:remote-attestation}
+Uno degli usi possibili dei TEE è quello di fornire un meccanismo di
+\textit{Remote Attestation} (RA), ovvero la possibilità di verificare che
+un dispositivo remoto stia effettivamente eseguendo il software che
+ci aspettiamo.
 
+Il problema dell'attestazione remota è stato ben studiato negli anni e
+sono stati proposti diversi metodi per risolverlo con vari gradi di
+sicurezza.
+La sfida principale è quella d'impedire a un attaccante di falsificare
+i risultati dell'attestazione, ovvero di far credere a un altro dispositivo
+che il dispositivo remoto stia eseguendo un software che non sta veramente
+eseguendo.
+
+In questo ambito i TEE possono essere utilizzati per implementare un sistema
+di attestazione remota in modo molto semplice.
+Un TEE, dato che offre integrità del software al suo interno, può implementare
+una piccola \textit{Trusted Application} che ha il compito di eseguire
+i controlli di attestazione e generare un report firmato digitalmente.
+La chiave privata utilizzata per firmare il report può essere generata al
+momento della prima installazione del dispositivo, questa chiave non uscirà
+mai dal TEE, garantendo dunque la sicurezza.
+
+Il tipico caso d'uso della RA è quello di una rete aziendale dove si
+vuole verificare che nessun computer sia stato manomesso
+e che non stiano eseguendo software non autorizzato.
+Migliorare la sicurezza di sistemi già esistenti non è il suo unico utilizzo:
+la RA può diventare un elemento fondamentale per lo sviluppo di nuove
+applicazioni innovative, come discuteremo più avanti in questo capitolo.
 
 \subsection{Protezione dei diritti di autore}
 \label{subsec:drm}
