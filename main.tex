@@ -114,7 +114,195 @@ e testato su piattaforma ARM usando OP-TEE come TEE di prova.
 
 \chapter{Introduzione}
 \label{sec:introduzione}
+I sistemi informatici moderni sono estremamente complessi e sono composti da
+molti componenti diversi che interagiscono continuamente tra di loro.
+Questa complessità può rendere difficile garantire che questi sistemi siano
+sicuri e dunque privi di vulnerabilità.
 
+Una delle ragioni è che il gran numero di componenti e le interazioni tra di
+essi possono rendere difficile testare e verificare in modo completo la
+sicurezza di un sistema.
+Ad esempio, un sistema potrebbe contenere al suo interno un componente che
+singolarmente non ha vulnerabilità ma che potrebbero aprire una falla di
+sicurezza quando combinato con un altro.
+Dato l'incredibile numero di combinazioni possibili, è molto difficile
+prevedere e valutare accuratamente il rischio di vulnerabilità di un sistema
+in anticipo, in modo da implementare contromisure efficaci.
+
+Un'altra ragione è che i sistemi informatici sono in costante evoluzione, con
+l'aggiunta di nuove funzionalità e capacità nel corso del tempo.
+Ciò può rendere difficile mantenere la sicurezza di un sistema, poiché nuove
+vulnerabilità potrebbero sorgere a causa di modifiche che all'apparenza non
+avrebbero dovuto avere tale effetto.
+
+In generale vale la regola che più un sistema è semplice, più è facile testare
+e verificare la sua sicurezza.
+Ridurre la complessità dei moderni sistemi è una idea nobile ma che si scontra
+presto con la realtà: una moltitudine di fattori, sia tecnici sia economici,
+rende difficile attuare questo piano senza dover scendere a compromessi.
+
+\bigbreak \noindent
+
+Una proposta alternativa e più realistica è quella data dai
+\textit{Trusted Execution Environments} (TEE).
+I TEE, come suggerisce il nome, sono ambienti sicuri in cui è possibile
+eseguire del software. Date le caratteristiche dei TEE, dentro essi
+generalmente si esegue solamente software con necessità di sicurezza
+particolarmente stringenti.
+
+L'idea di un TEE è quella di fornire all'interno del dispositivo
+un secondo sistema isolato dall'altro; questo, essendo
+indipendente, può implementare delle policy di sicurezza più
+stringenti rispetto a quelle del sistema principale senza però dover
+rinunciare a funzionalità.
+
+Un TEE, come il sistema principale, contiene al suo interno un sistema
+operativo e dei programmi scritti per esso, ma tramite l'uso di tecniche
+crittografiche, hardware di supporto e un approccio di sviluppo che
+prioritizza la sicurezza sopra tutti gli altri aspetti è possibile
+offrire un grado di sicurezza molto più elevato rispetto a quello
+offerto da un sistema tradizionale.
+
+\bigbreak \noindent
+
+Un calcolatore provvisto di TEE può essere visto come un sistema composto da
+due calcolatori, dove uno di essi è dedicato solamente a garantire la sicurezza
+del sistema nel suo complesso.
+Questa non è una metafora: un TEE può essere implementato in diversi modi ma
+uno di essi è quello di utilizzare un \textit{System on a Chip} che viene
+inserito all'interno del processore principale.
+Esempi di questo tipo di TEE sono la \textit{Secure Enclave}
+di \textit{Apple} oppure il \textit{Platform Security Processor} presente
+in molti processori \textit{AMD Ryzen}, che ironicamente al loro interno
+includono un processore della concorrente \textit{ARM}.
+
+Includere un secondo calcolatore all'interno del primo è un'idea efficace,
+ma non è l'unico modo di implementare un TEE.
+In generale però è possibile dire che per implementare un TEE è necessario
+di supporto hardware dedicato, questo perché il software da solo non è in
+grado di potersi difendere da altro software quando questo ha i suoi
+stessi privilegi.
+
+\section{Cloud computing e sicurezza}
+\label{sec:cloud}
+Gli ultimi anni hanno visto un cambiamento radicale nel modo in cui
+i produttori di software possono distribuire i loro prodotti
+grazie alla affermazione del \textit{Cloud Computing}.
+
+In passato l'unico modo per offrire un servizio web era quello di
+comprare o affittare dei server, dovendo occuparsi della loro manutenzione
+e dovendo prevedere la capacità di questi in base alle previsioni di
+utilizzo.
+Con il modello \textit{cloud} nasce il concetto di
+\textit{Infrastructure as a Service}, cioè la possibilità di affittare
+l'intera infrastruttura di rete necessaria a eseguire la nostra applicazione
+web e lasciare l'onere di mantenerla al provider cloud.
+
+Il cloud computing è diventato estremamente popolare negli ultimi anni
+grazie alla sua capacità di offrire risorse flessibili a basso costo
+anche a piccole e medie imprese.
+Questo modello è redditizio sia per i fornitori che per gli utenti,
+con i fornitori che possono offrire servizi a un costo inferiore grazie
+alle economie di scala e gli utenti che possono ridurre i costi IT e
+aumentare la loro agilità e competitività.
+
+\bigbreak \noindent
+
+Ovviamente questo modello porta non solo vantaggi, ma anche nuove sfide
+in termini di sicurezza.
+L'uso di questo modello comporta che i dati e il codice vengano spostati
+su server remoti che non sono più in mano nostra.
+Il controllo di questi server permette ai provider di ottimizzare al meglio
+l'uso delle risorse fisiche disponibili e di offrire servizi a prezzi molto
+convenienti, ma d'altro canto questo comporta una perdita del controllo
+di cosa avviene al software durante l'esecuzione nei server e di 
+chi può accedere ai dati oltre a loro.
+
+Seppur sia lecito aspettarsi che i provider di servizi cloud siano onesti
+e non vadano a sabotare i propri clienti, questa potrebbe non essere
+una garanzia sufficiente per tutti.
+
+Il modello di cloud include però un secondo attaccante: gli altri clienti.
+Il modo in cui i provider possono permettersi di offrire servizi di cloud
+computing a prezzi convenienti è quello di condividere i server tra più
+clienti; utilizzando delle macchine virtuali un server
+può ospitare le applicazioni di più clienti allo stesso momento.
+
+L'uso della \textit{virtualizzazione} permette ai provider di ridimensionare
+dinamicamente le risorse computazionali offerte ai clienti e di trasferire
+i loro dati e applicazioni da un server a un altro in qualsiasi
+momento.
+Tutto ciò avviene in modo completamente trasparente ai clienti, che hanno la
+sensazione di utilizzare un server dedicato,
+ma permette ai provider di ottimizzare al massimo l'utilizzo delle risorse
+fisiche e di bilanciare il carico di lavoro tra i server.
+
+\bigbreak \noindent
+
+Il partizionamento di un server tra i vari clienti viene effettuato
+utilizzando un \textit{hypervisor}, un software che presiede la creazione
+e la gestione delle macchine virtuali su un server fisico.
+Un hypervisor è in grado di vedere e modificare i dati in memoria di tutte
+le macchine virtuali, per questo motivo è un bersaglio particolarmente
+interessante per gli attaccanti.
+Un attaccante che riesce ad eludere le protezioni di un hypervisor può
+potenzialmente manomettere i dati di tutti i clienti che utilizzano quel
+server.
+
+\section{Motivazione della tesi}
+\label{sec:motivazione}
+I TEE nascono principalmente in ambito mobile proprio perché questi dispositivi
+sono diventati una parte sempre più importante della nostra vita quotidiana,
+di conseguenza sono diventati un bersaglio sempre più attraente per i
+cybercriminali.
+Oggi i TEE sono presenti su quasi tutti i cellulari, dove vengono usati per
+eseguire operazioni sensibili come ad esempio le schermate di sblocco
+del telefono e di inserimento di dati bancari o più in generale al
+trattamento di chiavi crittografiche e dati sensibili;
+il loro uso non è limitato però a questo ambito.
+
+In particolare siamo interessati al loro utilizzo insieme al modello di
+computing cloud per proteggere i dati.
+Parlando di protezione dati nel cloud possiamo far riferimento a tre
+aspetti:
+\begin{itemize}
+    \item \textbf{Dati in transito}: i dati devono essere protetti durante
+    il trasferimento tra i client e i server.
+    \item \textbf{Dati in storage}: i dati devono essere protetti anche
+    quando sono inattivi sul server.
+    \item \textbf{Dati in memoria}: i dati devono essere protetti durante
+    l'esecuzione del codice sul server.
+\end{itemize}
+
+Se per i primi due aspetti esistono soluzioni ben consolidate, come ad
+esempio il protocollo HTTPS per la protezione dei dati in transito e
+l'uso di dischi cifrati per la protezione dei dati in archiviazione,
+per l'ultimo aspetto non esiste ancora una soluzione standard.
+
+Questo problema ha portato alla fondazione
+della Confidential Computing Initiative (CCI), un gruppo di aziende che
+si sono unite per sviluppare soluzioni per garantire la sicurezza dei dati
+e del codice in ambito cloud computing mentre sono in memoria.
+
+La CCI trova nei TEE un ottimo strumento per garantire la sicurezza dei dati
+e del codice, ma il supporto oggi presente è limitato a server con
+piattaforme Intel o AMD e con pesanti lock-in rispetto la piattaforma scelta.
+
+Con un interesse crescente all'uso di architetture diverse da |x86\_64|
+in ambito server, diventa sensata l'idea di sviluppare un sistema per
+permettere l'utilizzo dei TEE in modo agnostico alla piattaforma sottostante.
+
+Lo scopo di questa tesi è dunque il primo passo verso questo obiettivo,
+cioè sviluppare un canale di comunicazione tra una macchina virtuale e
+un generico TEE, in modo completamente agnostico alla piattaforma
+hardware sottostante e al codice in esecuzione dentro al TEE.
+
+Il software sviluppato in questa tesi non vuole essere un prodotto finito,
+ma un prototipo che dimostri la fattibilità del progetto e che permetta
+di iniziare a discutere di come implementare un sistema completo.
+A tale scopo abbiamo deciso di estendere l'hypervisor QEMU e il sistema
+operativo Linux per permettere la comunicazione tra una macchina virtuale
+gestita dal primo e un TEE collegato al secondo.
 
 \chapter{Trusted Execution Environment}
 \label{sec:tee}
