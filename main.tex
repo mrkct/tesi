@@ -304,8 +304,32 @@ A tale scopo abbiamo deciso di estendere l'hypervisor QEMU e il sistema
 operativo Linux per permettere la comunicazione tra una macchina virtuale
 gestita dal primo e un TEE collegato al secondo.
 
+\section{Struttura della tesi}
+\label{sec:struttura-tesi}
+La tesi è strutturata in quattro capitoli principali:
+\begin{itemize}
+    \item Nel \textbf{Capitolo \ref{chap:tee}} diamo una introduzione al
+    concetto di Trusted Execution Environment, alle sua applicazioni
+    e a vari concetti correlati.
+    \item Nel \textbf{Capitolo \ref{chap:hardware-supporto-tee}} discutiamo
+    brevemente di varie soluzioni hardware a supporto dei TEE, delle loro
+    caratteristiche e delle loro limitazioni.
+    \item Nel \textbf{Capitolo \ref{chap:passthrough-tee-qemu-linux}}
+    finalmente discutiamo del progetto di questa tesi, ovvero la creazione
+    di un canale di comunicazione tra una macchina virtuale e un TEE.
+    \item Infine nel \textbf{Capitolo \ref{chap:testing}} descriviamo
+    come abbiamo testato il nostro prototipo e quali sono i risultati
+    ottenuti.
+\end{itemize}
+
+In aggiunta a questi capitoli troviamo due appendici \ref{app:faketee} e
+\ref{app:impostazione-ambiente-sviluppo-testing} che, seppur non essenziali
+per la comprensione della tesi,
+possono essere utili per risolvere alcune questioni tecniche
+nel caso si fosse interessati a riprodurre o continuare il nostro lavoro.
+
 \chapter{Trusted Execution Environment}
-\label{sec:tee}
+\label{chap:tee}
 Un \textit{Trusted Execution Environment} (TEE) è un'area protetta in un
 dispositivo che può essere utilizzata per eseguire codice autenticato in modo
 più sicuro e attendibile rispetto al resto del sistema.
@@ -925,7 +949,7 @@ il TEE.
 
 \appendix
 \chapter{FakeTEE: Simulatore di TEE per aiutare nello sviluppo}
-\label{chap:faketee}
+\label{app:faketee}
 Sviluppare applicazioni che utilizzano un Trusted Execution Environment può
 essere difficile non solo per l'attenzione necessaria a non violare
 le restrizioni imposte dal TEE, ma anche per l'assenza di un ambiente di
@@ -969,7 +993,7 @@ FakeTEE è disponibile su GitHub all'indirizzo
 \url{https://github.com/mrkct/faketee}.
 
 \chapter{Impostazione dell'ambiente di sviluppo e testing}
-\label{chap:impostazione-ambiente-sviluppo-testing}
+\label{app:impostazione-ambiente-sviluppo-testing}
 
 \bibliographystyle{unsrt}
 \bibliography{bibliografia}
