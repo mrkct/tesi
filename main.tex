@@ -18,7 +18,7 @@
 \def\myCDL{Corso di Laurea magistrale in\\Informatica}
 
 % TITOLO TESI:
-\def\myTitle{Sicurezza Hardware in Ambienti Virtualizzati Tramite un Passthrough TEE tra Qemu e Linux}
+\def\myTitle{Sicurezza Hardware in Ambienti Virtualizzati Tramite un Passthrough TEE tra QEMU e Linux}
 
 % AUTORE:
 \def\myName{Marco Cutecchia}
@@ -228,8 +228,9 @@ computing a prezzi convenienti è quello di condividere i server tra più
 clienti; utilizzando delle macchine virtuali un server
 può ospitare le applicazioni di più clienti allo stesso momento.
 
-L'uso della \textit{virtualizzazione} permette ai provider di ridimensionare
-dinamicamente le risorse computazionali offerte ai clienti e di trasferire
+L'uso della \textit{virtualizzazione} permette ai provider di isolare
+i clienti tra di loro, ridimensionare
+dinamicamente le risorse computazionali a loro offerte e di trasferire
 i loro dati e applicazioni da un server a un altro in qualsiasi
 momento.
 Tutto ciò avviene in modo completamente trasparente ai clienti, che hanno la
@@ -248,6 +249,12 @@ interessante per gli attaccanti.
 Un attaccante che riesce ad eludere le protezioni di un hypervisor può
 potenzialmente manomettere i dati di tutti i clienti che utilizzano quel
 server.
+
+Trattare tutte le possibili problematiche in termini di sicurezza del
+cloud computing non è lo scopo di questa tesi.
+Quanto descritto finora è solo una delle tante sfide che il cloud computing
+porta con sé, ma è sicuramente una delle più importanti data la sua alta
+posta in gioco.
 
 \section{Motivazione della tesi}
 \label{sec:motivazione}
@@ -288,9 +295,11 @@ La CCI trova nei TEE un ottimo strumento per garantire la sicurezza dei dati
 e del codice, ma il supporto oggi presente è limitato a server con
 piattaforme Intel o AMD e con pesanti lock-in rispetto la piattaforma scelta.
 
-Con un interesse crescente all'uso di architetture diverse da |x86\_64|
+Con un interesse crescente all'uso di architetture diverse da \texttt{x86\_64}
 in ambito server, diventa sensata l'idea di sviluppare un sistema per
 permettere l'utilizzo dei TEE in modo agnostico alla piattaforma sottostante.
+
+\bigbreak \noindent
 
 Lo scopo di questa tesi è dunque il primo passo verso questo obiettivo,
 cioè sviluppare un canale di comunicazione tra una macchina virtuale e
