@@ -18,7 +18,7 @@
 \def\myCDL{Corso di Laurea magistrale in\\Informatica}
 
 % TITOLO TESI:
-\def\myTitle{Studio e Sviluppo di un Sistema di Passthrough per TEE tra QEMU e Linux su Piattaforme ARM}
+\def\myTitle{Sicurezza Hardware in Ambienti Virtualizzati Tramite un Passthrough TEE tra Qemu e Linux}
 
 % AUTORE:
 \def\myName{Marco Cutecchia}
@@ -899,26 +899,149 @@ il TEE.
 
 \chapter{Passthrough per TEE tra QEMU e Linux}
 \label{chap:passthrough-tee-qemu-linux}
-% Breve intro a QEMU
-% Descrizione di quello che vogliamo fare (permettere ad un TEE generico di offrire servizi a macchine virtuali)
-% Interessante sia in ambito "casalingo" sia in ambito cloud per i provider
+Al momento le opzioni per utilizzare un TEE in un ambiente virtualizzato
+sono piuttosto limitate.
+Le opzioni possibili ad oggi generalmente prevedono che il cliente di un
+provider porti con sè il proprio TEE e Trusted Application:
+questo se da un lato offre una grande flessibilità al cliente, dall'altro
+comporta non solo il dover gestire un TEE da zero per l'utente, ma spesso
+anche delle pesanti limitazioni tecniche per poter comunque garantire la
+co-tenancy del sistema.
+
+L'approccio che ci prestiamo di seguito è diverso e complementare a quello
+appena descritto: il TEE è gestito dal provider e offre delle Trusted
+Application preinstallate che possono essere utilizzate dai clienti.
+Questo approccio non richiede che i clienti portino con sè il proprio TEE
+e non permette a loro di eseguire le proprie Trusted Application, ma rimuove
+quei limiti tecnici che impedivano di garantire la co-tenancy del sistema.
+
+È importante notare che questo approccio non è necessariamente in conflitto
+con quello precedente: un provider può offrire sia un TEE gestito da lui
+che un'opzione per portare con sè il proprio TEE.
+
+\section{Il sottosistema TEE per Linux}
+\label{sec:sottosistema-tee-per-linux}
+Dalla versione del kernel 4.12 Linux supporta un sottosistema TEE
+\cite{linux_tee_subsystem}
+per l'uso da parte degli utenti (user space) e per l'implementazione
+di driver.
+
+Questo sottosistema si occupa della registrazione dei driver TEE, della
+gestione della memoria condivisa tra il REE e il TEE e offre un'interfaccia
+generica per le comunicazione con il TEE.
+I driver implementati dentro questo sottosistema sono dei bridge di
+comunicazione tra il REE e il TEE e hanno molta poca conoscenza delle
+operazioni e risultati che stanno inoltrando.
+
+\bigbreak \noindent
+
+Se un TEE e il suo driver corrispondente sono presenti nel sistema allora
+il sottosistema TEE crea un device file \texttt{/dev/teeX} e
+\texttt{/dev/teeprivX} che rappresentano rispettivamente una interfaccia
+per la comunicazione da \textit{Client Application}(CA) a TEE e una interfaccia per
+fare polling di messaggi asincroni da parte del TEE.
+
+Queste interfacce sono utilizzabili tramite la system call \texttt{ioctl}
+e sono descritte nel file \texttt{linux/tee.h}, ma l'uso diretto di queste
+interfacce non è consigliato.
+Invece, gli sviluppatori di CA dovrebbero preferire l'uso di una libreria come
+\texttt{libteec} che offre un'interfaccia che rispetta la specifica GlobalPlatform
+TEE Client API\cite{globalplatform_tee_client_api} e che internamente usa
+le interfacce del sottosistema TEE.
+Questo approccio permette poi di utilizzare lo stesso codice anche su piattaforme
+diverse da Linux.
+
+Il sottosistema TEE definisce un set minimo di \texttt{IOCTL} che ogni
+driver TEE dovrebbe supportare, seppur un driver può decidere di
+supportarne anche altre.
+Queste sono:
+\begin{itemize}
+    \item \texttt{TEE\_IOC\_SHM\_ALLOC}:
+        Alloca un buffer di memoria condivisa tra una
+        \textit{Trusted Application} aperta ed una \textit{Client Application}.
+        Il risultato di questa operazione è un descrittore
+        di file che può essere usato per accedere alla memoria condivisa
+        tramite \texttt{mmap}.
+        Per deallocare la memoria condivisa la CA chiude il descrittore con
+        \texttt{close}. 
+
+    \item \texttt{TEE\_IOC\_VERSION}:
+        Restituisce una serie di informazioni sul modello specifico di TEE e
+        quali funzionalità supporta.
+        Queste informazioni possono permettere ai client di adattarsi e
+        utilizzare funzionalità specifiche di ogni TEE.
+
+    \item \texttt{TEE\_IOC\_OPEN\_SESSION}:
+        Apre una sessione con una \textit{Trusted Application}, restituendo
+        un ID univoco in caso di successo per identificare la sessione nei
+        futuri messaggi.
+
+    \item \texttt{TEE\_IOC\_INVOKE}:
+        Invoca una funzione (rappresentata da un intero) in una
+        \textit{Trusted Application} con cui si è aperta una sezione
+        in precedenza.
+        Il messaggio può contenere anche dei parametri che vengono passati
+        alla \textit{Trusted Application}.
+
+    \item \texttt{TEE\_IOC\_CANCEL}:
+        Cancella una operazione in corso iniziata in precedenza tramite
+        \texttt{INVOKE}.
+        Non è garantito che questa operazione abbia effetto.
+
+    \item \texttt{TEE\_IOC\_CLOSE\_SESSION}:
+        Chiude una sessione precedentemente aperta con una
+        \textit{Trusted Application}.
+\end{itemize}
+
 
 \section{OP-TEE}
 \label{sec:architettura-op-tee}
-% Descrizione di OP-TEE
-% Cosa fa, perchè lo abbiamo scelto
-% Architettura di OP-TEE, è molto simile a quella GlobalPlatform dunque parla
-% dei confronti ed eventuali differenze (tipo: c'è il TF-A)
+Open Portable Trusted Execution Environment (OP-TEE)\cite{optee}
+è un progetto open source
+che implementa un TEE per sistemi ARM basati su TrustZone.
+OP-TEE nasce nel 2013 dalla collaborazione tra Linaro e STMicroelectronics
+per fornire un TEE open source per i loro prodotti; oggi OP-TEE è sotto
+il controllo di \textit{TrustedFirmware}, una collaborazione tra varie
+aziende che ha lo scopo di fornire delle implementazioni di riferimento
+per lo sviluppo di software sicuro su piattaforme ARM.
+
+OP-TEE, tra i pochi TEE open source disponibili, è l'unico attivamente
+sviluppato e, grazie alla sua documentazione e al suo build system, non
+è difficile preparare un ambiente per sviluppare al suo interno.
+
+OP-TEE è stato progettato per essere compatibile con la specifica
+GlobalPlatform, di conseguenza è possibile notare una certa somiglianza
+tra la sua architettura software (raffigurata in
+\figurename~\ref{fig:tee-system-architecture})
+e quella di un TEE GlobalPlatform
+(in \figurename~\ref{fig:tee-system-architecture}).
+Al momento di questa tesi OP-TEE implementa la specifica GlobalPlatform v1.1,
+inoltre è tra i due TEE\footnote{
+        L'altro TEE per cui è implementato un driver Linux è
+        l'AMD Platform Security Processor
+} per cui è implementato un driver per il sottosistema TEE per Linux.
+
+OP-TEE include un supporto sperimentale alla virtualizzazione
+\cite{optee_virtualization}: in questo
+modello è possibile creare dei gruppi di TA isolate dal resto del TEE,
+dove ognuno di questi gruppi rappresenta il TEE di una VM.
+Questo modello però comporta delle limitazioni, la principale è che
+per evitare un attacco di tipo Denial of Service (DoS) OP-TEE impedisce
+un uso dinamico della memoria alle TA, a cui viene assegnata una quantità
+di memoria prefissata, statica e uguale per tutti.
+
+Per questi motivi OP-TEE è stato scelto come TEE da utilizzare
+come riferimento per la realizzazione del nostro progetto, è
+importante però notare che l'implementazione realizzata non è però
+legata a OP-TEE in particolare e dovrebbe funzionare con qualsiasi
+TEE disponibile nel kernel Linux.
 
 \section{GlobalPlatform API}
 \label{sec:global-platform-api}
 % Cosa è, cosa chiede di implementare
 % (?) Forse poco per una sezione?
 
-\section{Il sottosistema TEE per Linux}
-\label{sec:sottosistema-tee-per-linux}
-% Cosa è, perchè lo usiamo (perchè è una interfaccia comune)
-% Funzionamento via ioctl
+
 
 \section{Implementazione tramite l'Estensione del Kernel}
 \label{sec:implementazione-passthrough-tramite-kernel-module}
