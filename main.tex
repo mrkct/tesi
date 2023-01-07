@@ -942,36 +942,41 @@ I driver implementati dentro questo sottosistema sono dei bridge di
 comunicazione tra il REE e il TEE e hanno molta poca conoscenza delle
 operazioni e risultati che stanno inoltrando.
 
-\bigbreak \noindent
+Il sottosistema TEE di Linux prende chiaramente ispirazione dal modello
+operativo descritto dentro gli standard GlobalPlatform, seppur sia possibile
+implementare anche driver per TEE che non seguono questo standard.
 
+\subsection{Interfaccia user-space}
+\label{subsec:interfaccia-user-space}
 Se un TEE e il suo driver corrispondente sono presenti nel sistema allora
 il sottosistema TEE crea un device file \texttt{/dev/teeX} e
 \texttt{/dev/teeprivX} che rappresentano rispettivamente una interfaccia
-per la comunicazione da \textit{Client Application}(CA) a TEE e una interfaccia per
-fare polling di messaggi asincroni da parte del TEE.
+per la comunicazione da \textit{Client Application}(CA) a TEE e una
+interfaccia per fare polling di messaggi asincroni da parte del TEE.
 
 Queste interfacce sono utilizzabili tramite la system call \texttt{ioctl}
-e sono descritte nel file \texttt{linux/tee.h}, ma l'uso diretto di queste
-interfacce non è consigliato.
-Invece, gli sviluppatori di CA dovrebbero preferire l'uso di una libreria come
-\texttt{libteec} che offre un'interfaccia che rispetta la specifica GlobalPlatform
-TEE Client API\cite{globalplatform_tee_client_api} e che internamente usa
-le interfacce del sottosistema TEE.
-Questo approccio permette poi di utilizzare lo stesso codice anche su piattaforme
-diverse da Linux.
+e sono descritte nel file \texttt{linux/tee.h}.
+La system call \texttt{ioctl}(\textit{Input/Output Control})
+è una system call generica che permette di
+eseguire operazioni su un device file; questa system call
+prende tre parametri:
+il descrittore del device file, il codice dell'operazione da eseguire e
+un puntatore a un buffer contenente degli eventuali parametri da passare
+all'operazione.
 
-Il sottosistema TEE definisce un set minimo di \texttt{IOCTL} che ogni
+Il sottosistema TEE definisce un set minimo di \texttt{ioctl} che ogni
 driver TEE dovrebbe supportare, seppur un driver può decidere di
 supportarne anche altre.
 Queste sono:
 \begin{itemize}
     \item \texttt{TEE\_IOC\_SHM\_ALLOC}:
         Alloca un buffer di memoria condivisa tra una
-        \textit{Trusted Application} aperta ed una \textit{Client Application}.
+        \textit{Trusted Application} aperta e una
+        \textit{Client Application}.
         Il risultato di questa operazione è un descrittore
         di file che può essere usato per accedere alla memoria condivisa
         tramite \texttt{mmap}.
-        Per deallocare la memoria condivisa la CA chiude il descrittore con
+        Per liberare la memoria allocata, la CA chiude il descrittore con
         \texttt{close}. 
 
     \item \texttt{TEE\_IOC\_VERSION}:
@@ -981,7 +986,12 @@ Queste sono:
         utilizzare funzionalità specifiche di ogni TEE.
 
     \item \texttt{TEE\_IOC\_OPEN\_SESSION}:
-        Apre una sessione con una \textit{Trusted Application}, restituendo
+        Apre una sessione con una \textit{Trusted Application} specificata
+        tramite un UUID\footnote{
+            Un Universally Unique IDentifier (UUID) è una etichetta di 128 bit
+            che può essere usata per identificare univocamente un oggetto.
+            Un esempio di UUID è \texttt{123e4567-e89b-12d3-a456-426614174000}
+        } passato tra gli argomenti, restituendo
         un ID univoco in caso di successo per identificare la sessione nei
         futuri messaggi.
 
@@ -1002,6 +1012,158 @@ Queste sono:
         \textit{Trusted Application}.
 \end{itemize}
 
+Ognuna di queste operazioni, a eccezione di \texttt{TEE\_IOC\_VERSION},
+oltre ad un set di argomenti, può accettare anche degli argomenti extra
+specifici per il TEE che si sta utilizzando.
+Questi argomenti extra possono essere dei semplici interi a 64 bit oppure
+dei riferimenti a buffer di memoria condivisi.
+
+Il flusso tipico di operazione di una CA è il seguente:
+\begin{enumerate}
+    \item La CA apre il device file \texttt{/dev/tee0}, per esempio, usando
+        \texttt{open}.
+    \item La CA apre una sessione con una \textit{Trusted Application}
+        facendo una \texttt{ioctl} con \texttt{TEE\_IOC\_OPEN\_SESSION}
+        e passando una struttura \texttt{tee\_ioctl\_open\_session\_arg}
+        come argomento, riempita opportunamente con l'UUID
+        (conosciuto a priori) 
+        della \textit{Trusted Application} a cui vuole collegarsi, 
+        ed altri argomenti opzionali.
+    \item Se la sessione viene aperta con successo, la struttura passata come
+        argomento viene riempita con l'ID della sessione.
+    \item La CA invoca una funzione della \textit{Trusted Application} facendo
+        una \texttt{ioctl} con \texttt{TEE\_IOC\_INVOKE} e passando una
+        struttura \texttt{tee\_ioctl\_invoke\_arg} come argomento, riempita
+        opportunamente con l'ID della sessione, l'ID della funzione da
+        invocare e altri argomenti opzionali.
+    \item Se l'invocazione va a buon fine, la struttura passata come argomento
+        viene riempita con i risultati dell'invocazione.
+    \item LA CA ripete i punti 3 e 4 per invocare altre funzioni della
+        \textit{Trusted Application}.
+    \item La CA chiude la sessione con la \textit{Trusted Application} facendo
+        una \texttt{ioctl} con \texttt{TEE\_IOC\_CLOSE\_SESSION} e passando
+        una struttura \texttt{tee\_ioctl\_close\_session\_arg} come argomento,
+        riempita opportunamente con l'ID della sessione.
+    \item La CA chiude il device file \texttt{/dev/tee0} usando \texttt{close}.
+\end{enumerate}
+
+\bigbreak \noindent
+
+L'uso diretto di queste interfacce non è consigliato.
+Invece, gli sviluppatori di CA dovrebbero preferire l'uso di una libreria come
+\texttt{libteec} che offre un'interfaccia che rispetta la specifica
+GlobalPlatform TEE Client API\cite{globalplatform_tee_client_api} 
+e che internamente usa
+le interfacce del sottosistema TEE.
+Questo approccio permette poi di utilizzare lo stesso codice anche su
+piattaforme diverse da Linux.
+
+\subsection{Interfaccia kernel-space}
+\label{sec:interfaccia-kernel-space}
+Il sottosistema TEE di Linux offre anche una interfaccia kernel-space per
+gli sviluppatori di TEE che vogliono integrare il proprio TEE con Linux.
+Questa interfaccia permette loro di implementare un driver in modo
+relativamente semplice, inoltre offre anche una serie di funzioni
+utili per la gestione di alcune operazioni comuni come il caricamento
+di file dal REE oppure l'implementazione di un allocatore per la memoria
+condivisa tra TEE e REE.
+
+Questo sottosistema è spesso compilato come un modulo del kernel opzionale,
+dunque non è necessariamente presente in ogni sistema Linux.
+Per verificare se il sottosistema TEE è presente nel kernel, è possibile
+eseguire il comando \texttt{modinfo tee}.
+Se il modulo è presente, ma non è caricato, si può usare il comando
+\texttt{insmod} per caricarlo, passando il percorso del modulo letto
+dal comando precedente.
+
+\bigbreak \noindent
+
+Per implementare un driver, gli sviluppatori devono implementare
+delle funzioni che verranno poi richiamate dal sottosistema TEE.
+Molte di queste funzioni hanno una corrispondenza univoca con le
+\texttt{ioctl} che si possono vedere nell'interfaccia userspace,
+il sottosistema TEE assiste gli sviluppatori nella loro
+implementazione effettuando, per esempio, la conversione dei parametri
+passati da kernel-space a user-space e viceversa.
+% TODO: Ricorda che il driver non sta facendo operazioni complesse,
+%       sta solo inoltrando le richieste al TEE
+
+Il sottosistema TEE richiede inoltre che gli sviluppatori
+implementino delle funzioni per l'allocazione, de-allocazione e
+sincronizzazione di pool di memoria condivisa tra TEE e kernel-space.
+
+Da questo pool di memoria il sottosistema TEE soddisfa le richieste
+di allocazione di blocchi di memoria condivisa; questa memoria è la base
+con cui una CA e una TA possono scambiare dati di dimensioni non banali.
+
+Il set minimo di funzioni che un driver deve implementare è il seguente:
+\begin{itemize}
+    \item \texttt{get\_version}: L'implementazione ha il compito di restituire
+        un ID identificativo del TEE, un intero rappresentante la versione
+        del TEE e un bitfield con le funzionalità supportate.
+    \item \texttt{open}: Chiamata quando un utente apre il device file,
+        l'implementazione inizializza quanto necessario per gestire la
+        comunicazione con il TEE.
+        Un driver può salvare un puntatore \texttt{void*} dentro la struttura
+        \texttt{tee\_context}, che viene passata come argomento a tutte le
+        altre funzioni del driver chiamate sullo stesso device file.
+        Questo puntatore può essere usato per salvare informazioni private
+        del driver.
+    \item \texttt{release}: Chiamata quando un utente chiude il device file,
+        l'implementazione de-inizializza le risorse allocate per questa
+        specifica istanza del device file.
+    \item \texttt{open\_session}: Chiamata quando un utente esegue una
+        \texttt{ioctl} \texttt{TEE\_IOC\_OPEN\_SESSION} sul device file,
+        l'implementazione ha il compito di aprire una sessione con il TEE.
+    \item \texttt{close\_session}: Chiamata quando un utente esegue una
+        \texttt{ioctl} \texttt{TEE\_IOC\_CLOSE\_SESSION} sul device file,
+        l'implementazione ha il compito di chiudere una sessione con il TEE.
+    \item \texttt{invoke\_func}: Chiamata quando un utente esegue una
+        \texttt{ioctl} \texttt{TEE\_IOC\_INVOKE} sul device file,
+        l'implementazione ha il compito di invocare una funzione di una
+        sessione aperta con il TEE.
+    \item \texttt{cancel\_req}: Chiamata quando un utente esegue una
+        \texttt{ioctl} \texttt{TEE\_IOC\_CANCEL} sul device file,
+        l'implementazione ha il compito di annullare una richiesta in
+        corso con il TEE.
+    \item \textbf{Allocazione di memoria condivisa: }
+    \begin{itemize}
+        \item \texttt{alloc}: Chiamata quando il sottosistema TEE ha
+            bisogno di allocare una porzione di memoria condivisa,
+            questa è espressa in numero di pagine.
+            L'implementazione deve riempire una struttura \texttt{tee\_shm}
+            con i dati necessari per accedere alla memoria condivisa e
+            eventuali altre informazioni utili.
+        \item \texttt{free}: Chiamata quando il sottosistema TEE ha
+            bisogno di deallocare una porzione di memoria condivisa.
+            L'implementazione deve liberare la memoria condivisa, per
+            fare ciò riceve una struttura \texttt{tee\_shm} che contiene
+            i dati che ha riempito durante l'allocazione.
+    \end{itemize}
+\end{itemize}
+
+Una volta implementate queste funzioni, gli sviluppatori di driver
+possono usare le funzioni \texttt{tee\_device\_alloc} e
+\texttt{tee\_device\_register}, passando una struttura contenente
+le callback alle funzioni implementate, per registrare il loro TEE
+e renderlo disponibile alle applicazioni userspace.
+
+Questa operazione viene effettuata una sola volta per ogni TEE, e
+generalmente avviene all'inizializzazione del driver.
+Di contrasto, durante la deinizializzazione del driver, sarà necessario
+fare l'opposto dell'inizializzazione e deregistrare il TEE usando
+\texttt{tee\_device\_unregister}.
+
+\bigbreak \noindent
+
+Implementare un driver in Linux può essere fatto generalmente in due modi:
+in-tree o out-of-tree. Il primo modo richiede di compilare il driver insieme
+all'intero kernel, mentre il secondo permette di compilare il driver come un
+modulo separato che può essere caricato in runtime.
+Il modo in cui il driver è compilato non influenza il modo in cui viene
+utilizzato, ma in generale è preferibile compilare il driver come un modulo
+perché più semplice da gestire e perché permette di aggiornare il driver
+senza dover ricompilare il kernel.
 
 \section{OP-TEE}
 \label{sec:architettura-op-tee}
