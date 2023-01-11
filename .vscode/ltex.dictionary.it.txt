@@ -16,3 +16,8 @@ Architecture
 vendor
 Application
 client
+source
+tupla
+guest
+hypervisor
+prototipazione

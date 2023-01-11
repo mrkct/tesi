@@ -14,6 +14,10 @@
 \usepackage{listings}				% Scrittura di codice
 \usepackage{url}					% Visualizza e rendere interattii gli URL
 \usepackage{hyperref}				% Rende interattivi i collegamenti interni
+\usepackage{tikz}                   % Permette di disegnare inline
+\usepackage{import}
+\usepackage{float}
+\graphicspath{{immagini/}}
 
 \def\myCDL{Corso di Laurea magistrale in\\Informatica}
 
@@ -804,9 +808,10 @@ dei dati ricevuti da altri dispositivi.
 
 Nel mondo blockchain sono state proposte diverse soluzioni per implementare
 un sistema di consenso distribuito più efficiente utilizzando i TEE.
-Per esempio, in \cite{teeuses_blockchainconsent} viene proposto di utilizzare i TEE per
-implementare una serie di primitive sulla quale poi viene costruito un
-algoritmo di consenso che richiede solo $O(n)$ scambi di messaggi tra i nodi.
+Per esempio, in \cite{teeuses_blockchainconsent} viene proposto di utilizzare
+i TEE per implementare una serie di primitive sulla quale poi viene
+costruito un algoritmo di consenso che richiede solo $O(n)$ scambi di messaggi
+tra i nodi.
 
 Un'altra proposta, sempre in questo mondo, cerca di migliorare l'efficienza
 nell'esecuzione degli smart contract.
@@ -911,7 +916,7 @@ il TEE.
 Al momento le opzioni per utilizzare un TEE in un ambiente virtualizzato
 sono piuttosto limitate.
 Le opzioni possibili ad oggi generalmente prevedono che il cliente di un
-provider porti con sè il proprio TEE e Trusted Application:
+provider porti con se il proprio TEE e Trusted Application:
 questo se da un lato offre una grande flessibilità al cliente, dall'altro
 comporta non solo il dover gestire un TEE da zero per l'utente, ma spesso
 anche delle pesanti limitazioni tecniche per poter comunque garantire la
@@ -927,6 +932,12 @@ quei limiti tecnici che impedivano di garantire la co-tenancy del sistema.
 È importante notare che questo approccio non è necessariamente in conflitto
 con quello precedente: un provider può offrire sia un TEE gestito da lui
 che un'opzione per portare con sè il proprio TEE.
+
+\bigbreak \noindent
+
+In questo capitolo descriviamo come abbiamo realizzato questa soluzione;
+iniziando con il background necessario per poi arrivare a discutere la nostra
+implementazione, realizzata estendendo QEMU e Linux. 
 
 \section{Il sottosistema TEE per Linux}
 \label{sec:sottosistema-tee-per-linux}
@@ -1013,7 +1024,7 @@ Queste sono:
 \end{itemize}
 
 Ognuna di queste operazioni, a eccezione di \texttt{TEE\_IOC\_VERSION},
-oltre ad un set di argomenti, può accettare anche degli argomenti extra
+oltre a un set di argomenti, può accettare anche degli argomenti extra
 specifici per il TEE che si sta utilizzando.
 Questi argomenti extra possono essere dei semplici interi a 64 bit oppure
 dei riferimenti a buffer di memoria condivisi.
@@ -1081,7 +1092,7 @@ dal comando precedente.
 Per implementare un driver, gli sviluppatori devono implementare
 delle funzioni che verranno poi richiamate dal sottosistema TEE.
 Molte di queste funzioni hanno una corrispondenza univoca con le
-\texttt{ioctl} che si possono vedere nell'interfaccia userspace,
+\texttt{ioctl} che si possono vedere nell'interfaccia user-space,
 il sottosistema TEE assiste gli sviluppatori nella loro
 implementazione effettuando, per esempio, la conversione dei parametri
 passati da kernel-space a user-space e viceversa.
@@ -1132,7 +1143,7 @@ Il set minimo di funzioni che un driver deve implementare è il seguente:
             bisogno di allocare una porzione di memoria condivisa,
             questa è espressa in numero di pagine.
             L'implementazione deve riempire una struttura \texttt{tee\_shm}
-            con i dati necessari per accedere alla memoria condivisa e
+            con i dati necessari per accedere alla memoria condivisa ed
             eventuali altre informazioni utili.
         \item \texttt{free}: Chiamata quando il sottosistema TEE ha
             bisogno di deallocare una porzione di memoria condivisa.
@@ -1146,7 +1157,7 @@ Una volta implementate queste funzioni, gli sviluppatori di driver
 possono usare le funzioni \texttt{tee\_device\_alloc} e
 \texttt{tee\_device\_register}, passando una struttura contenente
 le callback alle funzioni implementate, per registrare il loro TEE
-e renderlo disponibile alle applicazioni userspace.
+e renderlo disponibile alle applicazioni user-space.
 
 Questa operazione viene effettuata una sola volta per ogni TEE, e
 generalmente avviene all'inizializzazione del driver.
@@ -1207,21 +1218,486 @@ importante però notare che l'implementazione realizzata non è però
 legata a OP-TEE in particolare e dovrebbe funzionare con qualsiasi
 TEE disponibile nel kernel Linux.
 
-\section{GlobalPlatform API}
-\label{sec:global-platform-api}
-% Cosa è, cosa chiede di implementare
-% (?) Forse poco per una sezione?
+\section{Implementazione}
+\label{sec:implementazione}
+Il nostro obiettivo è quello di implementare un passthrough per il TEE,
+cioè vogliamo che la macchina virtuale possa mandare richieste al TEE
+presente sull'host.
+
+Per fare questo abbiamo bisogno di un modo per comunicare tra la macchina
+virtuale e l'host, dunque di creare un canale di comunicazione tra i due
+mondi e dedicato al TEE.
+
+Nella pratica, creare questo canale di comunicazione vuol dire estendere
+l'hypervisor (nel nostro caso QEMU) con un nuovo device virtuale, che sarà
+il nostro passthrough.
+Aggiungere un nuovo dispositivo implica anche scrivere un driver per
+questo device, driver che verrà utilizzato nella sistema guest.
+
+Questo driver si interfaccia con il sottosistema TEE e il device virtuale,
+il suo compito dunque è quello di soddisfare le richieste verso il TEE
+inoltrando e ricevendo le richieste dal device virtuale.
+
+Host e macchina virtuale comunicano utilizzando questo device e implementano
+un semplice protocollo di comunicazione a messaggi; questi messaggi
+riflettono le richieste che il guest può fare al TEE. 
+
+\subsection{Device Virtuale}
+Il device virtuale è stato implementato estendendo la macchina ARM
+\texttt{qemu\_virt\_8}. 
+
+La scelta di questo sistema è stata fatta semplicemente perché è
+la scelta di default su QEMU, nulla dovrebbe impedire di rendere
+accessibile il device virtuale anche ad altre piattaforme e su altre
+architetture.
+
+\bigbreak \noindent
+
+Il device comunica con il driver tramite MMIO\footnote{
+    Memory Mapped Input/Output
+}:
+scritture da parte del guest nella zona di memoria
+\texttt{0x0b000000}-\texttt{0x0b000200}
+passano il controllo dalla VM all'hypervisor, che prende il controllo e
+permette di inoltrare il messaggio scritto dal guest.
+
+Questa zona di memoria è suddivisa in registri, questi sono utilizzati
+per implementare un semplice protocollo a messaggi che imita il funzionamento
+dell'interfaccia user-space del sottosistema TEE di Linux.
+I registri sono:
+
+\begin{table}
+    \centering
+    \begin{tabular}{|c|c|c|}
+        \hline
+        \textbf{Registro}   & \textbf{Offset} & \textbf{Dimensione} \\
+        \hline
+        OPEN\_TEE           & 0x0             & 8 byte \\
+        CLOSE\_TEE          & 0x8             & 8 byte \\
+        STATUS              & 0x10            & 8 byte \\
+        COMMAND\_PTR        & 0x18            & 8 byte \\
+        SEND\_COMMAND       & 0x20            & 4 byte \\
+        \hline
+    \end{tabular}
+    \caption{
+        Registri del device virtuale di passthrough.
+        L'offset è relativo all'inizio della zona di MMIO del device virtuale
+    }
+    \label{table:registri-device}
+\end{table}
+
+In \ref{subsection:interfaccia-user-space} abbiamo descritto nel dettaglio
+come l'interfaccia user-space del sottosistema TEE di Linux funziona.
+In breve, un programma apre il device file del TEE, effettua delle
+\textit{ioctl} e poi lo chiude.
+
+L'uso del device virtuale assomiglia molto a questo processo.
+Per esempio, il driver che vuole aprire una nuova connessione con il TEE
+legge un valore dal registro \texttt{OPEN\_TEE}.
+Il valore letto, se diverso da zero, rappresenta un identificativo
+della connessione con una semantica simile a quella dei descrittori
+di file.
+
+Per effettuare l'equivalente di una \textit{ioctl}, il driver
+prepara un messaggio in un buffer di memoria e scrive l'indirizzo
+fisico del messaggio nel registro \texttt{COMMAND\_PTR}.
+Infine, scrive un valore qualsiasi di quattro byte sul registro
+\texttt{SEND\_COMMAND}.
+
+Dopo ogni operazione, il driver può leggere il registro \texttt{STATUS}
+per ottenere informazioni sul successo o fallimento della richiesta.
+Inoltre, lo stato dei registri(eccetto \texttt{STATUS}) viene azzerato.
+
+\bigbreak \noindent
+
+L'uso del registro \texttt{SEND\_COMMAND} può sembrare strano,
+effettivamente sarebbe più semplice avviare l'operazione con la
+scrittura dell'indirizzo nel registro \texttt{COMMAND\_PTR}.
+Il problema di questa scelta è che non è sempre possibile effettuare
+una scrittura in memoria da otto byte in modo atomico su tutte le
+architetture.
+
+Il rischio è dunque che un processore scriva solamente la prima metà
+dell'indirizzo, attivando l'hypervisor e facendo iniziare l'operazione
+con un indirizzo non valido.
+
+Per questo motivo è stato scelto di utilizzare un registro extra, che
+ha il solo scopo di confermare la conclusione la scrittura dell'indirizzo
+nel registro \texttt{COMMAND\_PTR}.
+
+\subsection{Driver}
+\label{subsection:driver}
+Il driver è stato implementato come modulo kernel per Linux, compilato
+\textit{out-of-tree}.
+Questo implementa il set minimo di funzioni necessarie per integrarsi con
+il sottosistema TEE di Linux.
+
+Il driver al caricamento chiama la funzione \texttt{ioremap} per ri-mappare
+l'area di memoria del device virtuale in una zona di memoria virtuale
+accessibile dal kernel.
+
+In generale il driver non è particolarmente complesso, il suo compito è
+quello di ricevere delle richieste dal sottosistema TEE di Linux, convertirle
+in messaggi compatibili con il protocollo descritto più avanti e infine
+mandare questi messaggi al device virtuale.
+
+Durante l'invio dei messaggi, il driver deve fare attenzione a utilizzare
+meccanismi di sincronizzazione, come un semplice lock, per evitare che due
+richieste separate al TEE possano interferire tra di loro mentre stanno
+provando a comunicare con il device virtuale.
+
+\bigbreak \noindent
+
+Il codice del driver è disponibile all'URL \url{https://github.com/mrkct/tee-passthrough-linux-driver}.
+
+\subsection{Protocollo}
+\label{subsection:protocollo}
+Il protocollo di comunicazione tra host e guest è molto semplice ed è
+stato progettato per essere il più possibile simile alle operazioni
+supportate dai device file TEE reali.
+
+Il protocollo è basato su un sistema a messaggi. Ogni messaggio inizia
+con una struttura comune che permette al destinatario di capire come
+interpretare il resto del messaggio, raffigurata in
+\figurename~\ref{fig:message-wrapper-schema}.
+
+\begin{figure}
+    \centering
+    % TODO: Aggiungere immagine con schema del message-wrapper
+    % \includegraphics[width=\textwidth]{message-wrapper-schema}
+    \caption{
+        Header iniziale di tutti i messaggi del protocollo.
+        Questi valori permettono al destinatario di capire come interpretare
+        il resto del messaggio, contenuto del payload
+    }
+    \label{fig:message-wrapper-schema}
+\end{figure}
+
+Il campo \texttt{type} permette di identificare come interpretare il
+contenuto di \texttt{payload}, questo valore deve dunque essere uno di quelli
+in \tablename~\ref{tab:valid-message-types}.
+Dato che alcuni messaggi possono contenere un numero variabile
+(ma comunque limitato) di argomenti, il campo \texttt{payload\_size} indica
+la dimensione in byte del campo \texttt{payload} seguente.
+
+In base al tipo di messaggio inviato esistono dei vincoli sui valori
+accettabili per il campo \texttt{payload\_size}.
+Questi vincoli sono descritti in \tablename~\ref{tab:valid-payload-sizes}.
+
+\begin{table}
+    \centering
+    \begin{tabular}{|c|c|c|}
+        \hline
+        \textbf{Comando}    & \textbf{Dimensione Payload} & \textbf{Vincoli}    \\
+        \hline
+        \texttt{GetVersion} & 16 byte                     & Esattamente 16 byte \\
+        \texttt{OpenSession} & 16 byte                     & Esattamente 16 byte \\
+        \texttt{InvokeFunction} & 16 byte                     & Esattamente 16 byte \\
+        \texttt{CancelRequest} & 16 byte                     & Esattamente 16 byte \\
+        \texttt{CloseSession} & 16 byte                     & Esattamente 16 byte \\
+        \texttt{EnsureMemoryBuffersAreSynchronized} & 16 byte                     & Esattamente 16 byte \\
+        \texttt{FreeSharedMemoryBuffer} & 16 byte                     & Esattamente 16 byte \\
+        \hline
+    \end{tabular}
+    \caption{
+        Dimensioni e vincoli sulla dimensione dei payload per i vari messaggi
+    }
+    \label{tab:dimensioni-valide-payload}
+\end{table}
+
+Oltre a un valore di ritorno, leggibile tramite un registro del device
+virtuale, il destinatario può anche modificare il contenuto del campo
+\texttt{payload} del messaggio, in base al tipo di messaggio inviato.
+
+In generale questi messaggi sono molto simili (ma non uguali) alle strutture
+dati definite dall'interfaccia user-space del sottosistema TEE, con delle
+aggiunte per aiutare l'hypervisor e per allineare i dati ai 16 byte.
+
+Una modifica condivisa da molti messaggi è il campo \texttt{fd}
+(\textit{File Descriptor}). Questo campo ha una semantica simile a quella
+dei file descriptor in Linux, seppur in questo caso serva al driver per decidere
+quale connessione aperta tra hypervisor e TEE inoltrare il messaggio.
+
+Un valore \texttt{fd} valido è un valore maggiore o uguale a zero e letto
+tramite il registro \texttt{OPEN} del device virtuale.
+Messaggi che fanno parte della stessa connessione ci si aspetta che avranno
+lo stesso valore di \texttt{fd}.
+
+\bigbreak \noindent
+
+Un messaggio in particolare non ha corrispondenza con alcuna \textit{ioctl},
+questo è \texttt{EnsureMemoryBuffersAreSynchronized}.
+Questo messaggio invia all'hypervisor delle informazioni riguardo alcuni
+buffer di memoria condivisi, in particolare il loro ID
+(unico all'interno del guest), la loro dimensione allocata e
+l'indirizzo fisico in cui si trovano.
+Questo messaggio è inviato dal driver prima di inviare un altro messaggio
+che fa riferimento a questi buffer, questo è necessario per assicurarsi
+che l'hypervisor possa decidere il corrispondente buffer di memoria dentro al TEE.
+
+Questo problema è descritto più nel dettaglio in \ref{subsection:hypervisor}.
 
 
+\paragraph{GetVersion}:
 
-\section{Implementazione tramite l'Estensione del Kernel}
-\label{sec:implementazione-passthrough-tramite-kernel-module}
-% Descrizione del modulo Linux, modifiche a QEMU
-% Comunicazione via MMIO
-% Conversione di indirizzi virt/phys
-% Gestione della shared memory
-% Pro: è esplicito l'uso di un passthrough, facilmente cambiabile il passthrough sopra
-% Contro: necessario estendere il kernel con un modulo
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \draw (0, 0) node[below right] {test} rectangle (2, 1) node[midway] {impl id};
+        \draw (2, 0) rectangle (4, 1) node[midway] {impl caps};
+        \draw (4, 0) rectangle (6, 1) node[midway] {gen caps};
+        \draw (6, 0) rectangle (8, 1) node[midway] {padding};
+    \end{tikzpicture}
+    % TODO: Schema del pacchetto
+    % u32 impl_id;
+    % u32 impl_caps;
+    % u32 gen_caps;
+    % u32 zero_padding
+    \caption{Schema del payload di un messaggio \texttt{GetVersion}}
+    \label{fig:msg-schema-getversion}
+\end{figure} 
+
+Il messaggio \texttt{GetVersion} è identificato da \texttt{type} uguale a
+$0$ ed è il messaggio più semplice tra quelli presenti.
+Il mittente prepara un payload di dimensione $16$ byte tutti a zero, e lo
+manda al destinatario che si occuperà di riempire il payload con le
+informazioni riguardo al TEE.
+I valori ritornati non sono garantiti essere gli stessi che si ottengono 
+tramite la chiamata \texttt{ioctl} \texttt{TEE\_IOC\_VERSION} del
+sottosistema TEE, questo perché non è garantito che il passthrough
+possa supportare tutte le funzionalità extra offerte dal TEE.
+
+Ad esempio, la nostra implementazione non supporta
+(banalmente perchè non implementata)
+l'uso dei \textit{registered shared memory buffers}, cioè la possibilità per
+un client di "promuovere" un buffer allocato normalmente a buffer di memoria
+condivisa con il TEE.
+Per questo motivo un client interno a una VM che chiede informazioni riguardo
+al TEE leggerà sempre il bit \texttt{TEE\_GEN\_CAP\_REG\_MEM} di
+\texttt{gen\_caps} a zero, anche se il TEE fisico in realtà supporta la
+funzionalità.
+
+\paragraph{OpenSession, InvokeFunction, CancelRequest e CloseSession}: \\
+\begin{figure}[H]
+    \centering
+    % TODO: Schema del pacchetto
+    % int64_t fd;
+    % __u8 uuid[TEE_IOCTL_UUID_LEN];
+	% __u8 clnt_uuid[TEE_IOCTL_UUID_LEN];
+	% __u32 clnt_login;
+	% __u32 cancel_id;
+	% __u32 session;
+	% __u32 ret;
+	% __u32 ret_origin;
+	% __u32 num_params;
+	% struct tee_ioctl_param params[4]
+    %   __u64 attr, a, b, c;
+    \caption{Schema del payload di un messaggio \texttt{OpenSession}}
+    \label{fig:msg-schema-opensession}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    % TODO: Schema del pacchetto
+    \caption{Schema del payload di un messaggio \texttt{InvokeFunction}}
+    \label{fig:msg-schema-invokefunction}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    % TODO: Schema del pacchetto
+    \caption{Schema del payload di un messaggio \texttt{CancelRequest}}
+    \label{fig:msg-schema-cancelrequest}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    % TODO: Schema del pacchetto
+    \caption{Schema del payload di un messaggio \texttt{CloseSession}}
+    \label{fig:msg-schema-closesession}
+\end{figure}
+
+I messaggi \textit{OpenSession}, \textit{InvokeFunction}, \textit{CancelRequest}
+e \textit{CloseSession} sono identificati rispettivamente dai valori \texttt{type}
+uguale a $2, 3, 4$ e $5$.
+Il loro funzionamento e la semantica dei campi è identica a quella delle
+rispettive \textit{ioctl} dell'interfaccia user-space del sottosistema TEE
+con lo stesso nome.
+
+In aggiunta ai campi delle \textit{ioctl} del sottosistema TEE, troviamo anche
+campo extra \texttt{fd} che serve per identificare a quale connessione con
+il TEE vogliamo inoltrare il messaggio.
+Questo valore è ottenuto dal driver tramite il registro \texttt{OPEN} del
+device virtuale; messaggi che fanno parte della stessa connessione dovrebbero
+avere lo stesso valore di \texttt{fd}.
+
+La presenza di parametri in numero variabile è l'origine dei vincoli
+sulla lunghezza del payload, descritti in \ref{tab:dimensioni-valide-payload}.
+Questi vincoli verificano semplicemente che, oltre ai campi della
+richiesta, ci siano al massimo quattro parametri per la richiesta e siano
+tutti di dimensione 16 byte.
+
+I parametri sono rappresentati alla fine del messaggio, ognuno come tupla
+di quattro interi a 64 bit.
+La semantica di questi valori è la stessa del sottosistema TEE, cioè il
+primo di questi interi definisce il tipo dell'argomento e gli
+altri tre sono dei valori dipendenti dal tipo.
+
+Se un parametro è di tipo \textit{memref}, cioè è un buffer di memoria
+condivisa con il TEE, è necessario che prima del suo utilizzo il client
+lo abbia segnalato all'hypervisor tramite il messaggio
+\textit{EnsureMemoryBuffersAreSynchronized}.
+
+\paragraph{EnsureMemoryBuffersAreSynchronized}: \\
+\begin{figure}[H]
+    \centering
+    % TODO: Schema del pacchetto
+    \caption{Schema del payload di un messaggio \texttt{EnsureMemoryBuffersAreSynchronized}}
+    \label{fig:msg-schema-embas}
+\end{figure}
+Il messaggio \textit{EnsureMemoryBuffersAreSynchronized} è identificato da
+\texttt{type} uguale a $5$ ed è utilizzato per segnalare all'hypervisor
+l'ID locale di un buffer di memoria condivisa all'hypervisor.
+
+Questa operazione non ha una equivalente \textit{ioctl} ed è necessaria
+per l'implementazione del passthrough.
+Ogni buffer di memoria condivisa con il TEE è identificato con un ID numerico
+all'interno del sottosistema TEE.
+Questi ID sono assegnati dal sistema operativo, dunque un ID interno a una
+macchina virtuale non corrisponde necessariamente allo stesso buffer
+all'esterno della VM.
+
+Questo messaggio segnala all'hypervisor l'allocazione di uno o più buffer di
+memoria e l'ID locale corrispondente a tale buffer.
+Grazie a queste informazioni l'hypervisor potrà tradurre gli ID locali nei
+parametri degli altri messaggi negli ID corretti al di fuori della VM.
+
+Dunque, prima che un buffer allocato venga usato come parametro di una
+richiesta,
+è necessario che il client abbia inviato almeno un messaggio
+\textit{EnsureMemoryBuffersAreSynchronized} con le sue informazioni.
+
+Una discussione più approfondita su questa problematica è data più avanti in
+\ref{subsection:hypervisor}.
+
+\paragraph{FreeSharedMemoryBuffer}: \\
+\begin{figure}[H]
+    \centering
+    % TODO: Schema del pacchetto
+    \caption{Schema del payload di un messaggio \texttt{FreeSharedMemoryBuffer}}
+    \label{fig:msg-schema-freebuf}
+\end{figure}
+Il messaggio \textit{FreeSharedMemoryBuffer} è identificato da \texttt{type}
+uguale a $6$ ed è utilizzato liberare la memoria condivisa allocata
+precedentemente.
+
+Questa operazione non ha una equivalente \textit{ioctl}, questo perchè
+nell'interfaccia user-space del sottosistema TEE la deallocazione di un
+buffer di memoria corrisponde al momento in cui il client chiude il
+descrittore del file associato al buffer.
+
+I due parametri rappresentano rispettivamente la connessione con il TEE
+e l'ID (locale al guest) del buffer di memoria da liberare.
+
+\subsection{Hypervisor}
+\label{subsection:hypervisor}
+Il lato dell'hypervisor è dove si nasconde la parte più complessa del progetto.
+
+L'hypervisor deve, per prima cosa, implementare il device virtuale.
+Per fare ciò mantiene uno "stato" dei registri che viene aggiornato a ogni
+scrittura da parte del guest nella zona di MMIO del device.
+Una scrittura all'offset del registro \texttt{SEND\_COMMAND} indica il momento
+in cui l'hypervisor deve gestire un messaggio del protocollo.
+
+Implementare la maggior parte dei messaggi del protocollo è concettualmente
+semplice, dato che hanno spesso una corrispondenza diretta con una
+\textit{ioctl}.
+Ad alto livello dunque uno dei ruoli dell'hypervisor è quello di ricevere
+i messaggi, fare le rispettive \textit{ioctl} e riscrivere nella memoria
+dell'host il risultato.
+
+Il problema principale è che i dati passati dal guest all'hypervisor sono
+valori validi solo all'interno della VM, dunque fare una \textit{ioctl}
+usando direttamente quei valori non funzionerebbe.
+
+Un esempio di questo problema sono i descrittori di file utilizzati nella
+chiamata \textit{ioctl}: 
+il descrittore di file che una VM possiede per accedere al device file del TEE
+non è lo stesso valore con cui l'hypervisor può fare una \textit{ioctl},
+è necessario mantenere una tabella di traduzioni tra questi valori e
+utilizzare il valore adatto al mondo in cui ci si trova.
+
+Un secondo esempio di un problema simile, ma più complesso, è la gestione
+dell'allocazione dei buffer di memoria condivisa con il TEE.
+Ogni buffer è identificato da un ID numerico, che viene assegnato dal sistema
+operativo, dunque lo stesso buffer è identificato da valori diversi dentro
+e fuori la VM.
+
+Anche in questo caso è necessario dunque mantenere una tabella di traduzioni
+tra questi valori, e tradurre gli ID presenti nei messaggi prima di inoltrarli
+all'altro mondo.
+
+Costruire questa tabella delle traduzioni degli ID per i buffer di memoria è
+più difficile rispetto a quella dei descrittori di file.
+Il motivo è dato da un dettaglio tecnico del sottosistema TEE di Linux, che
+assegna un ID solamente quando la funzione di allocazione di memoria del driver
+ha restituito un buffer.
+Questo crea una dipendenza circolare, dove per allocare un buffer abbiamo bisogno
+di un ID, ma per ottenere un ID abbiamo bisogno di allocare prima il buffer.
+
+Modificare il kernel Linux è una soluzione che potrebbe risolvere il problema
+in modo pulito, ma uno dei nostri obiettivi è quello di mantenere il kernel
+invariato e di integrare la nostra implementazione come un TEE normale. 
+
+Per risolvere questo problema semplicemente decidiamo di rimandare l'allocazione
+al primo utilizzo del buffer come parametro di una operazione.
+Questo è il vero scopo del messaggio \textit{EnsureMemoryBuffersAreSynchronized},
+permettere di ritardare la vera allocazione del buffer sottostante e di soddisfarla
+solo quando è necessaria.
+
+\bigbreak \noindent
+
+Una volta che abbiamo risolto questi due problemi, rimane il problema di
+come rendere questi buffer di memoria effettivamente "condivisi" tra TEE
+e guest.
+I buffer allocati dall'hypervisor con il TEE sono effettivamente condivisi,
+ma sarebbe necessario condividere questa memoria anche con il guest.
+
+Fare questo è possibile, ma richiede delle modifiche sostanziali a QEMU, per
+questo motivo abbiamo scelto una strada molto più semplice, seppur
+inefficiente.
+
+Lo standard GlobalPlatform riconosce che non sempre è possibile implementare
+un  meccanismo di memoria condivisa, condividendo la vera memoria fisica,
+cioè senza copie.
+In queste situazioni la soluzione è quella di mantenere due buffer di memoria
+diversi, ma di uguali dimensioni, uno per il TEE e uno per il REE.
+Questi buffer vengono sincronizzati tramite una copia dei dati da uno all'altro
+ogni volta che si raggiunge un \textit{punto di sincronizzazione}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics{immagini/tp-synchronization-points}
+    \caption{
+        Punti di sincronizzazione buffer di memoria condivisa.
+        Da \textit{3.2.5 Memory References GlobalPlatform TEE Client Specification}
+    }
+    \label{fig:gp-punti-sincronizzazione}
+\end{figure}
+
+Questi \textit{punti di sincronizzazione}, raffigurati in
+\ref{fig:gp-punti-sincronizzazione} delle specifiche GlobalPlatform,
+sono banalmente i momenti in cui si attraversa la barriera tra TEE e REE.
+
+Nel nostro caso, però, abbiamo due barriere: una tra TEE e hypervisor, che funziona
+senza dover far nulla, e una tra hypervisor e VM, che dobbiamo implementare.
+Implementare la sincronizzazione è solamente questione di copiare i dati dal guest
+al buffer accessibile all'hypervisor prima di iniziare una chiamata al TEE, e fare
+l'opposto (cioè da buffer dell'hypervisor a buffer locale del guest) prima di
+ritornare il controllo alla VM.
+
+Questa è una soluzione piuttosto inefficiente, ma funzionale per lo scopo di
+prototipazione.
 
 \chapter{Testing}
 \label{chap:testing}

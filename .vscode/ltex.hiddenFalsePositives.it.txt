@@ -1,2 +1,3 @@
 {"rule":"ER_01_001","sentence":"^\\QQuesto potrebbe cambiare nei prossimi anni a seguito dell'adozione di un nuovo ma con gli sforzi di standardizzazione di GlobalPlatform, lo sviluppo di TEE open-source come OP-TEE e potremmo vedere nei prossimi anni un uso più ampio dei TEE.\\E$"}
 {"rule":"ER_01_001","sentence":"^\\QQuesta area viene crittografata utilizzando una chiave conosciuta solamente all'interno del TEE, la decifratura dei dati avviene solamente a seguito di un controllo degli accessi da parte del TEE.\\E$"}
+{"rule":"MORFOLOGIK_RULE_IT_IT","sentence":"^\\QOpen Portable Trusted Execution Environment (OP-TEE)\\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q è un progetto open source che implementa un TEE per sistemi ARM basati su TrustZone.\\E$"}
