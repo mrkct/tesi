@@ -1642,18 +1642,21 @@ più difficile rispetto a quella dei descrittori di file.
 Il motivo è dato da un dettaglio tecnico del sottosistema TEE di Linux, che
 assegna un ID solamente quando la funzione di allocazione di memoria del driver
 ha restituito un buffer.
-Questo crea una dipendenza circolare, dove per allocare un buffer abbiamo bisogno
-di un ID, ma per ottenere un ID abbiamo bisogno di allocare prima il buffer.
+Questo crea una dipendenza circolare, dove per allocare un buffer
+abbiamo bisogno di un ID, ma per ottenere un ID abbiamo bisogno di
+allocare prima il buffer.
 
 Modificare il kernel Linux è una soluzione che potrebbe risolvere il problema
 in modo pulito, ma uno dei nostri obiettivi è quello di mantenere il kernel
 invariato e di integrare la nostra implementazione come un TEE normale. 
 
-Per risolvere questo problema semplicemente decidiamo di rimandare l'allocazione
+Per risolvere questo problema semplicemente decidiamo di rimandare
+l'allocazione
 al primo utilizzo del buffer come parametro di una operazione.
-Questo è il vero scopo del messaggio \textit{EnsureMemoryBuffersAreSynchronized},
-permettere di ritardare la vera allocazione del buffer sottostante e di soddisfarla
-solo quando è necessaria.
+Questo è il vero scopo del messaggio
+\textit{EnsureMemoryBuffersAreSynchronized},
+permettere di ritardare la vera allocazione del buffer sottostante e
+di soddisfarla solo quando è necessaria.
 
 \bigbreak \noindent
 
@@ -1680,7 +1683,9 @@ ogni volta che si raggiunge un \textit{punto di sincronizzazione}.
     \includegraphics{immagini/tp-synchronization-points}
     \caption{
         Punti di sincronizzazione buffer di memoria condivisa.
-        Da \textit{3.2.5 Memory References GlobalPlatform TEE Client Specification}
+        Da \textit{
+            3.2.5 Memory References GlobalPlatform TEE Client Specification
+        }
     }
     \label{fig:gp-punti-sincronizzazione}
 \end{figure}
@@ -1689,12 +1694,13 @@ Questi \textit{punti di sincronizzazione}, raffigurati in
 \ref{fig:gp-punti-sincronizzazione} delle specifiche GlobalPlatform,
 sono banalmente i momenti in cui si attraversa la barriera tra TEE e REE.
 
-Nel nostro caso, però, abbiamo due barriere: una tra TEE e hypervisor, che funziona
+Nel nostro caso, però, abbiamo due barriere: una tra TEE e hypervisor,
+che funziona
 senza dover far nulla, e una tra hypervisor e VM, che dobbiamo implementare.
-Implementare la sincronizzazione è solamente questione di copiare i dati dal guest
-al buffer accessibile all'hypervisor prima di iniziare una chiamata al TEE, e fare
-l'opposto (cioè da buffer dell'hypervisor a buffer locale del guest) prima di
-ritornare il controllo alla VM.
+Implementare la sincronizzazione è solamente questione di copiare i dati dal
+guest al buffer accessibile all'hypervisor prima di iniziare una chiamata
+al TEE, e fare l'opposto (cioè da buffer dell'hypervisor a buffer locale
+del guest) prima di ritornare il controllo alla VM.
 
 Questa è una soluzione piuttosto inefficiente, ma funzionale per lo scopo di
 prototipazione.
