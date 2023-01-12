@@ -831,7 +831,7 @@ L'utilizzo dei TEE in questo protocollo permette di evitare che i veicoli
 possano essere manipolati da attaccanti esterni e che i dati vengano
 intercettati e utilizzati per tracciare gli spostamenti delle persone. 
 
-\section{Questioni Etiche nell'Uso dei TEE}
+\section{Questioni etiche nell'uso dei TEE}
 \label{sec:etica-tee}
 I Trusted Execution Environment introducono una serie di questioni etiche
 non ancora affrontate.
@@ -1242,7 +1242,7 @@ Host e macchina virtuale comunicano utilizzando questo device e implementano
 un semplice protocollo di comunicazione a messaggi; questi messaggi
 riflettono le richieste che il guest può fare al TEE. 
 
-\subsection{Device Virtuale}
+\subsection{Device virtuale}
 Il device virtuale è stato implementato estendendo la macchina ARM
 \texttt{qemu\_virt\_8}. 
 
@@ -1756,7 +1756,7 @@ Riteniamo dunque che, seppur sia necessario ancora del lavoro per rendere
 l'implementazione utilizzabile in pratica, il nostro approccio sia un buon
 punto di partenza
 
-\section{Sviluppi Futuri}
+\section{Sviluppi futuri}
 \label{sec:sviluppi-futuri}
 Il nostro lavoro trascura alcuni aspetti che potrebbero essere interessanti
 in base al contesto in cui si vuole utilizzare la nostra soluzione.
@@ -1832,11 +1832,27 @@ Queste sono utili per testare funzionalità come il passaggio di parametri o
 l'uso di memoria condivisa tra TEE e applicazione, ma possono essere
 facilmente modificate o sostituite con altre applicazioni.
 
-FakeTEE è disponibile su GitHub all'indirizzo
-\url{https://github.com/mrkct/faketee}.
-
 \chapter{Impostazione dell'ambiente di sviluppo e testing}
 \label{app:impostazione-ambiente-sviluppo-testing}
+
+\chapter{Codice sorgente}
+\label{app:codice-sorgente}
+Il codice sorgente del progetto è disponibile su GitHub ai seguenti indirizzi:
+
+\begin{itemize}
+    \item 
+        \textbf{QEMU con supporto a TEE passthrough}: \\
+        \noindent 
+        \url{https://github.com/mrkct/qemu-tee-passthrough}
+    \item
+        \textbf{Driver Linux per TEE passthrough}: \\ 
+        \noindent
+        \url{https://github.com/mrkct/tee-passthrough-linux-driver}
+    \item
+        \textbf{FakeTEE}: \\
+        \noindent
+        \url{https://github.com/mrkct/fake-tee}
+\end{itemize}
 
 \bibliographystyle{unsrt}
 \bibliography{bibliografia}
