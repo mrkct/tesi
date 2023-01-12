@@ -1719,9 +1719,76 @@ prototipazione.
 
 \chapter{Conclusioni}
 \label{chap:conclusioni}
+In questa tesi abbiamo presentato una possibile soluzione per l'uso dei
+Trusted Execution Environment (TEE) in ambienti virtualizzati.
+I TEE sono ambienti di computazione integrati nel processore principale
+che permettono di garantire diverse proprietà di sicurezza per le
+applicazioni eseguite al loro interno.
+
+L'interesse verso il loro uso in ambienti virtualizzati è constatato dalla
+fondazione della Confidential Computing Initiative
+\cite{confidential-computing-initiative}.
+Le soluzioni al momento sul mercato richiedono ai clienti di portare con sé
+un TEE con le loro applicazioni; questa è una soluzione flessibile ma che
+porta con se alcuni limiti tecnici per poterne garantire la sicurezza
+e un grande lock-in rispetto alla tecnologia usata.
+
+La soluzione proposta in questa tesi utilizza un approccio diverso che
+permette di evitare questi limiti ed è agnostico al TEE sottostante:
+invece di dover portare con sé un TEE, i clienti possono utilizzare un TEE
+configurato dal vendor con una serie di servizi preinstallati.
+
+La nostra proposta non è in conflitto con quelle già presenti sul mercato;
+questo crea un tradeoff interessante per i clienti che possono scegliere
+se gestire un TEE da soli, con tutti i vantaggi e svantaggi che ne derivano,
+oppure utilizzare un TEE preconfigurato dal vendor, con un lock-in minore
+ma con meno flessibilità.
+
+Abbiamo dimostrato la fattibilità del nostro approccio tramite un prototipo
+implementato modificando l'hypervisor QEMU e il sistema operativo Linux.
+Infine abbiamo messo alla prova la nostra implementazione tramite la test
+suite \textit{xtest} e il TEE \textit{OP-TEE}.
+
+Le performance del nostro prototipo non sono entusiasmanti, seppur accettabili
+in molti casi, ma queste sono causate dalla banalità dell'implementazione e
+non da limitazioni intrinseche del nostro approccio.
+Riteniamo dunque che, seppur sia necessario ancora del lavoro per rendere
+l'implementazione utilizzabile in pratica, il nostro approccio sia un buon
+punto di partenza
 
 \section{Sviluppi Futuri}
 \label{sec:sviluppi-futuri}
+Il nostro lavoro trascura alcuni aspetti che potrebbero essere interessanti
+in base al contesto in cui si vuole utilizzare la nostra soluzione.
+
+Come detto in precedenza, la nostra implementazione trascura le performance in
+favore di una implementazione semplice e facile da comprendere.
+Questo è un aspetto che potrebbe essere migliorato in futuro, per esempio
+implementando il meccanismo dei \textit{Registered Shared Memory Buffers},
+che permette di ridurre le allocazioni di memoria.
+
+Inoltre, seppur non strettamente necessarie secondo gli standard GlobalPlatform,
+il sottosistema Linux supporta delle funzionalità extra che, in alcuni casi,
+potrebbero essere utili per implementare ottimizzazioni.
+
+\bigbreak \noindent
+
+Una limitazione significativa della nostra implementazione attuale data dalle
+periferiche \textit{trusted}: al momento non è presente alcun meccanismo per
+permettere la virtualizzazione di queste periferiche all'interno della VM.
+Una interessante direzione di ricerca come permettere la virtualizzazione
+di queste periferiche senza comprometterne la sicurezza
+
+\bigbreak \noindent
+
+Infine in ambito cloud computing, una sfida interessante è quella di permettere
+il trasferimento di una VM che fa uso di un TEE da un server fisico ad un altro.
+Per design, i dati salvati dentro un TEE sono legati strettamente alle chiavi
+dentro esso, e quindi non possono essere trasferiti direttamente da un
+server ad un altro.
+
+Può essere interessante dunque esplorare come realizzare questo spostamento
+in modo sicuro e trasparente per l'utente.
 
 \appendix
 \chapter{FakeTEE: Simulatore di TEE per aiutare nello sviluppo}
