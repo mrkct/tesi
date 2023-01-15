@@ -892,24 +892,211 @@ il TEE.
 
 \chapter{Hardware a supporto dei TEE}
 \label{chap:hardware-supporto-tee}
+Un TEE non può garantire le sue proprietà di sicurezza se non è supportato
+dall'hardware, in particolare la proprietà di isolazione dal resto del
+sistema considerato "non sicuro".
+
+Non esiste una unica soluzione hardware per permettere che un TEE implementi
+queste proprietà; questo capitolo è dunque dedicato a una breve
+esplorazione di alcune delle proposte hardware presenti sul mercato.
+
+% Schema per la tecnologia:
+% 1. Breve intro: cosa è, quando è stato introdotto, per quale mercato e chi lo usa
+% 2. Come funziona
+% 3. Come implementa l'integrità
+% 4. Qualche attacco in letteratura
+% 5. [EXTRA] se è stato fixato, o altra roba
 
 \section{ARM TrustZone}
 \label{sec:arm-trustzone}
+ARM TrustZone è una etichetta introdotta da ARM nel 2004\cite{trustzone}
+che viene usata per indicare un insieme di funzionalità hardware per la
+sicurezza dei processori con profilo A (Application) e, di recente,
+anche M (Microcontroller).
+Alcuni nomi di TEE famosi che fanno uso di TrustZone includono
+Samsung Knox \cite{knox}, Trustonic TEE\cite{trustonic} e
+OP-TEE\cite{optee}.
 
-\section{Intel SGX e TXT}
-\label{sec:intel-sgx-txt}
+Alla base di TrustZone è l'idea di virtualizzare il processore, che in
+ogni momento può trovarsi in uno di due stati:
+\emph{Secure} o \emph{Non-secure}.
+Le modalità di privilegio di ARM, che vanno da EL3(più alto) a EL0(più basso),
+vengono duplicate nelle controparti S-EL3 a S-EL0.
+
+Il processore in modalità \emph{Secure} può accedere a tutta la memoria
+e le periferiche, mentre in modalità \emph{Non-secure} può accedere
+solamente a memoria e periferiche segnate come non sicure. 
+
+Il sistema si avvia in modalità \emph{Secure} con il più alto livello di
+privilegio supportato;
+il firmware in questo stato può configurare il sistema per decidere quanta
+memoria e quali periferiche isolare nel mondo \emph{Secure} e
+\emph{Non-Secure}.
+
+Una volta configurato il sistema, il firmware abbassa il livello
+di privilegio e carica il sistema operativo del TEE e il sistema operativo
+del REE.
+Un esempio di firmware è \textit{Trusted Firmware-A}\cite{trusted-firmware-a},
+una libera implementazione di riferimento sviluppata da ARM.
+
+Per passare da una modalità all'altra esiste una istruzione speciale
+\texttt{smc}(\textit{Secure Monitor Call}) che opera in modo simile alle
+istruzioni \texttt{svc} e \texttt{hvc} per il passaggio da EL0 a EL1 e EL2.
+
+\bigbreak \noindent
+
+% FIXME: Come implementa il secure boot in TrustZone
+
+\bigbreak \noindent
+
+% FIXME: Breve overview degli attacchi a TrustZone
+
+\section{Intel SGX}
+\label{sec:intel-sgx}
+Intel Software Guard Extensions (SGX) è una estensione
+dell'architettura x86\_64 introdotta nel 2015\cite{sgx} con i processori
+Intel Core di sesta generazione.
+
+Intel SGX permette di creare delle \textit{enclavi}, aree di memoria private
+e crittografate di piccole dimensioni (128MB o 256MB in base alla versione).
+L'accesso ai dati dentro le enclavi viene decrittato
+solamente dentro il processore al momento di eseguire il codice.
+La memoria dentro un enclave non può essere letta al di fuori
+di essa, indipendentemente dal livello di privilegio o modalità della CPU.
+Sia programmi utente sia il sistema operativo possono creare enclavi,
+che rimangono protette anche se il sistema operativo viene compromesso.
+
+La verifica dell'integrità iniziale del codice all'interno di un
+enclave può avvenire tramite due meccanismi di attestazione:
+appoggiandosi a un'altra enclave locale già verificata, oppure
+tramite una enclave speciale chiamata \textit{Quoting Enclave}
+che si appoggia a un servizio web remoto di Intel. 
+
+\smallbreak \noindent
+
+SGX implementa un approccio radicalmente diverso rispetto a TrustZone, e
+non necessità un sistema operativo separato per il TEE, seppur sia comunque
+possibile utilizzarlo in questo modo.
+Questo approccio permette d'integrarsi in ambienti cloud senza difficoltà,
+per questo motivo SGX è una delle poche soluzioni hardware oggi disponibili
+per utilizzare un TEE su tali piattaforme.
+
+\bigbreak \noindent
+
+Nonostante questo, Intel SGX ha subito diversi attacchi mirati a minare
+la proprietà di confidenzialità; molti di questi sono attacchi di tipo
+\textit{side-channel} che sfruttano le proprietà fisiche del processore 
+% FIXME: Parlare delle vulnerabilità di SGX
+
+\bigbreak \noindent
+
+A partire dal 2021, Intel SGX è stato deprecato sui processori Intel Core
+di undicesima e dodicesima generazione\cite{sgx_deprecation}.
+Intel non ha rilasciato spiegazioni, ma continua lo sviluppo di SGX per
+i processori Intel Xeon, comunemente usati sui server. 
 
 \section{AMD Secure Encrypted Virtualization}
 \label{sec:amd-sev}
+AMD Secure Encrypted Virtualization (SEV) è una estensione dell'architettura
+x86\_64 introdotta nel 2016\cite{sev} con la prima serie
+di processori Ryzen.
 
-\section{Processori esterni}
-\label{sec:processori-esterni}
-% AMD PSP
-% Apple Secure Enclave
-% Google Titan
+AMD SEV permette di crittografare la memoria di una macchina virtuale in
+modo che, anche se l'hypervisor viene compromesso, non sia possibile per
+l'attaccante leggere i dati della macchina virtuale.
+L'idea di SEV è simile a quella di SGX, ma invece di creare delle enclavi
+il concetto è applicato alle macchine virtuali.
+AMD SEV è una soluzione mirata per le esigenze dei provider cloud,
+infatti include inoltre meccanismi per permettere la migrazione di VM
+tra host.
 
-\section{RISC-V}
+\bigbreak \noindent
+
+% TODO: Attacchi a SEV
+
+\bigbreak \noindent
+
+Dopo la prima versione di SEV, AMD ha anche rilasciato
+SEV-ES (\textit{Secure Encrypted Virtualization-Encrypted State}), per
+crittografare anche lo stato dei registri, e
+SEV-SNP (\textit{Secure Encrypted Virtualization-Secure Nested Paging}), 
+che integra correzioni a vulnerabilità scoperte dopo il rilascio di SEV-ES.
+
+Nonostante ciò, anche AMD SEV-SNP è stato dimostrato vulnerabile
+ad altrettanti attacchi. % FIXME: Cita un po' di roba qui
+
+\section{Processori dedicati}
+\label{sec:processori-dedicati}
+Una soluzione possibile per implementare un TEE è quella di utilizzare
+un intero secondo sistema, collegato solamente alle periferiche fidate.
+Chiaramente integrare un secondo \textit{System on a Chip}(SoC) dentro
+a un dispositivo è una soluzione più costosa ma possibile, particolarmente
+in dispositivi di fascia premium.
+
+\bigbreak \noindent
+
+Apple, a partire dall'iPhone 5, include nei propri telefoni un sottosistema
+integrato nel processore che prende il nome di
+\textit{Secure Enclave}\cite{secure_enclave}.
+Questo è un \textit{System on a Chip}, cioè contiene un processore
+e della memoria dedicata, che esegue il piccolo sistema operativo verificato
+formalmente, L4\cite{l4}.
+Il chip \textit{Secure Enclave} è collegato solamente ad alcuni
+acceleratori crittografici e a un bus I2C per salvare dati in una zona di
+memoria non volatile dedicata; il suo scopo è quello di mantenere i dati
+degli utenti al sicuro in caso di compromissione del processore principale
+e implementare servizi come \textit{Touch ID} e \textit{Apple Pay}.
+
+\bigbreak \noindent
+Anche Google implementa una soluzione simile per i suoi telefoni Pixel.
+I telefoni Pixel 6 e Pixel 6 Pro integrano il processore
+\textit{Google Tensor}, un processore proprietario basato su ARM e che
+utilizza TrustZone per implementare un TEE.
+Affiancato a questo chip, ne troviamo un altro chiamato \textit{Titan M2}:
+questo è un \textit{System on a Chip} proprietario RISC-V dedicato a
+scopi simili a quelli di \textit{Secure Enclave}.   
+Nei propri telefoni Google utilizza l'area TrustZone solamente come
+intermezzo per la comunicazione con il chip \textit{Titan M2} e per
+implementare il meccanismo di \textit{Secure Boot} per il mondo
+non sicuro.
+
+\bigbreak \noindent
+
+Ad oggi non sono stati segnalati attacchi alla \textit{Secure Enclave},
+mentre è stato segnalato un singolo attacco\cite{attack_titanM} a
+\textit{Titan M}.
+L'attacco è una vulnerabilità software in una procedura di copia
+che permette di scrivere un singolo byte a un indirizzo qualsiasi in memoria.
+Questa vulnerabilità permette un attaccante di effettuare un attacco
+di tipo \textit{ROP}\footnote{Return Oriented Programming}
+ed estrarre informazioni private del TEE.
+
+\section{TEE RISC-V}
 \label{sec:risc-v}
+RISC-V è un ISA (Instruction Set Architecture) open source sviluppato
+dalla RISC-V Foundation, una organizzazione senza scopo di lucro.
+Sviluppare hardware basato su RISC-V è gratuito e non richiede alcuna
+licenza, nasce per essere estensibile e inoltre gode di un buon supporto
+tramite toolchain e sistemi operativi.
+Questo ISA è molto interessante per i produttori di dispositivi perché
+permette loro di sviluppare hardware adattato per le loro esigenze
+senza dover pagare licenze o scrivere completamente da zero un
+completo stack software.
+
+Queste caratteristiche hanno reso RISC-V un mondo dove diversi progetti
+collegati all'ambito TEE stanno nascendo.
+Molti di questi progetti si basano sull'estensione
+PMP (\textit{Physical Memory Protection}) che permette di definire un
+numero variabile(ma limitato dall'hardware) di aree di memoria fisica
+protette da accessi non autorizzati.
+Il funzionamento è simile a quello di SGX o TrustZone, senza però limiti
+alla memoria delle enclavi e con la possibilità di configurare le enclavi.
+
+Visto che l'interesse verso RISC-V è dato dalla possibilità di adattare
+l'hardware a specifiche esigenze, non esiste un'implementazione standard
+di un TEE RISC-V ma esistono dei progetti che permettono di costruire
+dei TEE RISC-V integrabili nei propri design.
+Alcuni esempi sono Keystone\cite{keystone} e Penglai\cite{penglai}.
 
 \chapter{Passthrough per TEE tra QEMU e Linux}
 \label{chap:passthrough-tee-qemu-linux}
