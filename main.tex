@@ -45,7 +45,6 @@
 \frontespizio
 \afterpreface
 
-% FIXME: Non compare sull'indice
 \chapter*{Sommario}
 \addcontentsline{toc}{chapter}{Sommario}  
 \label{cap:sommario}
@@ -666,7 +665,7 @@ quest'ultima funzionalità grazie ad API che, se presenti, utilizzano delle
 TA, come ad esempio "Keystore"\cite{androidkeystore} in Android.
 
 Alcuni produttori, ad esempio AMD con il suo
-\textit{Platform Security Processor}, utilizzano la
+\textit{Secure Processor}, utilizzano la
 funzionalità di \textit{Secure Storage} per implementare un
 \textit{Trusted Platform Module}(TPM) software\cite{amd2020ftpm}.
 Questo è normalmente un chip dedicato al salvataggio sicuro di chiavi crittografiche
@@ -900,61 +899,47 @@ Non esiste una unica soluzione hardware per permettere che un TEE implementi
 queste proprietà; questo capitolo è dunque dedicato a una breve
 esplorazione di alcune delle proposte hardware presenti sul mercato.
 
-% Schema per la tecnologia:
-% 1. Breve intro: cosa è, quando è stato introdotto, per quale mercato e chi lo usa
-% 2. Come funziona
-% 3. Come implementa l'integrità
-% 4. Qualche attacco in letteratura
-% 5. [EXTRA] se è stato fixato, o altra roba
-
 \section{ARM TrustZone}
 \label{sec:arm-trustzone}
-ARM TrustZone è una etichetta introdotta da ARM nel 2004\cite{trustzone}
-che viene usata per indicare un insieme di funzionalità hardware per la
+ARM TrustZone\cite{trustzone} è una etichetta introdotta da ARM nel 2004
+usata per indicare un insieme di funzionalità hardware per la
 sicurezza dei processori con profilo A (Application) e, di recente,
 anche M (Microcontroller).
 Alcuni nomi di TEE famosi che fanno uso di TrustZone includono
-Samsung Knox \cite{knox}, Trustonic TEE\cite{trustonic} e
-OP-TEE\cite{optee}.
+Samsung Knox, Qualcomm QSEE e OP-TEE.
 
 Alla base di TrustZone è l'idea di virtualizzare il processore, che in
 ogni momento può trovarsi in uno di due stati:
 \emph{Secure} o \emph{Non-secure}.
-Le modalità di privilegio di ARM, che vanno da EL3(più alto) a EL0(più basso),
-vengono duplicate nelle controparti S-EL3 a S-EL0.
+Le modalità di privilegio di ARM, che vanno da EL3(più alto)
+a EL0(più basso), vengono duplicate nelle controparti S-EL3 a S-EL0.
 
 Il processore in modalità \emph{Secure} può accedere a tutta la memoria
 e le periferiche, mentre in modalità \emph{Non-secure} può accedere
-solamente a memoria e periferiche segnate come non sicure. 
+solamente a memoria e periferiche segnate come non sicure.
+La decisione di quali periferiche e la zona di memoria sicura può essere
+definita dal firmware a runtime oppure essere prefissata dal produttore
+dell'hardware.
 
-Il sistema si avvia in modalità \emph{Secure} con il più alto livello di
-privilegio supportato;
-il firmware in questo stato può configurare il sistema per decidere quanta
-memoria e quali periferiche isolare nel mondo \emph{Secure} e
-\emph{Non-Secure}.
-
-Una volta configurato il sistema, il firmware abbassa il livello
-di privilegio e carica il sistema operativo del TEE e il sistema operativo
-del REE.
-Un esempio di firmware è \textit{Trusted Firmware-A}\cite{trusted-firmware-a},
-una libera implementazione di riferimento sviluppata da ARM.
-
-Per passare da una modalità all'altra esiste una istruzione speciale
+Per passare da una modalità all'altra viene introdotta una nuova istruzione
 \texttt{smc}(\textit{Secure Monitor Call}) che opera in modo simile alle
-istruzioni \texttt{svc} e \texttt{hvc} per il passaggio da EL0 a EL1 e EL2.
+istruzioni \texttt{svc} e \texttt{hvc}, passando il controllo al livello
+di privilegio S-EL3 (Secure Monitor).
 
-\bigbreak \noindent
+\medbreak \noindent
 
-% FIXME: Come implementa il secure boot in TrustZone
+TrustZone non definisce alcun sistema per verificare l'integrità del codice
+all'avvio; questo problema è invece lasciato ai produttori di dispositivi.
+Una soluzione popolare è quella di generare una coppia di chiavi pubblica
+e privata, e di stampare l'hash della chiave pubblica nel chip e renderla
+accessibile in modalità \emph{Secure} tramite un registro dedicato.
 
-\bigbreak \noindent
-
-% FIXME: Breve overview degli attacchi a TrustZone
+% FIXME: Si può espandere un po'...
 
 \section{Intel SGX}
 \label{sec:intel-sgx}
 Intel Software Guard Extensions (SGX) è una estensione
-dell'architettura x86\_64 introdotta nel 2015\cite{sgx} con i processori
+dell'architettura x86\_64 introdotta nel 2015 con i processori
 Intel Core di sesta generazione.
 
 Intel SGX permette di creare delle \textit{enclavi}, aree di memoria private
@@ -978,17 +963,17 @@ SGX implementa un approccio radicalmente diverso rispetto a TrustZone, e
 non necessità un sistema operativo separato per il TEE, seppur sia comunque
 possibile utilizzarlo in questo modo.
 Questo approccio permette d'integrarsi in ambienti cloud senza difficoltà,
-per questo motivo SGX è una delle poche soluzioni hardware oggi disponibili
+infatti SGX è una delle poche soluzioni hardware oggi disponibili
 per utilizzare un TEE su tali piattaforme.
 
-\bigbreak \noindent
+\medbreak \noindent
 
-Nonostante questo, Intel SGX ha subito diversi attacchi mirati a minare
-la proprietà di confidenzialità; molti di questi sono attacchi di tipo
-\textit{side-channel} che sfruttano le proprietà fisiche del processore 
-% FIXME: Parlare delle vulnerabilità di SGX
+Intel SGX ha sofferto di diverse vulnerabilità nel tempo, aggiustate tramite
+aggiornamenti del microcodice dei processori.
+Nilson et al.\cite{sgx_vulnerabilities} offrono una panoramica piuttosto
+vasta delle vulnerabilità scoperte nel tempo.
 
-\bigbreak \noindent
+\medbreak \noindent
 
 A partire dal 2021, Intel SGX è stato deprecato sui processori Intel Core
 di undicesima e dodicesima generazione\cite{sgx_deprecation}.
@@ -998,8 +983,8 @@ i processori Intel Xeon, comunemente usati sui server.
 \section{AMD Secure Encrypted Virtualization}
 \label{sec:amd-sev}
 AMD Secure Encrypted Virtualization (SEV) è una estensione dell'architettura
-x86\_64 introdotta nel 2016\cite{sev} con la prima serie
-di processori Ryzen.
+x86\_64 introdotta nel 2017\cite{sev} con la prima serie
+di processori Epyc.
 
 AMD SEV permette di crittografare la memoria di una macchina virtuale in
 modo che, anche se l'hypervisor viene compromesso, non sia possibile per
@@ -1010,20 +995,41 @@ AMD SEV è una soluzione mirata per le esigenze dei provider cloud,
 infatti include inoltre meccanismi per permettere la migrazione di VM
 tra host.
 
-\bigbreak \noindent
+Alla base del funzionamento di SEV è il \textit{Secure Processor}
+\footnote{
+    Precedentemente chiamato \textit{Platform Security Processor} (PSP).
+}(SP): 
+un processore ARM integrato nel chip che esegue un sistema operativo
+proprietario che ha il compito di crittare e decrittare la memoria
+in transito sui bus, oltre a generare e gestire le chiavi crittografiche
+locali.
 
-% TODO: Attacchi a SEV
+Il \textit{Secure Processor} ha anche il compito di assicurare
+l'attestazione remota delle macchine virtuali.
+Ogni SP è dotato di una chiave privata, che viene utilizzata
+per firmare i report di attestazione delle VM. Questi report vengono
+inviati ai clienti, che vogliono aver modo di verificare che le VM
+in esecuzione su un server siano state create da un'immagine verificata
+e sono in esecuzione nell'ambiente desiderato.
 
-\bigbreak \noindent
+\medbreak
 
-Dopo la prima versione di SEV, AMD ha anche rilasciato
-SEV-ES (\textit{Secure Encrypted Virtualization-Encrypted State}), per
-crittografare anche lo stato dei registri, e
-SEV-SNP (\textit{Secure Encrypted Virtualization-Secure Nested Paging}), 
-che integra correzioni a vulnerabilità scoperte dopo il rilascio di SEV-ES.
+Successivamente AMD ha rilasciato una versione aggiornata di SEV, chiamata
+SEV-ES (Encrypted State)\cite{sev_es}. Inizialmente SEV salvava i registri
+di una VM in chiaro dopo un context switch con l'hypervisor, questo è
+stato ritenuto un problema di sicurezza e dunque SEV-ES ha introdotto la
+crittografia anche degli stati dei registri.
 
-Nonostante ciò, anche AMD SEV-SNP è stato dimostrato vulnerabile
-ad altrettanti attacchi. % FIXME: Cita un po' di roba qui
+\medbreak \noindent
+
+SEV-SNP (Secure Nested Paging)\cite{sev_snp}, rilasciata nel 2021
+con la terza serie di processori Epyc, è l'ultima versione di SEV
+disponibile al momento.
+SEV-SNP include protezioni aggiuntive verso
+attacchi \textit{replay}, attacchi che sfruttavano mapping di memoria
+intenzionalmente inconsistenti per bypassare alcune protezioni di SEV
+e delle correzioni generali a vulnerabilità scoperte nelle versioni 
+precedenti.
 
 \section{Processori dedicati}
 \label{sec:processori-dedicati}
@@ -1037,10 +1043,10 @@ in dispositivi di fascia premium.
 
 Apple, a partire dall'iPhone 5, include nei propri telefoni un sottosistema
 integrato nel processore che prende il nome di
-\textit{Secure Enclave}\cite{secure_enclave}.
+\textit{Secure Enclave}.
 Questo è un \textit{System on a Chip}, cioè contiene un processore
 e della memoria dedicata, che esegue il piccolo sistema operativo verificato
-formalmente, L4\cite{l4}.
+formalmente, L4\cite{secure_enclave}.
 Il chip \textit{Secure Enclave} è collegato solamente ad alcuni
 acceleratori crittografici e a un bus I2C per salvare dati in una zona di
 memoria non volatile dedicata; il suo scopo è quello di mantenere i dati
@@ -1065,11 +1071,6 @@ non sicuro.
 Ad oggi non sono stati segnalati attacchi alla \textit{Secure Enclave},
 mentre è stato segnalato un singolo attacco\cite{attack_titanM} a
 \textit{Titan M}.
-L'attacco è una vulnerabilità software in una procedura di copia
-che permette di scrivere un singolo byte a un indirizzo qualsiasi in memoria.
-Questa vulnerabilità permette un attaccante di effettuare un attacco
-di tipo \textit{ROP}\footnote{Return Oriented Programming}
-ed estrarre informazioni private del TEE.
 
 \section{TEE RISC-V}
 \label{sec:risc-v}
@@ -1095,8 +1096,114 @@ alla memoria delle enclavi e con la possibilità di configurare le enclavi.
 Visto che l'interesse verso RISC-V è dato dalla possibilità di adattare
 l'hardware a specifiche esigenze, non esiste un'implementazione standard
 di un TEE RISC-V ma esistono dei progetti che permettono di costruire
-dei TEE RISC-V integrabili nei propri design.
-Alcuni esempi sono Keystone\cite{keystone} e Penglai\cite{penglai}.
+dei TEE RISC-V integrabili nei propri design,
+ad esempio Keystone\cite{keystone} e Penglai\cite{penglai}.
+
+\section{Vulnerabilità comuni}
+\label{sec:vulnerabilita-comuni}
+I TEE sono progettati per essere sicuri, ma un famoso mantra dice che
+\textit{"la sicurezza assoluta non esiste"}, e questo vale anche per i TEE.
+Seppur i TEE offrano un livello di sicurezza molto elevato, sono stati
+dimostrati in passato diversi attacchi che permettono di bypassare
+le protezioni offerte da questi sistemi.
+
+Il software dei TEE può essere aggiornato per risolvere questi problemi,
+mentre gli attacchi hardware sono più difficili da risolvere.
+Alcuni attacchi hardware possono essere risolti con aggiornamenti del
+microcodice della CPU, ma questo non è sempre possibile e in tali casi
+è necessario cambiare hardware. 
+
+\medbreak
+Un primo vettore di attacco è il software in esecuzione dentro il TEE:
+vulnerabilità classiche come \textit{buffer overflow}, \textit{use after free}
+o la mancata validazione degli input possono compromettere la sicurezza
+dell'intero sistema.
+Questi attacchi non sono dipendenti dall'hardware di supporto al TEE,
+è possibile infatti trovare vulnerabilità simili anche in TEE che fanno
+uso di hardware molto diversi tra loro.
+
+Un esempio di attacco di questo tipo è stato segnalato nel 2022 verso
+\textit{Titan M}\cite{attack_titanM}, il chip proprietario di Google
+per i suoi telefoni Pixel.
+Una vulnerabilità in una procedura di copia dati da un buffer temporaneo
+ha permesso di scrivere un singolo byte a un indirizzo qualsiasi in memoria
+sicura; tramite essa è stato possibile effettuare un attacco
+di tipo \textit{ROP}\footnote{Return Oriented Programming}
+ed estrarre informazioni private del TEE.
+
+Le soluzioni a questo problema sono le stesse di qualsiasi altro software:
+una progettazione tenendo conto della sicurezza fin dall'inizio, 
+l'impiego di processi di code-review, l'uso di linguaggi di programmazione
+\textit{memory safe}, e l'uso di strumenti di fuzzing, verifica formale e
+analisi statica per trovare bug in anticipo sono tutte buone pratiche per
+la sicurezza del software.  
+
+\bigbreak \noindent
+Per molte soluzioni hardware la gestione della cache è stata
+un punto dolente: sia su TrustZone, sia su SGX e sia su SEV
+è stato possibile bypassare le protezioni offerte da questi sistemi
+grazie a essa.
+La gestione della cache in modo sicuro è un problema molto complesso,
+che viene ulteriormente complicato dalla presenza dei TEE dato che
+diventa necessario separare le linee di cache per la memoria del TEE
+e per quella del REE.
+
+Attacchi \textit{timing-based} sono stati dimostrati su TrustZone e SGX,
+permettendo di estrarre dati privati dalla memoria del TEE e, in almeno
+un caso, anche di scrivere dati nella memoria sicura.
+Per esempio, \textit{CacheZoom}\cite{cachezoom} e
+\textit{ARMageddon}\cite{armageddon} hanno permesso di estrarre dati
+dalla memoria sicura, rispettivamente su Intel SGX e ARM TrustZone,
+tramite attacchi alla cache di tipo \textit{Prime+Probe},
+\textit{Flush+Reload} e altro.
+
+Su ARM TrustZone, Guanciale et al.\cite{aliasdriven} hanno dimostrato
+che creando molteplici mapping virtuali allo stesso indirizzo fisico
+ma impostando politiche di caching incoerenti, è possibile non solo
+leggere dati dalla memoria sicura ma anche scrivere dati in alcuni casi.
+
+Su AMD SEV, Mengyuan et all\cite{sev_tlb_poisoning} hanno trovato diverse
+vulnerabilità nella gestione del \textit{Translation Lookaside Buffer}(TLB),
+riuscendo non solo a leggere dati dalla memoria sicura di una VM, ma anche
+a forzarla ad eseguire una istruzione arbitraria.
+
+Inoltre, seppur non sia una vulnerabilità del TEE, è stato
+dimostrato che la gestione separata della cache tra TEE e REE
+può essere utilizzata da rootkit nel REE per nascondersi da strumenti
+di analisi.
+Ad esempio, CacheKit\cite{cachekit} è un rootkit per sistemi Linux
+su piattaforme ARM con TrustZone che inietta il proprio codice nella
+cache senza però essere presente in memoria.
+CacheKit sfrutta le linee di cache riservate alle periferiche
+del mondo \textit{Secure} per rimanere invisibile agli strumenti
+di analisi. 
+
+\bigbreak
+Un altro vettore di attacco è l'alimentazione del processore: questi
+fanno parte di una classe di attacchi chiamati \textit{fault attacks}
+e consistono nell'indurre l'hardware a commettere errori intenzionalmente
+per poi sfruttarli per estrarre informazioni private.
+
+Un esempio di questo tipo di attacco sono
+\textit{Plundervolt}\cite{plundervolt} e
+\textit{CLKscrew}\cite{clkscrew},
+rispettivamente su Intel SGX e ARM TrustZone.
+Questi attacchi manipolano l'alimentazione del sistema portandola a livelli
+troppo bassi per operare correttamente; in questo modo errori nella RAM
+o nell'esecuzione di istruzioni possono essere usati per portare il sistema
+in uno stato non previsto e dunque vulnerabile.
+Anche su AMD SEV è stato dimostrato un attacco simile\cite{sev_power_attack}
+al \textit{Security Processor}, permettendo eventualmente di caricare un
+firmware malevolo per bypassare la cifratura delle VM.
+
+Intel e ARM hanno risolto questo problema rispettivamente ignorando le
+impostazioni di alimentazione mentre la CPU è dentro un enclave SGX e
+rendendo il dispositivo di controllo dell'alimentazione accessibile
+solamente dal mondo \textit{Secure}.
+AMD non ha rilasciato alcuna dichiarazione al riguardo: tutti i processori
+AMD Epyc fino alla terza generazione sono confermati vulnerabili, non è
+stato ancora verificato se questa vulnerabilità è stata risolta nei
+processori di quarta generazione.  
 
 \chapter{Passthrough per TEE tra QEMU e Linux}
 \label{chap:passthrough-tee-qemu-linux}
@@ -1124,7 +1231,7 @@ che un'opzione per portare con sè il proprio TEE.
 
 In questo capitolo descriviamo come abbiamo realizzato questa soluzione;
 iniziando con il background necessario per poi arrivare a discutere la nostra
-implementazione, realizzata estendendo QEMU e Linux. 
+implementazione, realizzata estendendo QEMU e Linux.
 
 \section{Il sottosistema TEE per Linux}
 \label{sec:sottosistema-tee-per-linux}
@@ -1250,7 +1357,7 @@ Il flusso tipico di operazione di una CA è il seguente:
 L'uso diretto di queste interfacce non è consigliato.
 Invece, gli sviluppatori di CA dovrebbero preferire l'uso di una libreria come
 \texttt{libteec} che offre un'interfaccia che rispetta la specifica
-GlobalPlatform TEE Client API\cite{globalplatform_tee_client_api} 
+GlobalPlatform TEE Client API\cite{gp2020internalapi} 
 e che internamente usa
 le interfacce del sottosistema TEE.
 Questo approccio permette poi di utilizzare lo stesso codice anche su
@@ -1575,6 +1682,7 @@ Questi vincoli sono descritti in \tablename~\ref{tab:valid-payload-sizes}.
     \centering
     \begin{tabular}{|c|c|c|}
         \hline
+        % FIXME: Scrivere i vincoli sulle dimensioni dei payload
         \textbf{Comando}    & \textbf{Dimensione Payload} & \textbf{Vincoli}    \\
         \hline
         \texttt{GetVersion} & 16 byte                     & Esattamente 16 byte \\
@@ -1704,9 +1812,9 @@ funzionalità.
     \label{fig:msg-schema-closesession}
 \end{figure}
 
-I messaggi \textit{OpenSession}, \textit{InvokeFunction}, \textit{CancelRequest}
-e \textit{CloseSession} sono identificati rispettivamente dai valori \texttt{type}
-uguale a $2, 3, 4$ e $5$.
+I messaggi \textit{OpenSession}, \textit{InvokeFunction},
+\textit{CancelRequest} e \textit{CloseSession} sono identificati
+rispettivamente dai valori \texttt{type} uguale a $2, 3, 4$ e $5$.
 Il loro funzionamento e la semantica dei campi è identica a quella delle
 rispettive \textit{ioctl} dell'interfaccia user-space del sottosistema TEE
 con lo stesso nome.
@@ -1719,7 +1827,8 @@ device virtuale; messaggi che fanno parte della stessa connessione dovrebbero
 avere lo stesso valore di \texttt{fd}.
 
 La presenza di parametri in numero variabile è l'origine dei vincoli
-sulla lunghezza del payload, descritti in \ref{tab:dimensioni-valide-payload}.
+sulla lunghezza del payload, descritti in
+\tablename~\ref{tab:dimensioni-valide-payload}.
 Questi vincoli verificano semplicemente che, oltre ai campi della
 richiesta, ci siano al massimo quattro parametri per la richiesta e siano
 tutti di dimensione 16 byte.
@@ -1739,7 +1848,9 @@ lo abbia segnalato all'hypervisor tramite il messaggio
 \begin{figure}[H]
     \centering
     % TODO: Schema del pacchetto
-    \caption{Schema del payload di un messaggio \texttt{EnsureMemoryBuffersAreSynchronized}}
+    \caption{
+        Schema del payload di un messaggio
+        \texttt{EnsureMemoryBuffersAreSynchronized}}
     \label{fig:msg-schema-embas}
 \end{figure}
 Il messaggio \textit{EnsureMemoryBuffersAreSynchronized} è identificato da
@@ -1878,7 +1989,7 @@ ogni volta che si raggiunge un \textit{punto di sincronizzazione}.
 \end{figure}
 
 Questi \textit{punti di sincronizzazione}, raffigurati in
-\ref{fig:gp-punti-sincronizzazione} delle specifiche GlobalPlatform,
+\figurename~\ref{fig:gp-punti-sincronizzazione} delle specifiche GlobalPlatform,
 sono banalmente i momenti in cui si attraversa la barriera tra TEE e REE.
 
 Nel nostro caso, però, abbiamo due barriere: una tra TEE e hypervisor,
@@ -1892,17 +2003,43 @@ del guest) prima di ritornare il controllo alla VM.
 Questa è una soluzione piuttosto inefficiente, ma funzionale per lo scopo di
 prototipazione.
 
-\chapter{Testing}
-\label{chap:testing}
+\section{Verifica funzionale e performance}
+\label{sec:verifica-funzionale-e-performance}
 
-\section{Setup dell'ambiente}
-\label{sec:setup-ambiente}
+% Abbiamo usato una VM dentro una VM per testare il nostro prototipo
+% La VM esterna è Linux versione X con busybox X girata su QEMU X nella macchina virtuale qemu-virt-8
+% La VM interna è Linux versione Y con buusybox Y girata sulla nostra versione modifcata di QEMU, cioè Y commit XXX
+% Per verifcare la correttezza della nostra soluzione abbiamo usato tre set di test cases
 
-\section{Preparazione della test suite}
-\label{sec:preparazione-test-suite}
+% Il primo set sono i programmi di esempio forniti da OPTEE, questi includono
+% sono: AES, SECURE STORAGE, ...
+% Sono programmi relativemente semplici ma che testano tutte le funzionalità
+% dell'interfaccia GlobalPlatform e che fanno uso di libteec
 
-\section{Performance}
-\label{sec:performance}
+% Il secondo set è un sottoinsieme dei test di "xtest", una suite di test utilizzata
+% per testare OPTEE.
+% Il sottoinsieme scelto esclude le funzionalità specifiche di OPTEE che non sono incluse
+% nelle specifiche GP, in totale sono 700 test cases
+
+% Abbiamo inoltre effettuato dei semplici test delle performance, nonostante ribadiamo
+% che questa implementazione sia intenzionalmente primitiva e inefficiente.
+% Per misurare le performance abbiamo usato il comando time,
+% che misura il tempo di esecuzione di un comando, utilizzando la misura 'real time'
+% Ogni test case è stato eseguito 10 volte e i risultati riportanti in \tablename~\ref{tab:performance}
+% A confronto abbiamo anche riportato i tempi di esecuzione degli stessi test case
+% sulla VM host (cioè la VM esterna), che accede direttamente al TEE senza passare
+% dal nostro passthrough.
+% [TABELLA]
+% Chiaramente i tempi di esecuzione utilizzando il passthrough sono più alti,
+% principalmente per l'implementazione inefficiente della sincronizzazione dei buffer
+% di memoria condivisa.
+% Infatti, se dividiamo i test case in due categorie, quelli che fanno uso di memoria
+% condivisa e quelli che non lo fanno, si nota che i tempi di esecuzione sono
+% dei secondi sono molto simili ai tempi senza passthrough.
+% [TABELLA]
+% Chiaramente l'uso di test case per confrontare le performance non
+% necessariamente riflette dei carichi di lavoro reali, ma è un modo semplice
+% per avere un'idea delle prestazioni.
 
 \chapter{Conclusioni}
 \label{chap:conclusioni}
@@ -1913,8 +2050,7 @@ che permettono di garantire diverse proprietà di sicurezza per le
 applicazioni eseguite al loro interno.
 
 L'interesse verso il loro uso in ambienti virtualizzati è constatato dalla
-fondazione della Confidential Computing Initiative
-\cite{confidential-computing-initiative}.
+fondazione della Confidential Computing Consortium.
 Le soluzioni al momento sul mercato richiedono ai clienti di portare con sé
 un TEE con le loro applicazioni; questa è una soluzione flessibile ma che
 porta con se alcuni limiti tecnici per poterne garantire la sicurezza
@@ -2021,6 +2157,60 @@ facilmente modificate o sostituite con altre applicazioni.
 
 \chapter{Impostazione dell'ambiente di sviluppo e testing}
 \label{app:impostazione-ambiente-sviluppo-testing}
+Questa appendice descrive come impostare un ambiente di sviluppo e testing
+per il nostro progetto utilizzando il TEE open-source OP-TEE.
+Queste istruzioni assumono che si abbia già clonato tutti i repository
+elencati in \ref{app:repository} e che si abbia già compilato OP-TEE e
+preparato un ambiente virtualizzato dove è possibile provarlo.
+
+Alla fine di queste istruzioni si avrà un ambiente con due macchine virtuali,
+una dentro l'altra, dove quella più esterna emula un TEE con OP-TEE mentre
+quella interna contiene un passthrough che gli permette di accedere al TEE
+emulato.
+
+Il primo passo consiste nel compilare la versione modificata di QEMU per
+poterla utilizzare dentro la VM che emula il TEE.
+QEMU non è un software particolarmente complesso da compilare, ma richiede
+delle librerie \textit{shared}\footnote{
+    Al momento di scrittura creare un binario statico di QEMU per Linux
+    non è supportato
+} che probabilmente non sono presenti sul sistema.
+
+OP-TEE utilizza un sistema di build basato su \textit{buildroot}, che
+permette di compilare QEMU con tutte le librerie necessarie.
+Possiamo dunque entrare nella cartella \texttt{out-br}
+
+Per fare questo abbiamo bisogno di trovare la toolchain utilizzata per
+compilare i software user-space presenti nel setup di default OP-TEE.
+Questa normalmente si trova nella cartella 
+% Vogliamo avere QEMU-moddato che gira un Linux dentro QEMU che emula il TEE
+% 1. Bisogna avere OP-TEE + Linux compilato e funzionante.
+% 2. Scoprire la toolchain utilizzata per compilare la userland dentro OPTEE
+%    Questa è solitamente dentro la cartella `build/out-br/host/bin'
+% 3. Utilizzando tale toolchain, bisogna compilare qemu-tee-passthrough
+% 4. Per fare ciò bisogna fare configure e make passando il path della toolchain.
+%    Esempio: <configure>
+% 5. Il binario di QEMU modificato si trova nella cartella build/*, questo programma
+%    dovrà essere eseguito dentro QEMU+OPTEE.
+%    Per fare questo creiamo una cartella, per esempio nella root del progetto OPTEE,
+%    che condivideremo con la VM. Chiamiamola `shared-folder` e copiamo l'intera cartella
+%    build li dentro.
+% 6. Facciamo partire QEMU con OPTEE passando l'opzione VIRTFS=y, una volta dentro diamo
+%    il comando `mount -t 9p -o trans virtio /mnt/host' e dovremmo poter accedere ai file
+%    da dentro la VM
+% 7. Per testare se abbiamo compilato QEMU correttamente, diamo ./build/qemu-system-aarch64 -v
+%    Se stampa la versione allora siamo ok
+% 8. Adesso abbiamo bisogno di un sistema Linux da eseguire dentro questa seconda VM, insieme
+%    anche al driver e ai test da eseguire.
+%    Scarichiamo Buildroot, copiamo la configurazione da defconfig_qemu_virt e diamo
+%    `make defconfig_qemu_virt'. Il default va bene, diamo okay e compiliamo.
+% 9. Segnamo il path dei sorgenti Linux scaricati da Buildroot, cloniamo il driver e
+%    impostiamo la variabile d'ambiente LINUX_PATH a tale path, infine diamo `make all'
+%    Esempio: `LINUX_PATH=/home/marco/Desktop/buildroot20.04/out/linux make all'
+% 10. Se tutto è andato okay, allora avremo un file .ko che è il nostro driver da caricare.
+%     Copiamolo all'interno della cartella 'shared'
+% 11. Infine dobbiamo compilare i test, 
+% 3. Preparare un sistema Linux parallelo da caricare dentro la V
 
 \chapter{Codice sorgente}
 \label{app:codice-sorgente}

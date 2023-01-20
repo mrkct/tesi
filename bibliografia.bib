@@ -44,26 +44,47 @@
   numpages = {10}
 }
 
-@whitepaper{gp2020protectionprofile,
+@unpublished{amd2020ftpm,
+  author = {AMD},
+  title = {Intermittent System Stutter Experienced with fTPM Enabled on Windows® 10 and 11},
+  howpublished = {\url{https://www.amd.com/en/support/kb/faq/pa-410}},
+  note = {Accessed: 2023-01-20}
+}
+
+@techreport{gp2020protectionprofile,
   title = {TEE Protection Profile v1.3},
+  institution = {GlobalPlatform},
   author = {GlobalPlatform Technical Committee},
   howpublished = {\url{https://globalplatform.org/specs-library/tee-protection-profile/}},
   note = {Accessed: 2022-12-21},
   year = {2020}
 }
 
-@whitepaper{gp2020systemarchitecture,
+@techreport{gp2020systemarchitecture,
   title = {TEE System Architecture v1.3},
+  institution = {GlobalPlatform},
   author = {GlobalPlatform Technical Committee},
   howpublished = {\url{https://globalplatform.org/specs-library/tee-system-architecture/}},
-  note = {Accessed: 2022-12-21}
+  note = {Accessed: 2022-12-21},
+  year = {2022}
 }
 
-@whitepaper{gp2020internalapi,
+@techreport{gp2020internalapi,
   title = {TEE Internal Core API Specification v1.3.1},
+  institution = {GlobalPlatform},
   author = {GlobalPlatform Technical Committee},
   howpublished = {\url{https://globalplatform.org/specs-library/tee-internal-core-api-specification/}},
-  note = {Accessed: 2022-12-21}
+  note = {Accessed: 2022-12-21},
+  year = {2021}
+}
+
+@techreport{gp2020clientapi,
+  title = {TEE Client API Specification v1.0},
+  institution = {GlobalPlatform},
+  author = {GlobalPlatform Technical Committee},
+  howpublished = {\url{https://globalplatform.org/specs-library/tee-client-api-specification/}},
+  note = {Accessed: 2023-1-20},
+  year = {2010}
 }
 
 @misc{confidential_computing_initiative,
@@ -108,7 +129,7 @@
   note = {Accessed: 2022-12-15}
 }
 
-@article{stallman2021tpm,
+@unpublished{stallman2021tpm,
   title = "Can You Trust Your Computer?",
   author = {Richard M. Stallman},
   howpublished = {\url{https://www.gnu.org/philosophy/can-you-trust.en.html}},
@@ -185,6 +206,13 @@
   year = {2022}
 }
 
+@misc{secure_enclave,
+  title={Demystifying the Secure Enclave Processor},
+  author={Tarjei K. Mandt and Mathew Solnik and David Wang},
+  year={2016},
+  note = {Presentazione a "Blackhat 2016"}
+}
+
 @misc{optee,
   title = {Open Portable Trusted Execution Environment (OP-TEE)},
   howpublished = {\url{https://www.op-tee.org/}},
@@ -215,7 +243,7 @@
   note = {Accessed: 2023-01-12}
 }
 
-@manual{sgx_deprecated,
+@manual{sgx_deprecation,
   title = {11th Generation Intel Core Processor Desktop Datasheet},
   organization = {Intel Corporation},
   volume = {1 of 2},
@@ -246,3 +274,165 @@
   booktitle = {Proceedings of the Fifteenth European Conference on Computer Systems},
   series = {EuroSys '20}
 }
+
+@article{trustzone,
+  author = {Pinto, Sandro and Santos, Nuno},
+  title = {Demystifying Arm TrustZone: A Comprehensive Survey},
+  year = {2019},
+  issue_date = {November 2019},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  volume = {51},
+  number = {6},
+  issn = {0360-0300},
+  url = {https://doi.org/10.1145/3291047},
+  doi = {10.1145/3291047},
+  journal = {ACM Comput. Surv.},
+  month = {jan},
+  articleno = {130},
+  numpages = {36},
+  keywords = {security, TEE, survey, virtualization, TrustZone, Arm}
+}
+
+@inproceedings{aliasdriven,
+  author={Guanciale, Roberto and Nemati, Hamed and Baumann, Christoph and Dam, Mads},
+  booktitle={2016 IEEE Symposium on Security and Privacy (SP)}, 
+  title={Cache Storage Channels: Alias-Driven Attacks and Verified Countermeasures}, 
+  year={2016},
+  volume={},
+  number={},
+  pages={38-55},
+  doi={10.1109/SP.2016.11}}
+}
+
+@inproceedings{armageddon,
+  author = {Lipp, Moritz and Gruss, Daniel and Spreitzer, Raphael and Maurice, Cl\'{e}mentine and Mangard, Stefan},
+  title = {ARMageddon: Cache Attacks on Mobile Devices},
+  year = {2016},
+  isbn = {9781931971324},
+  publisher = {USENIX Association},
+  address = {USA},
+  booktitle = {Proceedings of the 25th USENIX Conference on Security Symposium},
+  pages = {549-564},
+  numpages = {16},
+  location = {Austin, TX, USA},
+  series = {SEC'16}
+}
+
+@inproceedings{cachekit,
+  author={Zhang, Ning and Sun, He and Sun, Kun and Lou, Wenjing and Hou, Y. Thomas},
+  booktitle={2016 IEEE European Symposium on Security and Privacy (EuroS\&P)}, 
+  title={CacheKit: Evading Memory Introspection Using Cache Incoherence}, 
+  year={2016},
+  volume={},
+  number={},
+  pages={337-352},
+  doi={10.1109/EuroSP.2016.34}
+}
+
+@inproceedings{clkscrew,
+  author = {Tang, Adrian and Sethumadhavan, Simha and Stolfo, Salvatore},
+  title = {CLKSCREW: Exposing the Perils of Security-Oblivious Energy Management},
+  year = {2017},
+  isbn = {9781931971409},
+  publisher = {USENIX Association},
+  address = {USA},
+  booktitle = {Proceedings of the 26th USENIX Conference on Security Symposium},
+  pages = {1057-1074},
+  numpages = {18},
+  location = {Vancouver, BC, Canada},
+  series = {SEC'17}
+}
+
+@inproceedings{tz_vulnerabilities,
+  author={Cerdeira, David and Santos, Nuno and Fonseca, Pedro and Pinto, Sandro},
+  booktitle={2020 IEEE Symposium on Security and Privacy (SP)}, 
+  title={SoK: Understanding the Prevailing Security Vulnerabilities in TrustZone-assisted TEE Systems}, 
+  year={2020},
+  volume={},
+  number={},
+  pages={1416-1432},
+  doi={10.1109/SP40000.2020.00061}
+}
+
+@inproceedings{cachezoom,
+  author="Moghimi, Ahmad and Irazoqui, Gorka and Eisenbarth, Thomas",
+  editor="Fischer, Wieland and Homma, Naofumi",
+  title="CacheZoom: How SGX Amplifies the Power of Cache Attacks",
+  booktitle="Cryptographic Hardware and Embedded Systems -- CHES 2017",
+  year="2017",
+  publisher="Springer International Publishing",
+  address="Cham",
+  pages="69--90",
+  isbn="978-3-319-66787-4"
+}
+
+@inproceedings {plundervolt,
+  author={Murdock, Kit and Oswald, David and Garcia, Flavio D. and Van Bulck, Jo 
+  and Gruss, Daniel and Piessens, Frank},
+  booktitle = {{Proceedings of the 41st IEEE Symposium on Security and Privacy (S\&P'20)}},
+  title={{Plundervolt}: Software-based Fault Injection Attacks against Intel SGX},
+  year = {2020},
+}
+
+@techreport{sev,
+  institution = {AMD},
+  author = {Kaplan, David and Powell, Jeremy and Woller, Tom},
+  year = {2016},
+  title = {Whitepaper: AMD Memory Encryption},
+  url = {\url{https://developer.amd.com/wordpress/media/2013/12/AMD_Memory_Encryption_Whitepaper_v7-Public.pdf}}
+}
+
+@techreport{sev_es,
+  institution = {AMD},
+  author = {Kaplan, David},
+  year = {2017},
+  title = {Whitepaper: Protecting VM Register State with SEV-ES},
+  url = {\url{https://www.amd.com/system/files/TechDocs/Protecting%20VM%20Register%20State%20with%20SEV-ES.pdf}}
+}
+
+@techreport{sev_snp,
+  institution = {AMD},
+  author = {Kaplan, David},
+  year = {2020},
+  title = {Whitepaper: AMD SEV-SNP: Strengthening VM Isolation with Integrity Protection and More},
+  url = {\url{https://www.amd.com/system/files/TechDocs/SEV-SNP-strengthening-vm-isolation-with-integrity-protection-and-more.pdf}}
+}
+
+@inproceedings{sev_tlb_poisoning,
+  author = {Li, Mengyuan and Zhang, Yinqian and Wang, Huibo and Li, Kang and Cheng, Yueqiang},
+  title = {TLB Poisoning Attacks on AMD Secure Encrypted Virtualization},
+  year = {2021},
+  isbn = {9781450385794},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  url = {https://doi.org/10.1145/3485832.3485876},
+  doi = {10.1145/3485832.3485876},
+  booktitle = {Annual Computer Security Applications Conference},
+  pages = {609-619},
+  numpages = {11},
+  keywords = {TLB management, Secure Encrypted Virtualization, Cloud security, Trusted execution environments},
+  location = {Virtual Event, USA},
+  series = {ACSAC '21}
+}
+
+@inproceedings{sev_power_attack,
+  author = {Buhren, Robert and Jacob, Hans-Niklas and Krachenfels, Thilo and Seifert, Jean-Pierre},
+  title = {One Glitch to Rule Them All: Fault Injection Attacks Against AMD's Secure Encrypted Virtualization},
+  year = {2021},
+  isbn = {9781450384544},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  url = {https://doi.org/10.1145/3460120.3484779},
+  doi = {10.1145/3460120.3484779},
+  booktitle = {Proceedings of the 2021 ACM SIGSAC Conference on Computer and Communications Security},
+  pages = {2875-2889},
+  numpages = {15},
+  keywords = {secure encrypted virtualization, SNP, SEV, hardware fault attack, voltage glitching, secure nested paging},
+  location = {Virtual Event, Republic of Korea},
+  series = {CCS '21}
+}
+
+
+
+% TODO: Knox
