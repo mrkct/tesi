@@ -1,0 +1,728 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="158.76335mm"
+   height="55.087944mm"
+   viewBox="0 0 450.03842 156.15551"
+   xml:space="preserve"
+   color-interpolation-filters="sRGB"
+   class="st10"
+   version="1.1"
+   id="svg1242"
+   sodipodi:docname="aarch64_exception_levels.svg"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"><defs
+   id="defs1246">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	<clipPath
+   clipPathUnits="userSpaceOnUse"
+   id="clipPath13931"><g
+     inkscape:label="Clip"
+     id="use13933"><g
+       id="g13947"
+       transform="translate(92.822047,-241.01328)"><title
+         id="title13935">Block.7</title><desc
+         id="desc13937">Application</desc><rect
+         x="0"
+         y="129.976"
+         width="46.771702"
+         height="26.9291"
+         rx="5.6692901"
+         ry="5.6692901"
+         class="st1"
+         id="rect13939" /><text
+         x="3.8199999"
+         y="139.84"
+         class="st2"
+         id="text13945"><tspan
+           sodipodi:role="line"
+           id="tspan13941"
+           x="3.8199999"
+           y="139.84">   Trusted</tspan><tspan
+           sodipodi:role="line"
+           id="tspan13943"
+           x="3.8199999"
+           y="149.83995">Application</tspan></text></g><g
+       id="g13961"
+       transform="translate(143.84565,-241.01328)"><title
+         id="title13949">Block.7</title><desc
+         id="desc13951">Application</desc><rect
+         x="0"
+         y="129.976"
+         width="46.771702"
+         height="26.9291"
+         rx="5.6692901"
+         ry="5.6692901"
+         class="st1"
+         id="rect13953" /><text
+         x="3.8199999"
+         y="139.84"
+         class="st2"
+         id="text13959"><tspan
+           sodipodi:role="line"
+           id="tspan13955"
+           x="3.8199999"
+           y="139.84">   Trusted</tspan><tspan
+           sodipodi:role="line"
+           id="tspan13957"
+           x="3.8199999"
+           y="149.83995">Application</tspan></text></g><g
+       id="g13975"
+       transform="translate(195.57835,-241.01328)"><title
+         id="title13963">Block.7</title><desc
+         id="desc13965">Application</desc><rect
+         x="0"
+         y="129.976"
+         width="46.771702"
+         height="26.9291"
+         rx="5.6692901"
+         ry="5.6692901"
+         class="st1"
+         id="rect13967" /><text
+         x="3.8199999"
+         y="139.84"
+         class="st2"
+         id="text13973"><tspan
+           sodipodi:role="line"
+           id="tspan13969"
+           x="3.8199999"
+           y="139.84">   Trusted</tspan><tspan
+           sodipodi:role="line"
+           id="tspan13971"
+           x="3.8199999"
+           y="149.83995">Application</tspan></text></g><g
+       id="g13989"
+       transform="translate(246.60195,-241.01328)"><title
+         id="title13977">Block.7</title><desc
+         id="desc13979">Application</desc><rect
+         x="0"
+         y="129.976"
+         width="46.771702"
+         height="26.9291"
+         rx="5.6692901"
+         ry="5.6692901"
+         class="st1"
+         id="rect13981" /><text
+         x="3.8199999"
+         y="139.84"
+         class="st2"
+         id="text13987"><tspan
+           sodipodi:role="line"
+           id="tspan13983"
+           x="3.8199999"
+           y="139.84">   Trusted</tspan><tspan
+           sodipodi:role="line"
+           id="tspan13985"
+           x="3.8199999"
+           y="149.83995">Application</tspan></text></g><g
+       id="g13999"
+       transform="translate(94.239351,-205.58037)"><title
+         id="title13991">Sheet.30</title><desc
+         id="desc13993">Guest OS</desc><rect
+         x="0"
+         y="131.394"
+         width="96.377998"
+         height="25.511801"
+         rx="5.6692901"
+         ry="5.6692901"
+         class="st7"
+         id="rect13995" /><text
+         x="29.129992"
+         y="146.55"
+         class="st2"
+         id="text13997">Trusted OS</text></g><g
+       id="g14009"
+       transform="translate(196.28635,-205.58037)"><title
+         id="title14001">Sheet.2</title><desc
+         id="desc14003">Guest OS</desc><rect
+         x="0"
+         y="131.394"
+         width="96.377998"
+         height="25.511801"
+         rx="5.6692901"
+         ry="5.6692901"
+         class="st7"
+         id="rect14005" /><text
+         x="27.629984"
+         y="146.55"
+         class="st2"
+         id="text14007">Trusted OS</text></g><rect
+       x="94.239342"
+       y="-37.336266"
+       width="198.425"
+       height="28.3465"
+       rx="5.6692901"
+       ry="5.6692901"
+       class="st8"
+       id="rect14011"
+       style="stroke-width:0.500252;stroke-miterlimit:3;stroke-dasharray:none;stroke-dashoffset:0" /><text
+       x="159.33926"
+       y="-20.765268"
+       class="st2"
+       id="text14013">Trusted Hypervisor)</text></g></clipPath>
+			
+			
+			
+			
+			
+					</defs><sodipodi:namedview
+   id="namedview1244"
+   pagecolor="#ffffff"
+   bordercolor="#999999"
+   borderopacity="1"
+   inkscape:pageshadow="0"
+   inkscape:pageopacity="0"
+   inkscape:pagecheckerboard="0"
+   showgrid="false"
+   units="mm"
+   inkscape:zoom="1.849946"
+   inkscape:cx="284.6029"
+   inkscape:cy="108.11126"
+   inkscape:window-width="1920"
+   inkscape:window-height="1007"
+   inkscape:window-x="0"
+   inkscape:window-y="0"
+   inkscape:window-maximized="1"
+   inkscape:current-layer="svg1242"
+   fit-margin-top="0"
+   fit-margin-left="0"
+   fit-margin-right="0"
+   fit-margin-bottom="0"
+   inkscape:document-units="mm" />
+	
+
+	<style
+   type="text/css"
+   id="style1061">
+	<![CDATA[
+		.st1 {fill:#ccffff;stroke:#000000;stroke-linecap:butt;stroke-width:0.5}
+		.st2 {fill:#000000;font-family:Arial,Helvetica,sans-serif;font-size:0.666664em}
+		.st3 {stroke:#000000;stroke-dasharray:9.6,4.8;stroke-linecap:butt;stroke-width:1.2}
+		.st4 {fill:none;stroke:none;stroke-linecap:butt;stroke-width:0.5}
+		.st5 {font-size:1em}
+		.st6 {stroke:#000000;stroke-dasharray:4,2;stroke-linecap:butt;stroke-width:0.5}
+		.st7 {fill:#d9d9d9;stroke:#000000;stroke-linecap:butt;stroke-width:0.5}
+		.st8 {fill:#fdefe3;stroke:#000000;stroke-linecap:butt;stroke-width:0.5}
+		.st9 {fill:#7395bf;stroke:#000000;stroke-linecap:butt;stroke-width:0.5}
+		.st10 {fill:none;fill-rule:evenodd;font-size:12px;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
+	]]>
+	</style>
+
+	<g
+   id="shape6-4"
+   transform="rotate(90,195.20402,205.47962)">
+			<title
+   id="title1074">Sheet.6</title>
+			<path
+   d="M 0,156.91 H 108.78"
+   class="st3"
+   id="path1076" />
+		</g><g
+   id="shape7-7"
+   transform="translate(38.266344,-115.803)">
+			<title
+   id="title1079">Block.7</title>
+			<desc
+   id="desc1081">Application</desc>
+			
+			
+			
+			
+			<rect
+   x="0"
+   y="129.976"
+   width="46.771702"
+   height="26.9291"
+   rx="5.6692901"
+   ry="5.6692901"
+   class="st1"
+   id="rect1083" />
+			<text
+   x="3.8199999"
+   y="145.84"
+   class="st2"
+   id="text1085">Application</text>		</g><g
+   id="shape10-10"
+   transform="translate(86.455344,-145.567)">
+			<title
+   id="title1088">Sheet.10</title>
+			<desc
+   id="desc1090">Normal world</desc>
+			
+			
+			<rect
+   x="0"
+   y="145.567"
+   width="93.543297"
+   height="11.3386"
+   class="st4"
+   id="rect1092" />
+			<text
+   x="23.209999"
+   y="153.64"
+   class="st2"
+   id="text1094">Normal world</text>		</g><g
+   id="shape11-13"
+   transform="translate(299.36102,-145.567)">
+			<title
+   id="title1097">Sheet.11</title>
+			<desc
+   id="desc1099">Secure world</desc>
+			
+			
+			<rect
+   x="0"
+   y="145.567"
+   width="93.543297"
+   height="11.3386"
+   class="st4"
+   id="rect1101" />
+			<text
+   x="23.43"
+   y="153.64"
+   class="st2"
+   id="text1103">Secure world</text>		</g><g
+   id="shape1-16"
+   transform="translate(89.289944,-115.803)">
+			<title
+   id="title1106">Block.1</title>
+			<desc
+   id="desc1108">Application</desc>
+			
+			
+			
+			
+			<rect
+   x="0"
+   y="129.976"
+   width="46.771702"
+   height="26.9291"
+   rx="5.6692901"
+   ry="5.6692901"
+   class="st1"
+   id="rect1110" />
+			<text
+   x="3.8199999"
+   y="145.84"
+   class="st2"
+   id="text1112">Application</text>		</g><g
+   id="shape16-19"
+   transform="translate(141.02264,-115.803)">
+			<title
+   id="title1115">Block.16</title>
+			<desc
+   id="desc1117">Application</desc>
+			
+			
+			
+			
+			<rect
+   x="0"
+   y="129.976"
+   width="46.771702"
+   height="26.9291"
+   rx="5.6692901"
+   ry="5.6692901"
+   class="st1"
+   id="rect1119" />
+			<text
+   x="3.8199999"
+   y="145.84"
+   class="st2"
+   id="text1121">Application</text>		</g><g
+   id="shape17-22"
+   transform="translate(191.33764,-115.803)">
+			<title
+   id="title1124">Block.17</title>
+			<desc
+   id="desc1126">Application</desc>
+			
+			
+			
+			
+			<rect
+   x="0"
+   y="129.976"
+   width="46.771702"
+   height="26.9291"
+   rx="5.6692901"
+   ry="5.6692901"
+   class="st1"
+   id="rect1128" />
+			<text
+   x="3.8199999"
+   y="145.84"
+   class="st2"
+   id="text1130">Application</text>		</g><g
+   id="shape18-25"
+   transform="translate(257.95164,-49.189001)">
+			<title
+   id="title1133">Sheet.18</title>
+			<desc
+   id="desc1135">No Hypervisor in Secure world</desc>
+			
+			
+			<rect
+   x="0"
+   y="139.89799"
+   width="73.700798"
+   height="17.0079"
+   class="st4"
+   id="rect1137" />
+					</g><g
+   id="shape24-29"
+   transform="matrix(1.3789072,0,0,1.3789072,42.518344,-124.38208)"
+   style="stroke-width:0.725212">
+			<title
+   id="title1144">Dynamic connector.24</title>
+			<path
+   d="M 0,149.82 H 294.8"
+   class="st6"
+   id="path1146" />
+		</g><g
+   id="shape26-32"
+   transform="translate(-0.00135628,-125.724)">
+			<title
+   id="title1149">Sheet.26</title>
+			<desc
+   id="desc1151">EL0</desc>
+			
+			
+			<rect
+   x="0"
+   y="145.567"
+   width="30.8976"
+   height="11.3386"
+   class="st4"
+   id="rect1153" />
+			<text
+   x="8.3299999"
+   y="153.64"
+   class="st2"
+   id="text1155">EL0</text>		</g><g
+   id="shape27-35"
+   transform="translate(-0.00135628,-91.000001)">
+			<title
+   id="title1158">Sheet.27</title>
+			<desc
+   id="desc1160">EL1</desc>
+			
+			
+			<rect
+   x="0"
+   y="145.567"
+   width="30.8976"
+   height="11.3386"
+   class="st4"
+   id="rect1162" />
+			<text
+   x="8.3299999"
+   y="153.64"
+   class="st2"
+   id="text1164">EL1</text>		</g><g
+   id="shape28-38"
+   transform="translate(-0.00135628,-12.338601)">
+			<title
+   id="title1167">Sheet.28</title>
+			<desc
+   id="desc1169">EL3</desc>
+			
+			
+			<rect
+   x="0"
+   y="145.567"
+   width="30.8976"
+   height="11.3386"
+   class="st4"
+   id="rect1171" />
+			<text
+   x="8.3299999"
+   y="153.64"
+   class="st2"
+   id="text1173">EL3</text>		</g><g
+   id="shape29-41"
+   transform="translate(-0.00135628,-52.023601)">
+			<title
+   id="title1176">Sheet.29</title>
+			<desc
+   id="desc1178">EL2</desc>
+			
+			
+			<rect
+   x="0"
+   y="145.567"
+   width="30.8976"
+   height="11.3386"
+   class="st4"
+   id="rect1180" />
+			<text
+   x="8.3299999"
+   y="153.64"
+   class="st2"
+   id="text1182">EL2</text>		</g><g
+   id="shape25-44"
+   transform="matrix(2.0197846,0,0,2.0197846,42.518344,-195.0301)"
+   style="stroke-width:0.495102">
+			<title
+   id="title1185">Sheet.25</title>
+			<path
+   d="M 0,156.91 H 201.26"
+   class="st3"
+   id="path1187" />
+		</g><g
+   id="shape30-47"
+   transform="translate(39.683644,-80.370101)">
+			<title
+   id="title1190">Sheet.30</title>
+			<desc
+   id="desc1192">Guest OS</desc>
+			
+			
+			<rect
+   x="0"
+   y="131.394"
+   width="96.377998"
+   height="25.511801"
+   rx="5.6692901"
+   ry="5.6692901"
+   class="st7"
+   id="rect1194" />
+			<text
+   x="30.629999"
+   y="146.55"
+   class="st2"
+   id="text1196">Guest OS</text>		</g><g
+   id="shape2-50"
+   transform="translate(141.73064,-80.370101)">
+			<title
+   id="title1199">Sheet.2</title>
+			<desc
+   id="desc1201">Guest OS</desc>
+			
+			
+			<rect
+   x="0"
+   y="131.394"
+   width="96.377998"
+   height="25.511801"
+   rx="5.6692901"
+   ry="5.6692901"
+   class="st7"
+   id="rect1203" />
+			<text
+   x="30.629999"
+   y="146.55"
+   class="st2"
+   id="text1205">Guest OS</text>		</g><g
+   id="shape4-56"
+   transform="translate(39.683644,-40.685001)">
+			<title
+   id="title1217">Sheet.4</title>
+			<desc
+   id="desc1219">Hypervisor</desc>
+			
+			
+			<rect
+   x="0"
+   y="128.55901"
+   width="198.425"
+   height="28.3465"
+   rx="5.6692901"
+   ry="5.6692901"
+   class="st8"
+   id="rect1221" />
+			<text
+   x="80.099998"
+   y="145.13"
+   class="st2"
+   id="text1223">Hypervisor</text>		</g><g
+   id="shape7-7-2"
+   transform="translate(249.23692,-116.05268)"><title
+     id="title1079-7">Block.7</title><desc
+     id="desc1081-0">Application</desc><rect
+     x="0"
+     y="129.976"
+     width="46.771702"
+     height="26.9291"
+     rx="5.6692901"
+     ry="5.6692901"
+     class="st1"
+     id="rect1083-9" /><text
+     x="3.8199999"
+     y="139.84"
+     class="st2"
+     id="text1085-3"><tspan
+       sodipodi:role="line"
+       id="tspan3609"
+       x="3.8199999"
+       y="139.84">   Trusted</tspan><tspan
+       sodipodi:role="line"
+       id="tspan3611"
+       x="3.8199999"
+       y="149.83995">Application</tspan></text></g><g
+   id="shape7-7-2-5"
+   transform="translate(300.26052,-116.05268)"><title
+     id="title1079-7-0">Block.7</title><desc
+     id="desc1081-0-3">Application</desc><rect
+     x="0"
+     y="129.976"
+     width="46.771702"
+     height="26.9291"
+     rx="5.6692901"
+     ry="5.6692901"
+     class="st1"
+     id="rect1083-9-6" /><text
+     x="3.8199999"
+     y="139.84"
+     class="st2"
+     id="text1085-3-1"><tspan
+       sodipodi:role="line"
+       id="tspan3609-0"
+       x="3.8199999"
+       y="139.84">   Trusted</tspan><tspan
+       sodipodi:role="line"
+       id="tspan3611-6"
+       x="3.8199999"
+       y="149.83995">Application</tspan></text></g><g
+   id="shape7-7-2-3"
+   transform="translate(351.99322,-116.05268)"><title
+     id="title1079-7-2">Block.7</title><desc
+     id="desc1081-0-0">Application</desc><rect
+     x="0"
+     y="129.976"
+     width="46.771702"
+     height="26.9291"
+     rx="5.6692901"
+     ry="5.6692901"
+     class="st1"
+     id="rect1083-9-61" /><text
+     x="3.8199999"
+     y="139.84"
+     class="st2"
+     id="text1085-3-5"><tspan
+       sodipodi:role="line"
+       id="tspan3609-5"
+       x="3.8199999"
+       y="139.84">   Trusted</tspan><tspan
+       sodipodi:role="line"
+       id="tspan3611-4"
+       x="3.8199999"
+       y="149.83995">Application</tspan></text></g><g
+   id="shape7-7-2-5-7"
+   transform="translate(403.01682,-116.05268)"><title
+     id="title1079-7-0-6">Block.7</title><desc
+     id="desc1081-0-3-5">Application</desc><rect
+     x="0"
+     y="129.976"
+     width="46.771702"
+     height="26.9291"
+     rx="5.6692901"
+     ry="5.6692901"
+     class="st1"
+     id="rect1083-9-6-6" /><text
+     x="3.8199999"
+     y="139.84"
+     class="st2"
+     id="text1085-3-1-9"><tspan
+       sodipodi:role="line"
+       id="tspan3609-0-3"
+       x="3.8199999"
+       y="139.84">   Trusted</tspan><tspan
+       sodipodi:role="line"
+       id="tspan3611-6-7"
+       x="3.8199999"
+       y="149.83995">Application</tspan></text></g><g
+   id="shape30-47-9"
+   transform="translate(250.65422,-80.619771)"><title
+     id="title1190-2">Sheet.30</title><desc
+     id="desc1192-2">Guest OS</desc><rect
+     x="0"
+     y="131.394"
+     width="96.377998"
+     height="25.511801"
+     rx="5.6692901"
+     ry="5.6692901"
+     class="st7"
+     id="rect1194-8" /><text
+     x="29.129992"
+     y="146.55"
+     class="st2"
+     id="text1196-9">Trusted OS</text></g><g
+   id="shape2-50-7"
+   transform="translate(352.70122,-80.619771)"><title
+     id="title1199-3">Sheet.2</title><desc
+     id="desc1201-6">Guest OS</desc><rect
+     x="0"
+     y="131.394"
+     width="96.377998"
+     height="25.511801"
+     rx="5.6692901"
+     ry="5.6692901"
+     class="st7"
+     id="rect1203-1" /><text
+     x="27.629984"
+     y="146.55"
+     class="st2"
+     id="text1205-2">Trusted OS</text></g><rect
+   x="250.65422"
+   y="87.624336"
+   width="198.425"
+   height="28.3465"
+   rx="5.6692901"
+   ry="5.6692901"
+   class="st8"
+   id="rect1221-9"
+   style="stroke-width:0.500252;stroke-miterlimit:3;stroke-dasharray:none;stroke-dashoffset:0" /><text
+   x="315.75415"
+   y="104.19534"
+   class="st2"
+   id="text1223-4">Trusted Hypervisor</text><rect
+   x="39.683643"
+   y="127.55901"
+   width="408.45981"
+   height="28.3465"
+   rx="5.6692901"
+   ry="5.6692901"
+   class="st9"
+   id="rect1230" /><text
+   x="215.44585"
+   y="144.12997"
+   class="st2"
+   id="text1232-2"
+   style="font-size:7.99997px;font-family:Arial, Helvetica, sans-serif;fill:#000000">Secure monitor</text><g
+   id="shape19-62"
+   transform="matrix(1.3789072,0,0,1.3789072,42.282144,-161.23286)"
+   style="stroke-width:0.725213">
+			<title
+   id="title1235">Dynamic connector.19</title>
+			<path
+   d="M 0,149.82 H 294.8"
+   class="st6"
+   id="path1237" />
+		</g>
+</svg>

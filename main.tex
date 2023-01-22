@@ -911,8 +911,52 @@ Samsung Knox, Qualcomm QSEE e OP-TEE.
 Alla base di TrustZone è l'idea di virtualizzare il processore, che in
 ogni momento può trovarsi in uno di due stati:
 \emph{Secure} o \emph{Non-secure}.
-Le modalità di privilegio di ARM, che vanno da EL3(più alto)
-a EL0(più basso), vengono duplicate nelle controparti S-EL3 a S-EL0.
+Questi stati possono accedere a memoria e periferiche diverse, e
+vengono isolati uno dall'altro da sistemi di protezione hardware.
+Le modalità di privilegio di ARM, che vanno da EL2(più alto)
+a EL0(più basso), vengono estese con le modalità S-EL0, S-EL1, EL3.
+A partire da ARMv8.4-A, TrustZone supporta anche il livello
+di privilegio S-EL2, ma rimane una feature opzionale.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{immagini/aarch64-exception-levels}
+    \caption{
+        Livelli di privilegio di ARM TrustZone e il software
+        che solitamente viene eseguito al loro interno.
+        Adattato da
+        \textit{"ARM Cortex-A Series Programmer's Guide for ARMv8-A"}
+        \cite{arm_programmers_manual}
+    }
+    \label{fig:arm-exception-levels}
+\end{figure}
+
+Il livello di privilegio EL3 è il livello più alto e viene usato dal firmware
+per configurare il sistema e gestire il passaggio di controllo tra il mondo
+\emph{Secure} e quello \emph{Non-secure}.
+In TrustZone, il livello EL3 rappresenta il \emph{Separation Kernel}
+che abbiamo descritto in precedenza.
+
+Il processore si avvia in questo livello eseguendo il firmware da una ROM.
+Tra i compiti di questo firmware è quello di partizionare la memoria in
+memoria "sicura" e "non sicura", e di configurare quali periferiche sono
+accessibili in modalità \emph{Secure} e quali in modalità \emph{Non-secure}.
+I dispositivi, che su ARM vengono acceduti tramite MMIO, hanno accesso a un
+bit speciale che indica se il processore è in modalità \emph{Secure} o
+\emph{Non-secure}.
+Tramite questo bit un dispositivo potrebbe decidere se
+rifiutarsi di essere utilizzato in modalità \emph{Non-secure}. 
+
+Il firmware deve anche configurare un handler per l'istruzione
+\textit{Secure Monitor Call}(\texttt{smc}).
+Questa istruzione opera in modo simile a una \textit{system/hypervisor call}:
+quando chiamata con un codice numerico specifico, cambia il livello
+di privilegio a EL3 e passa il controllo a un handler impostato dal firmware.
+Questo handler è impostato nella tabella degli interrupt del processore.
+
+L'uso di questa istruzione permette di implementare il passaggio
+di messaggi tra il mondo \emph{Secure} e quello \emph{Non-secure}, ed è
+anche il modo usato da OP-TEE.
 
 Il processore in modalità \emph{Secure} può accedere a tutta la memoria
 e le periferiche, mentre in modalità \emph{Non-secure} può accedere
@@ -921,12 +965,10 @@ La decisione di quali periferiche e la zona di memoria sicura può essere
 definita dal firmware a runtime oppure essere prefissata dal produttore
 dell'hardware.
 
-Per passare da una modalità all'altra viene introdotta una nuova istruzione
-\texttt{smc}(\textit{Secure Monitor Call}) che opera in modo simile alle
-istruzioni \texttt{svc} e \texttt{hvc}, passando il controllo al livello
-di privilegio S-EL3 (Secure Monitor).
-
 \medbreak \noindent
+
+Il firmware in EL3 ha anche il compito di caricare i sistemi operativi
+del mondo \emph{Secure} e \emph{Non-secure}.
 
 TrustZone non definisce alcun sistema per verificare l'integrità del codice
 all'avvio; questo problema è invece lasciato ai produttori di dispositivi.
@@ -934,7 +976,17 @@ Una soluzione popolare è quella di generare una coppia di chiavi pubblica
 e privata, e di stampare l'hash della chiave pubblica nel chip e renderla
 accessibile in modalità \emph{Secure} tramite un registro dedicato.
 
-% FIXME: Si può espandere un po'...
+Il codice da caricare viene impacchettato insieme a un certificato
+contenente l'hash del codice, una firma e la chiave pubblica utilizzata
+per firmare l'hash.
+Il firmware può calcolare l'hash della chiave letta dal codice, confrontarla
+con quella dal registro locale e, se corrispondono, utilizzare la
+chiave pubblica per verificare la firma dell'hash del codice.
+
+Se la verifica fallisce, il firmware può decidere di continuare il boot
+del mondo \emph{Non-Secure}, rendendo inutilizzabili i servizi del mondo
+\emph{Secure}, o addinon caricare il codice
+e rendere inaccessibile la modalità \emph{Secure}
 
 \section{Intel SGX}
 \label{sec:intel-sgx}
@@ -995,22 +1047,35 @@ AMD SEV è una soluzione mirata per le esigenze dei provider cloud,
 infatti include inoltre meccanismi per permettere la migrazione di VM
 tra host.
 
-Alla base del funzionamento di SEV è il \textit{Secure Processor}
+Alla base del funzionamento di SEV sono un chip AES-128 installato sui
+bus di memoria, che si occupa della cifratura dei dati in memoria,
+e un processore ARM installato sulla scheda madre chiamato 
+\textit{Secure Processor}
 \footnote{
     Precedentemente chiamato \textit{Platform Security Processor} (PSP).
-}(SP): 
-un processore ARM integrato nel chip che esegue un sistema operativo
-proprietario che ha il compito di crittare e decrittare la memoria
-in transito sui bus, oltre a generare e gestire le chiavi crittografiche
-locali.
+}(SP).
+Questo processore aggiunto esegue un sistema operativo proprietario che
+ha vari compiti, come ad esempio generare e gestire le chiavi crittografiche
+usate per crittografare la memoria delle VM.
 
 Il \textit{Secure Processor} ha anche il compito di assicurare
 l'attestazione remota delle macchine virtuali.
-Ogni SP è dotato di una chiave privata, che viene utilizzata
-per firmare i report di attestazione delle VM. Questi report vengono
-inviati ai clienti, che vogliono aver modo di verificare che le VM
-in esecuzione su un server siano state create da un'immagine verificata
-e sono in esecuzione nell'ambiente desiderato.
+Il SP è in grado di generare un report di attestazione per ogni VM
+in esecuzione.
+Questi report vengono inviati ai clienti, che vogliono aver modo di
+verificare che le VM in esecuzione su un server siano state create
+da un'immagine verificata e sono in esecuzione nell'ambiente desiderato.
+
+Un report di attestazione contiene informazioni come un hash dell'immagine
+della VM caricata dall'hypervisor, informazioni sulle tabelle di mapping
+impostate inizialmente per la VM, funzionalità di sicurezza abilitate
+sul sistema e versioni dei componenti hardware.
+Questo report viene firmato utilizzando una chiave privata installata nel
+processore, estraibile (in teoria) solamente con tecniche distruttive e
+che richiedono accesso fisico.
+I clienti possono quindi verificare che il report sia stato firmato da
+una chiave privata di un processore AMD utilizzando il certificato pubblico
+di AMD disponibile online. 
 
 \medbreak
 
@@ -1019,8 +1084,6 @@ SEV-ES (Encrypted State)\cite{sev_es}. Inizialmente SEV salvava i registri
 di una VM in chiaro dopo un context switch con l'hypervisor, questo è
 stato ritenuto un problema di sicurezza e dunque SEV-ES ha introdotto la
 crittografia anche degli stati dei registri.
-
-\medbreak \noindent
 
 SEV-SNP (Secure Nested Paging)\cite{sev_snp}, rilasciata nel 2021
 con la terza serie di processori Epyc, è l'ultima versione di SEV
@@ -1639,10 +1702,6 @@ Durante l'invio dei messaggi, il driver deve fare attenzione a utilizzare
 meccanismi di sincronizzazione, come un semplice lock, per evitare che due
 richieste separate al TEE possano interferire tra di loro mentre stanno
 provando a comunicare con il device virtuale.
-
-\bigbreak \noindent
-
-Il codice del driver è disponibile all'URL \url{https://github.com/mrkct/tee-passthrough-linux-driver}.
 
 \subsection{Protocollo}
 \label{subsection:protocollo}
