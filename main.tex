@@ -17,7 +17,38 @@
 \usepackage{tikz}                   % Permette di disegnare inline
 \usepackage{import}
 \usepackage{float}
+\usepackage{xstring}                % Permette di usare la funzione \IfInteger
+\usepackage{array}                  % Permette di usare colonne "m" dentro table
 \graphicspath{{immagini/}}
+
+\usetikzlibrary{positioning}
+\usetikzlibrary{calc}
+\usetikzlibrary{shapes}
+
+\newcommand{\GeneraSchemaPacchetto}[2]{{
+\begin{tikzpicture}
+    [
+        box/.style={draw,rectangle,minimum width=\recminwidth, 
+        minimum height=\rectangleheight, 
+        outer sep=0pt, node distance=0pt}
+    ]
+
+    \def\rectangleheight{1cm}
+    \def\recminwidth{2cm}
+
+    \foreach \name/\size in {#1} {
+        \node[box, label={below:\small \texttt{\size{} byte}}] (0) {\texttt{\name}};
+    }    
+
+    \foreach \name/\size [count=\i] in {#2}
+    {
+        \pgfmathtruncatemacro\prevposition{\i - 1}
+        \node[box, right = 0pt of \prevposition,
+            label={below:\small \texttt{\IfInteger{\size}{\size\ byte}{\size}}}
+        ] (\i) {\texttt{\name}};
+    }
+\end{tikzpicture}
+}}
 
 \def\myCDL{Corso di Laurea magistrale in\\Informatica}
 
@@ -1760,10 +1791,13 @@ con una struttura comune che permette al destinatario di capire come
 interpretare il resto del messaggio, raffigurata in
 \figurename~\ref{fig:message-wrapper-schema}.
 
-\begin{figure}
+\begin{figure}[H]
     \centering
-    % TODO: Aggiungere immagine con schema del message-wrapper
-    % \includegraphics[width=\textwidth]{message-wrapper-schema}
+    \GeneraSchemaPacchetto{
+        type/8}{
+        payload\_size/8,
+        payload/variabile
+    }
     \caption{
         Header iniziale di tutti i messaggi del protocollo.
         Questi valori permettono al destinatario di capire come interpretare
@@ -1785,18 +1819,17 @@ Questi vincoli sono descritti in \tablename~\ref{tab:valid-payload-sizes}.
 
 \begin{table}
     \centering
-    \begin{tabular}{|c|c|c|}
+    \begin{tabular}{|m{5.3cm}|c|c|}
         \hline
-        % FIXME: Scrivere i vincoli sulle dimensioni dei payload
         \textbf{Comando}    & \textbf{Dimensione Payload} & \textbf{Vincoli}    \\
         \hline
-        \texttt{GetVersion} & 16 byte                     & Esattamente 16 byte \\
-        \texttt{OpenSession} & 16 byte                     & Esattamente 16 byte \\
-        \texttt{InvokeFunction} & 16 byte                     & Esattamente 16 byte \\
-        \texttt{CancelRequest} & 16 byte                     & Esattamente 16 byte \\
-        \texttt{CloseSession} & 16 byte                     & Esattamente 16 byte \\
-        \texttt{EnsureMemoryBuffersAreSynchronized} & 16 byte                     & Esattamente 16 byte \\
-        \texttt{FreeSharedMemoryBuffer} & 16 byte                     & Esattamente 16 byte \\
+        \texttt{GetVersion}                             & $12$ byte                 & \_                     \\
+        \texttt{OpenSession}                            & $64 \leq x \leq 192$ byte & $(x - 64) \mod 32 = 0$ \\
+        \texttt{InvokeFunction}                         & $32 \leq x \leq 160$ byte & $(x - 32) \mod 32 = 0$ \\
+        \texttt{CancelRequest}                          & $16$ byte                 & \_                     \\
+        \texttt{CloseSession}                           & $12$ byte                 & \_                     \\
+        \texttt{EnsureMemoryBuffers-AreSynchronized}    & $12 \leq x \leq 112$ byte & $(x - 12) \mod 24 = 0$ \\
+        \texttt{FreeSharedMemoryBuffer}                 & $16$ byte                 & \_                     \\
         \hline
     \end{tabular}
     \caption{
@@ -1842,17 +1875,7 @@ Questo problema è descritto più nel dettaglio in \ref{subsection:hypervisor}.
 
 \begin{figure}[H]
     \centering
-    \begin{tikzpicture}
-        \draw (0, 0) node[below right] {test} rectangle (2, 1) node[midway] {impl id};
-        \draw (2, 0) rectangle (4, 1) node[midway] {impl caps};
-        \draw (4, 0) rectangle (6, 1) node[midway] {gen caps};
-        \draw (6, 0) rectangle (8, 1) node[midway] {padding};
-    \end{tikzpicture}
-    % TODO: Schema del pacchetto
-    % u32 impl_id;
-    % u32 impl_caps;
-    % u32 gen_caps;
-    % u32 zero_padding
+    \GeneraSchemaPacchetto {impl\_id/4}{impl\_caps/4, gen\_caps/4}
     \caption{Schema del payload di un messaggio \texttt{GetVersion}}
     \label{fig:msg-schema-getversion}
 \end{figure} 
@@ -1880,39 +1903,56 @@ funzionalità.
 \paragraph{OpenSession, InvokeFunction, CancelRequest e CloseSession}: \\
 \begin{figure}[H]
     \centering
-    % TODO: Schema del pacchetto
-    % int64_t fd;
-    % __u8 uuid[TEE_IOCTL_UUID_LEN];
-	% __u8 clnt_uuid[TEE_IOCTL_UUID_LEN];
-	% __u32 clnt_login;
-	% __u32 cancel_id;
-	% __u32 session;
-	% __u32 ret;
-	% __u32 ret_origin;
-	% __u32 num_params;
-	% struct tee_ioctl_param params[4]
-    %   __u64 attr, a, b, c;
+    \resizebox{\textwidth}{!}{
+    \GeneraSchemaPacchetto {
+        fd/8}{
+        uuid/16, 
+        clnt\_uuid/16, 
+        clnt\_login/4, 
+        cancel\_id/4, 
+        session/4,
+        ret/4, 
+        ret\_origin/4, 
+        num\_params/4, 
+        params/variabile
+    }}
     \caption{Schema del payload di un messaggio \texttt{OpenSession}}
     \label{fig:msg-schema-opensession}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    % TODO: Schema del pacchetto
+    \resizebox{\textwidth}{!}{
+    \GeneraSchemaPacchetto{
+        fd/8}{
+        func/4, 
+        session/4, 
+        cancel\_id/4, 
+        ret/4, 
+        ret\_origin/4, 
+        num\_params/4, 
+        params/variabile
+    }}
     \caption{Schema del payload di un messaggio \texttt{InvokeFunction}}
     \label{fig:msg-schema-invokefunction}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    % TODO: Schema del pacchetto
+    \GeneraSchemaPacchetto{
+        fd/4}{
+        cancel\_id/4, 
+        session/4
+    }
     \caption{Schema del payload di un messaggio \texttt{CancelRequest}}
     \label{fig:msg-schema-cancelrequest}
 \end{figure}
 
 \begin{figure}[h]
     \centering
-    % TODO: Schema del pacchetto
+    \GeneraSchemaPacchetto{fd/4}{
+        session/4
+    }
     \caption{Schema del payload di un messaggio \texttt{CloseSession}}
     \label{fig:msg-schema-closesession}
 \end{figure}
@@ -1952,7 +1992,11 @@ lo abbia segnalato all'hypervisor tramite il messaggio
 \paragraph{EnsureMemoryBuffersAreSynchronized}: \\
 \begin{figure}[H]
     \centering
-    % TODO: Schema del pacchetto
+    \GeneraSchemaPacchetto{
+        fd/8}{
+        num\_buffers/4,
+        buffer/variabile
+    }
     \caption{
         Schema del payload di un messaggio
         \texttt{EnsureMemoryBuffersAreSynchronized}}
@@ -1986,7 +2030,10 @@ Una discussione più approfondita su questa problematica è data più avanti in
 \paragraph{FreeSharedMemoryBuffer}: \\
 \begin{figure}[H]
     \centering
-    % TODO: Schema del pacchetto
+    \GeneraSchemaPacchetto{
+        fd/8}{
+        buf\_id/8
+    }
     \caption{Schema del payload di un messaggio \texttt{FreeSharedMemoryBuffer}}
     \label{fig:msg-schema-freebuf}
 \end{figure}
