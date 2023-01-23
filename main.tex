@@ -990,26 +990,16 @@ e rendere inaccessibile la modalità \emph{Secure}
 
 \section{Intel SGX}
 \label{sec:intel-sgx}
+% FIXME: Cita in qualche modo \cite{sgxexplained}
 Intel Software Guard Extensions (SGX) è una estensione
 dell'architettura x86\_64 introdotta nel 2015 con i processori
 Intel Core di sesta generazione.
 
-Intel SGX permette di creare delle \textit{enclavi}, aree di memoria private
-e crittografate di piccole dimensioni (128MB o 256MB in base alla versione).
-L'accesso ai dati dentro le enclavi viene decrittato
-solamente dentro il processore al momento di eseguire il codice.
-La memoria dentro un enclave non può essere letta al di fuori
-di essa, indipendentemente dal livello di privilegio o modalità della CPU.
-Sia programmi utente sia il sistema operativo possono creare enclavi,
-che rimangono protette anche se il sistema operativo viene compromesso.
-
-La verifica dell'integrità iniziale del codice all'interno di un
-enclave può avvenire tramite due meccanismi di attestazione:
-appoggiandosi a un'altra enclave locale già verificata, oppure
-tramite una enclave speciale chiamata \textit{Quoting Enclave}
-che si appoggia a un servizio web remoto di Intel. 
-
-\smallbreak \noindent
+Intel SGX permette di creare delle \textit{enclavi}, aree di
+memoria private e crittografate di piccole dimensioni.
+L'accesso ai dati dentro una enclave consentito solamente se
+il processore è entrato dentro di esse tramite i nuovi meccanismi
+introdotti da SGX, ad esempio l'istruzione \texttt{EENTER}.
 
 SGX implementa un approccio radicalmente diverso rispetto a TrustZone, e
 non necessità un sistema operativo separato per il TEE, seppur sia comunque
@@ -1018,14 +1008,70 @@ Questo approccio permette d'integrarsi in ambienti cloud senza difficoltà,
 infatti SGX è una delle poche soluzioni hardware oggi disponibili
 per utilizzare un TEE su tali piattaforme.
 
+Le enclavi sono eseguibili solamente in \textit{protected mode}
+a livello di privilegio $3$(il più basso) e possono essere create
+solamente dal sistema operativo, per conto suo oppure di un'applicazione.
+All'avvio della macchina, il sistema operativo può designare una zona
+di memoria contigua come \textit{Processor Reserved Memory} (PRM) impostando
+due registri e con una dimensione massima di 128MB e potenza di 2.
+
+Questa zona di memoria viene suddivisa in sottosezioni, tra cui troviamo
+la \textit{Enclave Page Cache}(EPC) e la
+\textit{Enclave Page Cache Map}(EPMC).
+La EPC è un pool di memoria suddiviso in pagine di 4KB che possono essere
+assegnate a enclavi oppure utilizzate per contenere strutture dati di
+supporto a SGX.
+L'accesso a questa memoria è consentito solamente all'enclave a cui è
+assegnata la pagina corrispondente, altrimenti il processore leggerà tutti
+i bit a $1$.
+La EPMC è una tabella utilizzata da SGX per tracciare le pagine della EPC
+a quale enclave appartengono ed è inaccessibile a chinque, indipendentemente
+dal livello di privilegio.
+
+La creazione di una enclave è compito del sistema operativo e
+avviene in tre fasi:
+inizialmente l'OS seleziona una pagina libera della EPC in cui scrive una
+struttura dati chiamata \textit{SGX Enclave Control Structure}(SECS)
+contenente diversi parametri riguardo all'enclave. 
+Il sistema operativo chiama \texttt{ECREATE} passando questa pagina, che
+diventerà poi inacessibile a chiunque dato che SGX la utilizzerà per
+salvare metadati riguardo l'enclave.
+L'indirizzo virtuale della SECS diventerà un identificatore per l'enclave.
+
+Una volta create l'enclave, il sistema operativo deve assegnargli memoria
+e copiare al suo interno i dati iniziali.
+Per fare questo utilizza l'istruzione \texttt{EADD} passando
+l'indirizzo virtuale a una struttura dati chiamata
+\textit{SGX Enclave Page Information}(EPI) che contiene
+informazioni riguardo la pagina di EPC da utilizzare per l'enclave
+e, opzionalmente, se copiare al suo interno i dati da un'altra pagina
+di memoria.
+
+Infine è necessario inizializzare l'enclave prima di poter eseguire
+il codice al suo interno.
+Per fare ciò il sistema operativo chiama \texttt{EINIT} passando
+un \textit{Init Token Structure}. Questo token può essere generato grazie
+a una enclave speciale fornita da Intel chiamata \textit{Launch Enclave}
+che può essere approvata locamente dalle CPU SGX perchè firmata con una
+chiave installata nell'hardware.
+
+La Launch Enclave si appoggia a un servizio remoto alla quale
+gli sviluppatori possono iscriversi, previa verifica di Intel, per caricare
+un proprio certificato pubblico.
+Una enclave deve essere distribuita con un \textit{Measurement Hash}(MH)
+firmato con tale certificato.
+Un MH è un hash generato da SGX che rappresenta lo stato di una enclave appena
+prima che questa possa eseguire la sua prima istruzione, la Launch Enclave
+dunque utilizza il MH misurato, il MH incluso firmato e il
+certificato pubblico per verificare l'integrità della enclave e generare il
+token d'inizializzazione.
+
 \medbreak \noindent
 
-Intel SGX ha sofferto di diverse vulnerabilità nel tempo, aggiustate tramite
-aggiornamenti del microcodice dei processori.
-Nilson et al.\cite{sgx_vulnerabilities} offrono una panoramica piuttosto
-vasta delle vulnerabilità scoperte nel tempo.
-
-\medbreak \noindent
+Intel SGX è implementato quasi interamente in microcodice: 
+grazie a questa scelta anche se SGX nel tempo SGX ha sofferto
+di diverse vulnerabilità, Intel ha potuto risolverle rilasciando
+aggiornamenti puramente software.
 
 A partire dal 2021, Intel SGX è stato deprecato sui processori Intel Core
 di undicesima e dodicesima generazione\cite{sgx_deprecation}.
