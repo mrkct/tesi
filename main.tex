@@ -1399,9 +1399,9 @@ il sottosistema TEE crea un device file \texttt{/dev/teeX} e
 per la comunicazione da \textit{Client Application}(CA) a TEE e una
 interfaccia per fare polling di messaggi asincroni da parte del TEE.
 
-Queste interfacce sono utilizzabili tramite la system call \texttt{ioctl}
+Queste interfacce sono utilizzabili tramite la system call \textit{ioctl}
 e sono descritte nel file \texttt{linux/tee.h}.
-La system call \texttt{ioctl}(\textit{Input/Output Control})
+La system call \textit{ioctl}(\textit{Input/Output Control})
 è una system call generica che permette di
 eseguire operazioni su un device file; questa system call
 prende tre parametri:
@@ -1409,7 +1409,7 @@ il descrittore del device file, il codice dell'operazione da eseguire e
 un puntatore a un buffer contenente degli eventuali parametri da passare
 all'operazione.
 
-Il sottosistema TEE definisce un set minimo di \texttt{ioctl} che ogni
+Il sottosistema TEE definisce un set minimo di \textit{ioctl} che ogni
 driver TEE dovrebbe supportare, seppur un driver può decidere di
 supportarne anche altre.
 Queste sono:
@@ -1468,7 +1468,7 @@ Il flusso tipico di operazione di una CA è il seguente:
     \item La CA apre il device file \texttt{/dev/tee0}, per esempio, usando
         \texttt{open}.
     \item La CA apre una sessione con una \textit{Trusted Application}
-        facendo una \texttt{ioctl} con \texttt{TEE\_IOC\_OPEN\_SESSION}
+        facendo una \textit{ioctl} con \texttt{TEE\_IOC\_OPEN\_SESSION}
         e passando una struttura \texttt{tee\_ioctl\_open\_session\_arg}
         come argomento, riempita opportunamente con l'UUID
         (conosciuto a priori) 
@@ -1477,7 +1477,7 @@ Il flusso tipico di operazione di una CA è il seguente:
     \item Se la sessione viene aperta con successo, la struttura passata come
         argomento viene riempita con l'ID della sessione.
     \item La CA invoca una funzione della \textit{Trusted Application} facendo
-        una \texttt{ioctl} con \texttt{TEE\_IOC\_INVOKE} e passando una
+        una \textit{ioctl} con \texttt{TEE\_IOC\_INVOKE} e passando una
         struttura \texttt{tee\_ioctl\_invoke\_arg} come argomento, riempita
         opportunamente con l'ID della sessione, l'ID della funzione da
         invocare e altri argomenti opzionali.
@@ -1486,7 +1486,7 @@ Il flusso tipico di operazione di una CA è il seguente:
     \item LA CA ripete i punti 3 e 4 per invocare altre funzioni della
         \textit{Trusted Application}.
     \item La CA chiude la sessione con la \textit{Trusted Application} facendo
-        una \texttt{ioctl} con \texttt{TEE\_IOC\_CLOSE\_SESSION} e passando
+        una \textit{ioctl} con \texttt{TEE\_IOC\_CLOSE\_SESSION} e passando
         una struttura \texttt{tee\_ioctl\_close\_session\_arg} come argomento,
         riempita opportunamente con l'ID della sessione.
     \item La CA chiude il device file \texttt{/dev/tee0} usando \texttt{close}.
@@ -1526,7 +1526,7 @@ dal comando precedente.
 Per implementare un driver, gli sviluppatori devono implementare
 delle funzioni che verranno poi richiamate dal sottosistema TEE.
 Molte di queste funzioni hanno una corrispondenza univoca con le
-\texttt{ioctl} che si possono vedere nell'interfaccia user-space,
+\textit{ioctl} che si possono vedere nell'interfaccia user-space,
 il sottosistema TEE assiste gli sviluppatori nella loro
 implementazione effettuando, per esempio, la conversione dei parametri
 passati da kernel-space a user-space e viceversa.
@@ -1558,17 +1558,17 @@ Il set minimo di funzioni che un driver deve implementare è il seguente:
         l'implementazione de-inizializza le risorse allocate per questa
         specifica istanza del device file.
     \item \texttt{open\_session}: Chiamata quando un utente esegue una
-        \texttt{ioctl} \texttt{TEE\_IOC\_OPEN\_SESSION} sul device file,
+        \textit{ioctl} \texttt{TEE\_IOC\_OPEN\_SESSION} sul device file,
         l'implementazione ha il compito di aprire una sessione con il TEE.
     \item \texttt{close\_session}: Chiamata quando un utente esegue una
-        \texttt{ioctl} \texttt{TEE\_IOC\_CLOSE\_SESSION} sul device file,
+        \textit{ioctl} \texttt{TEE\_IOC\_CLOSE\_SESSION} sul device file,
         l'implementazione ha il compito di chiudere una sessione con il TEE.
     \item \texttt{invoke\_func}: Chiamata quando un utente esegue una
-        \texttt{ioctl} \texttt{TEE\_IOC\_INVOKE} sul device file,
+        \textit{ioctl} \texttt{TEE\_IOC\_INVOKE} sul device file,
         l'implementazione ha il compito di invocare una funzione di una
         sessione aperta con il TEE.
     \item \texttt{cancel\_req}: Chiamata quando un utente esegue una
-        \texttt{ioctl} \texttt{TEE\_IOC\_CANCEL} sul device file,
+        \textit{ioctl} \texttt{TEE\_IOC\_CANCEL} sul device file,
         l'implementazione ha il compito di annullare una richiesta in
         corso con il TEE.
     \item \textbf{Allocazione di memoria condivisa: }
@@ -1886,7 +1886,7 @@ Il mittente prepara un payload di dimensione $16$ byte tutti a zero, e lo
 manda al destinatario che si occuperà di riempire il payload con le
 informazioni riguardo al TEE.
 I valori ritornati non sono garantiti essere gli stessi che si ottengono 
-tramite la chiamata \texttt{ioctl} \texttt{TEE\_IOC\_VERSION} del
+tramite la chiamata \textit{ioctl} \texttt{TEE\_IOC\_VERSION} del
 sottosistema TEE, questo perché non è garantito che il passthrough
 possa supportare tutte le funzionalità extra offerte dal TEE.
 
@@ -2157,41 +2157,90 @@ prototipazione.
 
 \section{Verifica funzionale e performance}
 \label{sec:verifica-funzionale-e-performance}
+Lo sviluppo e la verifica del prototipo è stata fatta utilizzando una macchina
+virtuale QEMU simulando una macchina virtuale ARMv8 con supporto a TrustZone,
+un processore Cortex-A72 con 2 core e 1GB di RAM.
+Su questa VM abbiamo installato Linux versione 5.19.0,
+Busybox 1.34.1 compilato tramite Buildroot e, come TEE, OP-TEE versione
+3.19.0-ge0cfd556.
+Questa VM, che chiameremo VM1, è stata utilizzata per simulare la macchina
+host nel nostro prototipo. Infatti, dentro la VM1 abbiamo eseguito una
+seconda macchina virtuale utilizzando la nostra versione modificata di QEMU.
+Questa VM, che chiameremo VM2, è stata utilizzata per simulare la macchina
+guest nel nostro prototipo e simula una macchina ARM \textit{virt} con
+processore \textit{"kvm"}, cioè sfruttando le funzionalità di virtualizzazione
+del kernel Linux.
+Dentro la VM2 abbiamo installato Linux versione 5.15.18 con Busybox 1.35.0
+e caricato il nostro driver per il passthrough TEE.
+Per verificare la correttezza del nostro prototipo abbiamo usato due set di
+test cases.
 
-% Abbiamo usato una VM dentro una VM per testare il nostro prototipo
-% La VM esterna è Linux versione X con busybox X girata su QEMU X nella macchina virtuale qemu-virt-8
-% La VM interna è Linux versione Y con buusybox Y girata sulla nostra versione modifcata di QEMU, cioè Y commit XXX
-% Per verifcare la correttezza della nostra soluzione abbiamo usato tre set di test cases
+Il primo set sono i programmi di esempio forniti da OPTEE: sono piccoli
+programmi userspace e Trusted Application a scopo didattico e che testano le
+funzionalità offerte dall'interfaccia GlobalPlatform e che fanno uso di
+\textit{libteec} per comunicare con il TEE, una libreria wrapper
+dell'interfaccia userspace del sottosistema TEE di Linux.
+Questi programmi includono il classico "Hello World", una implementazione
+dell'algoritmo AES, un programma che salva e recupera dati dallo storage
+sicuro offerto dal TEE, un programma che genera blocchi di dati
+sfruttando il generatore sicuro di dati random di OP-TEE e altri
+programmi che utilizzano funzionalità specifiche di OP-TEE.
+Questi piccoli programmi, seppur utilizzino tutte le feature dell'interfaccia
+TEE e siano stati di aiuto durante lo sviluppo del prototipo, chiaramente
+hanno un utilizzo limitato per la verifica funzionale del prototipo.
 
-% Il primo set sono i programmi di esempio forniti da OPTEE, questi includono
-% sono: AES, SECURE STORAGE, ...
-% Sono programmi relativemente semplici ma che testano tutte le funzionalità
-% dell'interfaccia GlobalPlatform e che fanno uso di libteec
+Il secondo set è la suite \textit{xtest}, un insieme di poco meno di
+$10000$ test sviluppati dal progetto OP-TEE. 
+Questa suite nasce per testare le funzionalità di OP-TEE, ma utilizzando
+l'interfaccia del sottosistema TEE di Linux la gran parte dei test è
+applicabile a qualunque TEE che implementi un driver Linux. 
+Su XXXX test, solamente XXX falliscono, ma questi sono tutti test che
+fanno uso di funzionalità specifiche di OP-TEE che sono al di fuori
+dell'interfaccia TEE standard e dunque fuori dallo scopo del nostro
+progetto.
 
-% Il secondo set è un sottoinsieme dei test di "xtest", una suite di test utilizzata
-% per testare OPTEE.
-% Il sottoinsieme scelto esclude le funzionalità specifiche di OPTEE che non sono incluse
-% nelle specifiche GP, in totale sono 700 test cases
+Infine, abbiamo inoltre effettuato dei semplici test delle performance,
+nonostante ribadiamo che la nostra implementazione sia intenzionalmente
+primitiva e inefficiente.
+Per misurare le performance abbiamo usato il comando Unix \textit{time}
+eseguendo l'intera suite di test \textit{xtest}.
+Noi siamo interessati all'overhead del passthrough, dunque leggeremo la
+misura \textit{"sys"}, che indica il tempo speso in kernel mode dal computer
+per servire un processo. 
 
-% Abbiamo inoltre effettuato dei semplici test delle performance, nonostante ribadiamo
-% che questa implementazione sia intenzionalmente primitiva e inefficiente.
-% Per misurare le performance abbiamo usato il comando time,
-% che misura il tempo di esecuzione di un comando, utilizzando la misura 'real time'
-% Ogni test case è stato eseguito 10 volte e i risultati riportanti in \tablename~\ref{tab:performance}
-% A confronto abbiamo anche riportato i tempi di esecuzione degli stessi test case
-% sulla VM host (cioè la VM esterna), che accede direttamente al TEE senza passare
-% dal nostro passthrough.
-% [TABELLA]
-% Chiaramente i tempi di esecuzione utilizzando il passthrough sono più alti,
-% principalmente per l'implementazione inefficiente della sincronizzazione dei buffer
-% di memoria condivisa.
-% Infatti, se dividiamo i test case in due categorie, quelli che fanno uso di memoria
-% condivisa e quelli che non lo fanno, si nota che i tempi di esecuzione sono
-% dei secondi sono molto simili ai tempi senza passthrough.
-% [TABELLA]
-% Chiaramente l'uso di test case per confrontare le performance non
-% necessariamente riflette dei carichi di lavoro reali, ma è un modo semplice
-% per avere un'idea delle prestazioni.
+Abbiamo eseguito le misure 10 volte e i risultati sono riportati
+in \tablename~\ref{tab:performance}.
+A confronto abbiamo anche riportato i tempi di esecuzione ottenuti ripetendo
+lo stesso test eseguendo direttamente i test case sulla VM host
+(cioè la VM esterna), che accede direttamente al TEE senza passare dal
+nostro passthrough.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{|c|c|c|c|}
+\end{tabular}
+\label{tab:performance}
+\end{table}
+
+Chiaramente i tempi di esecuzione utilizzando il passthrough sono più alti.
+Il sospetto è che questo sia dovuto principalmente per l'implementazione
+inefficiente della sincronizzazione dei buffer di memoria condivisa.
+Infatti, se dividiamo i test case in due categorie, quelli che fanno
+uso di memoria condivisa e quelli che non lo fanno, e ripetiamo i test
+(riportati in \tablename~\ref{tab:performance-no-shmem}) si nota che
+i tempi di esecuzione sono dei secondi sono molto simili ai tempi
+senza passthrough.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{|c|c|c|c|}
+\end{tabular}
+\label{tab:performance-no-shmem}
+\end{table}
+
+L'uso di test case per confrontare le performance non necessariamente
+riflette dei carichi di lavoro reali, ma è un modo semplice per avere
+un'idea delle prestazioni.
 
 \chapter{Conclusioni}
 \label{chap:conclusioni}
