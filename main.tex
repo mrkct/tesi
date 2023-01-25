@@ -79,9 +79,6 @@
 \chapter*{Sommario}
 \addcontentsline{toc}{chapter}{Sommario}  
 \label{cap:sommario}
-% + Chiediamo più servizi e dunque aumenta la superficie di attacco, ma un
-%   buco anche in servizi non critici rischia di mettere a rischio l'intero
-%   sistema
 L'aumento dei servizi che vengono richiesti dai moderni dispositivi di
 computazione ha creato un quesito: l'aspetto di sicurezza è diventato più
 importante di prima, ma con la maggiore complessità di tali sistemi aumenta
@@ -91,60 +88,46 @@ Rimuovere funzionalità dal sistema principale per renderlo più sicuro non
 della sicurezza in ambienti di computazione separati.
 
 Questa è l'idea alla base dei \textit{Trusted Execution Environment(TEE)},
-creare un ambiente di computazione nel processore, isolato dal resto del
+creare un ambiente di computazione nel processore isolato dal resto del
 mondo non sicuro e dedicato solamente a quei software con requisiti di
 sicurezza stringenti.
+Normalmente un software è completamente esposto a tutto il codice
+presente nel sistema con un livello di privilegio superiore;
+i TEE si separano da questa gerarchia isolando la propria memoria e i propri
+dati dal resto del sistema affidandosi a una base hardware e software
+molto piccola.
 
-% + Molto diffusi su mobile, inizia ad esserci interesse su piattaforme cloud
-%   (trusted computing)
-Dato che gli smartphone stanno diventando sempre più critici per la nostra vita
-i TEE sono estremamente diffusi in ambito mobile, dove la piattaforma ARM fa da
-padrona, e ormai presenti su praticamente tutti i cellulari ma inizia a esserci
-un crescente interesse al loro uso anche in ambito Desktop e, in particolare,
-anche sui server grazie all'iniziativa \textit{Confidential Computing}.
+I TEE sono molto diffusi in ambito mobile, dove vengono utilizzati per
+isolare servizi come l'autenticazione di dati biometrici oppure la gestione
+di pagamenti digitali, ma inizia a esserci un crescente interesse al loro
+uso anche in ambito cloud per motivi di maggiore sicurezza, normative dati e 
+per la possibilità di accertarsi che il software in esecuzione sul server
+sia effettivamente quello che ci si aspetta.
 
-% + Esistono soluzioni ma sono solo su piattaforme x86 via intel SGX che è una
-%   implementazione molto particolare(approfondire)
-% + Con il crescente interesse nell'uso di ARM sui server vogliamo scoprire
-%   come integrare un TEE implementato via TrustZone in ambienti virtualizzati
-Al momento di scrittura di questa tesi, il mercato server è principalmente
-dominato da processori basati sull'architettura x86\_64, esiste però un
-interesse nell'uso di processori basati su architettura ARM grazie alla loro
-particolare efficienza energetica.
-Lo scopo di questa tesi è studiare come è possibile rendere disponibili i
-servizi offerti da un TEE conforme alla specifica GlobalPlatform anche ad
-ambienti virtualizzati.
+Gli sforzi finora fatti in questo ambito sono stati rivolti verso permettere
+ai clienti di portare i propri interi TEE; questa soluzione offre una grande
+flessibilità ma implica anche uno sforzo significativo da parte del cliente
+di gestire il proprio TEE, che per definizione è completamente inaccessibile
+al vendor del cloud.
 
-% + Implementato un prototipo tramite QEMU, Linux ed utilizzando OP-TEE come
-%   test case di TEE
-Il risultato è stato quello di una versione modificata dell'emulatore QEMU
-per aggiungere un device virtuale per la comunicazione tra il guest e il TEE
-disponibile all'host. Inoltre è stato sviluppato un driver per sistemi Linux
-e testato su piattaforma ARM usando OP-TEE come TEE di prova.
+Le soluzioni oggi disponibili sul mercato sono esclusivamente per
+l'architettura x86\_64 e implicano un lock-in rispetto le tecnologie
+proprietarie di Intel e AMD.
 
-% TODO: PARLA DI PROBLEMI
+Questa tesi si propone di studiare un modello alternativo dove il provider
+di servizi cloud offre un TEE con dei servizi pre-installati offerti ai
+clienti
+Questo modello, seppur meno flessibile, è più semplice per il cliente e non
+è in contrasto con il modello precedente. Questo offre un alternativa
+ai clienti che non vogliono gestire il proprio TEE.
+Inoltre, con la standardizzazione dell'interfaccia esterna TEE da parte di
+dell'organizzazione GlobalPlatform e la creazione del sottosistema TEE
+di Linux, è anche possibile evitare il lock-in rispetto a un TEE specifico
+o a una architettura in particolare.
 
-% Le soluzioni disponibili sul mercato fanno uso di Intel SGX
-% o AMD SEV, che descriviamo rispettivamente in \ref{sec:intel-sgx} e
-% \ref{sec:amd-sev}. Queste tecnologie sono disponibili solamente su processori
-% con architettura x86\_64 dei rispettivi produttori hardware.
-% Con un maggior interesse nell'utilizzo dell'architettura ARM lato server, % FIXME: Cit required
-% grazie alla sua maggior efficienza energetica, % FIXME: Cit required
-% vogliamo dunque trovare una soluzione equivalente per questa architettura.
-% 
-% Fino a oggi la gran parte degli sforzi rispetto all'uso dei TEE su ARM
-% si è concentrata su dispositivi mobile, ma il modello dei TEE come implementato
-% su questi dispositivi non può essere trasposto direttamente sui server,
-% richiede di risolvere dei nuovi problemi nati dal diverso ambiente.
-% In particolare i TEE dei dispositivi mobile sono pensati per essere usati
-% da un solo utente, mentre in un ambiente cloud è necessario che più utenti
-% possano usare la stessa macchina fisica e dunque che il TEE possa essere
-% condiviso.
-% Inoltre, il modello dei TEE mobile assume che il software rimanga legato a
-% un unico TEE per tutta la sua esecuzione; questa assunzione cade in ambito
-% cloud dato che una VM potrebbe essere trasferita su in qualunque momento su
-% una macchina fisica diversa, e dunque su un TEE diverso.
-
+Per dimostrare la fattibilità di questo modello abbiamo sviluppato un
+prototipo estendendo l'hypervisor QEMU, scrivendo un driver Linux e
+testando il tutto con il TEE open-source OP-TEE su piattaforma ARM.
 
 \chapter{Introduzione}
 \label{sec:introduzione}
@@ -2216,10 +2199,23 @@ lo stesso test eseguendo direttamente i test case sulla VM host
 nostro passthrough.
 
 \begin{table}[ht]
-\centering
-\begin{tabular}{|c|c|c|c|}
-\end{tabular}
-\label{tab:performance}
+    \centering
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|}
+        \hline
+        \textbf{Test} & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & \textbf{Media} \\
+        \hline
+        \textbf{Base} & x & x & x & x & x & x & x & x & x & x  & \textbf{x} \\
+        \hline
+        \textbf{Passthrough} & x & x & x & x & x & x & x & x & x & x & \textbf{x} \\
+        \hline
+        \textbf{Overhead} & x & x & x & x & x & x & x & x & x & x & \textbf{x} \\
+        \hline
+    \end{tabular}
+    \label{tab:performance}
+    \caption{
+        Confronto tra tempi di esecuzione con e senza passthrough su
+        tutti i test di \textit{xtest}.
+    }
 \end{table}
 
 Chiaramente i tempi di esecuzione utilizzando il passthrough sono più alti.
@@ -2231,11 +2227,24 @@ uso di memoria condivisa e quelli che non lo fanno, e ripetiamo i test
 i tempi di esecuzione sono dei secondi sono molto simili ai tempi
 senza passthrough.
 
-\begin{table}[ht]
-\centering
-\begin{tabular}{|c|c|c|c|}
-\end{tabular}
-\label{tab:performance-no-shmem}
+\begin{table}
+    \centering
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|}
+        \hline
+        \textbf{Test} & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & \textbf{Media} \\
+        \hline
+        \textbf{Base} & x & x & x & x & x & x & x & x & x & x  & \textbf{x} \\
+        \hline
+        \textbf{Passthrough} & x & x & x & x & x & x & x & x & x & x & \textbf{x} \\
+        \hline
+        \textbf{Overhead} & x & x & x & x & x & x & x & x & x & x & \textbf{x} \\
+        \hline
+    \end{tabular}
+    \label{tab:performance-no-shmem}
+    \caption{
+       Confronto tra tempi di esecuzione con e senza passthrough solo
+       sui test di \textit{xtest} che non usano shared memory.
+    }
 \end{table}
 
 L'uso di test case per confrontare le performance non necessariamente
@@ -2315,7 +2324,7 @@ Può essere interessante dunque esplorare come realizzare questo spostamento
 in modo sicuro e trasparente per l'utente.
 
 \appendix
-\chapter{FakeTEE: Simulatore di TEE per aiutare nello sviluppo}
+\chapter{FakeTEE: Simulatore di TEE per lo sviluppo}
 \label{app:faketee}
 Sviluppare applicazioni che utilizzano un Trusted Execution Environment può
 essere difficile non solo per l'attenzione necessaria a non violare
