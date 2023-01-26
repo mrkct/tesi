@@ -133,32 +133,30 @@ testando il tutto con il TEE open-source OP-TEE su piattaforma ARM.
 \label{sec:introduzione}
 I sistemi informatici moderni sono estremamente complessi e sono composti da
 molti componenti diversi che interagiscono continuamente tra di loro.
-Questa complessità può rendere difficile garantire che questi sistemi siano
+Questa complessità può rendere difficile garantire che tali sistemi siano
 sicuri e dunque privi di vulnerabilità.
 
-Una delle ragioni è che il gran numero di componenti e le interazioni tra di
-essi possono rendere difficile testare e verificare in modo completo la
-sicurezza di un sistema.
+Uno dei principali problemi è la difficoltà di testare e verificare
+completamente la sicurezza di un sistema a causa del gran numero di
+componenti e interfacce di comunicazione.
 Ad esempio, un sistema potrebbe contenere al suo interno un componente che
-singolarmente non ha vulnerabilità ma che potrebbero aprire una falla di
+singolarmente non ha vulnerabilità ma che potrebbe aprire una falla di
 sicurezza quando combinato con un altro.
 Dato l'incredibile numero di combinazioni possibili, è molto difficile
 prevedere e valutare accuratamente il rischio di vulnerabilità di un sistema
 in anticipo, in modo da implementare contromisure efficaci.
 
-Un'altra ragione è che i sistemi informatici sono in costante evoluzione, con
+Inoltre i sistemi informatici sono in costante evoluzione, con
 l'aggiunta di nuove funzionalità e capacità nel corso del tempo.
 Ciò può rendere difficile mantenere la sicurezza di un sistema, poiché nuove
 vulnerabilità potrebbero sorgere a causa di modifiche che all'apparenza non
 avrebbero dovuto avere tale effetto.
 
-In generale vale la regola che più un sistema è semplice, più è facile testare
-e verificare la sua sicurezza.
-Ridurre la complessità dei moderni sistemi è una idea nobile ma che si scontra
-presto con la realtà: una moltitudine di fattori, sia tecnici sia economici,
-rende difficile attuare questo piano senza dover scendere a compromessi.
-
-\bigbreak \noindent
+In generale, più un sistema è semplice, più è facile testare e verificare
+la sua sicurezza. 
+Tuttavia, ridurre la complessità dei sistemi informatici moderni è un
+obiettivo ambizioso, poiché una moltitudine di fattori, sia tecnici
+sia economici, rende difficile attuare questo piano.
 
 Una proposta alternativa e più realistica è quella data dai
 \textit{Trusted Execution Environments} (TEE).
@@ -173,29 +171,20 @@ indipendente, può implementare delle policy di sicurezza più
 stringenti rispetto a quelle del sistema principale senza però dover
 rinunciare a funzionalità.
 
-Un TEE, come il sistema principale, contiene al suo interno un sistema
-operativo e dei programmi scritti per esso, ma tramite l'uso di tecniche
-crittografiche, hardware di supporto e un approccio di sviluppo che
-prioritizza la sicurezza sopra tutti gli altri aspetti è possibile
-offrire un grado di sicurezza molto più elevato rispetto a quello
-offerto da un sistema tradizionale.
+Un TEE, tramite l'uso di tecniche crittografiche, hardware di supporto
+e un approccio di sviluppo che prioritizza la sicurezza sopra tutti
+gli altri aspetti, può offrire un grado di sicurezza molto più elevato
+rispetto a quello offerto da un sistema tradizionale.
 
-\bigbreak \noindent
-
-Un calcolatore provvisto di TEE può essere visto come un sistema composto da
-due calcolatori, dove uno di essi è dedicato solamente a garantire la sicurezza
-del sistema nel suo complesso.
-Questa non è una metafora: un TEE può essere implementato in diversi modi ma
-uno di essi è quello di utilizzare un \textit{System on a Chip} che viene
-inserito all'interno del processore principale.
-Esempi di questo tipo di TEE sono la \textit{Secure Enclave}
-di \textit{Apple} oppure il \textit{Platform Security Processor} presente
-in molti processori \textit{AMD Ryzen}, che ironicamente al loro interno
-includono un processore della concorrente \textit{ARM}.
-
-Includere un secondo calcolatore all'interno del primo è un'idea efficace,
-ma non è l'unico modo di implementare un TEE.
-In generale però è possibile dire che per implementare un TEE è necessario
+Anche se esiste una interfaccia di comunicazione con i TEE standardizzata,
+a basso livello questi possono essere implementati in modi
+significativamente diversi.
+Un esempio di tali differenze sono
+\textit{AMD Secure Encrypted Virtualization}, che permette di crittografare
+la memoria di una macchina virtuale, e \textit{Secure Enclave}
+di \textit{Apple}, un intero secondo computer integrato nel primo.
+Questi non sono assolutamente gli unici approcci possibili,
+in generale però è possibile dire che per implementare un TEE è necessario
 di supporto hardware dedicato, questo perché il software da solo non è in
 grado di potersi difendere da altro software quando questo ha i suoi
 stessi privilegi.
@@ -203,20 +192,20 @@ stessi privilegi.
 \section{Cloud computing e sicurezza}
 \label{sec:cloud}
 Gli ultimi anni hanno visto un cambiamento radicale nel modo in cui
-i produttori di software possono distribuire i loro prodotti
+i produttori di software distribuiscono i loro prodotti
 grazie alla affermazione del \textit{Cloud Computing}.
 
-In passato l'unico modo per offrire un servizio web era quello di
-comprare o affittare dei server, dovendo occuparsi della loro manutenzione
-e dovendo prevedere la capacità di questi in base alle previsioni di
+In passato, l'unico modo per offrire un servizio web era quello di
+acquistare o affittare dei server, occupandosi della loro manutenzione
+e prevedendo le loro capacità in base alle previsioni di
 utilizzo.
-Con il modello \textit{cloud} nasce il concetto di
-\textit{Infrastructure as a Service}, cioè la possibilità di affittare
-l'intera infrastruttura di rete necessaria a eseguire la nostra applicazione
+Con il modello cloud nasce il concetto di
+\textit{Infrastructure as a Service}, ovvero la possibilità di affittare
+l'intera infrastruttura di rete necessaria per eseguire la propria applicazione
 web e lasciare l'onere di mantenerla al provider cloud.
 
 Il cloud computing è diventato estremamente popolare negli ultimi anni
-grazie alla sua capacità di offrire risorse flessibili a basso costo
+per la sua capacità di offrire risorse flessibili a basso costo
 anche a piccole e medie imprese.
 Questo modello è redditizio sia per i fornitori che per gli utenti,
 con i fornitori che possono offrire servizi a un costo inferiore grazie
@@ -239,53 +228,50 @@ Seppur sia lecito aspettarsi che i provider di servizi cloud siano onesti
 e non vadano a sabotare i propri clienti, questa potrebbe non essere
 una garanzia sufficiente per tutti.
 
-Il modello di cloud include però un secondo attaccante: gli altri clienti.
+Inoltre, il modello di cloud include un secondo attaccante: gli altri
+clienti.
 Il modo in cui i provider possono permettersi di offrire servizi di cloud
 computing a prezzi convenienti è quello di condividere i server tra più
 clienti; utilizzando delle macchine virtuali un server
 può ospitare le applicazioni di più clienti allo stesso momento.
 
-L'uso della \textit{virtualizzazione} permette ai provider di isolare
-i clienti tra di loro, ridimensionare
-dinamicamente le risorse computazionali a loro offerte e di trasferire
+L'utilizzo della \textit{virtualizzazione} consente ai provider di isolare
+i clienti tra di loro, di adattare
+dinamicamente le risorse computazionali a loro disposizione e di trasferire
 i loro dati e applicazioni da un server a un altro in qualsiasi
-momento.
-Tutto ciò avviene in modo completamente trasparente ai clienti, che hanno la
-sensazione di utilizzare un server dedicato,
-ma permette ai provider di ottimizzare al massimo l'utilizzo delle risorse
-fisiche e di bilanciare il carico di lavoro tra i server.
+momento, in modo completamente trasparente ai clienti.
+Ciò permette ai provider di ottimizzare l'utilizzo delle risorse
+fisiche e di equilibrare il carico di lavoro tra i server.
 
-\bigbreak \noindent
-
-Il partizionamento di un server tra i vari clienti viene effettuato
-utilizzando un \textit{hypervisor}, un software che presiede la creazione
+Il processo di suddivisione di un server tra i vari clienti avviene tramite
+l'utilizzo di un \textit{hypervisor}, un software che controlla la creazione
 e la gestione delle macchine virtuali su un server fisico.
-Un hypervisor è in grado di vedere e modificare i dati in memoria di tutte
-le macchine virtuali, per questo motivo è un bersaglio particolarmente
-interessante per gli attaccanti.
-Un attaccante che riesce ad eludere le protezioni di un hypervisor può
-potenzialmente manomettere i dati di tutti i clienti che utilizzano quel
-server.
+Tuttavia, l'utilizzo di un hypervisor rappresenta anche una minaccia per
+la sicurezza poichè esso ha accesso e può modificare i dati in memoria
+di tutte le macchine virtuali.
+Pertanto, un attaccante che riuscesse ad eludere le protezioni
+dell'hypervisor può potenzialmente manipolare i dati di tutti i clienti
+che utilizzano quel server.
 
 Trattare tutte le possibili problematiche in termini di sicurezza del
 cloud computing non è lo scopo di questa tesi.
-Quanto descritto finora è solo una delle tante sfide che il cloud computing
-porta con sé, ma è sicuramente una delle più importanti data la sua alta
+Quanto descritto finora è solo una delle molte sfide che il cloud computing
+comporta, ma è sicuramente una delle più importanti data la sua elevata
 posta in gioco.
 
 \section{Motivazione della tesi}
 \label{sec:motivazione}
-I TEE nascono principalmente in ambito mobile proprio perché questi dispositivi
-sono diventati una parte sempre più importante della nostra vita quotidiana,
-di conseguenza sono diventati un bersaglio sempre più attraente per i
-cybercriminali.
-Oggi i TEE sono presenti su quasi tutti i cellulari, dove vengono usati per
-eseguire operazioni sensibili come ad esempio le schermate di sblocco
-del telefono e di inserimento di dati bancari o più in generale al
-trattamento di chiavi crittografiche e dati sensibili;
-il loro uso non è limitato però a questo ambito.
+I TEE sono stati sviluppati principalmente per gli ambienti mobili
+poichè questi dispositivi sono diventati una componente sempre più
+rilevante nella nostra vita quotidiana, rendendoli pertanto un
+obiettivo sempre più allettante per i cyber criminali.
+Oggi, i TEE sono presenti su quasi tutti i cellulari, dove vengono
+usati per eseguire operazioni sensibili come, ad esempio, la gestione
+della schermata di sblocco del telefono e l'inserimento di dati bancari
+o, in generale, il trattamento di chiavi crittografiche e dati sensibili.
+Tuttavia, il loro utilizzo non è limitato solo a questo ambito.
 
-In particolare siamo interessati al loro utilizzo insieme al modello di
+In particolare siamo interessati al loro utilizzo insieme ai modello di
 computing cloud per proteggere i dati.
 Parlando di protezione dati nel cloud possiamo far riferimento a tre
 aspetti:
@@ -301,26 +287,32 @@ aspetti:
 Se per i primi due aspetti esistono soluzioni ben consolidate, come ad
 esempio il protocollo HTTPS per la protezione dei dati in transito e
 l'uso di dischi cifrati per la protezione dei dati in archiviazione,
-per l'ultimo aspetto non esiste ancora una soluzione standard.
+per l'ultimo aspetto, ovvero la protezione dei dati e del codice in
+memoria durante l'esecuzione, non esiste ancora una soluzione standard.
 
-Questo problema ha portato alla fondazione
-della Confidential Computing Initiative (CCI), un gruppo di aziende che
-si sono unite per sviluppare soluzioni per garantire la sicurezza dei dati
-e del codice in ambito cloud computing mentre sono in memoria.
+Per far fronte a questa sfida, è stata fondata la
+Confidential Computing Initiative (CCI), un gruppo di aziende che si sono
+unite per sviluppare soluzioni per garantire
+la sicurezza dei dati e del codice in ambito cloud computing
+mentre sono in memoria.
 
 La CCI trova nei TEE un ottimo strumento per garantire la sicurezza dei dati
-e del codice, ma il supporto oggi presente è limitato a server con
-piattaforme Intel o AMD e con pesanti lock-in rispetto la piattaforma scelta.
+e del codice, tuttavia, il supporto attualmente disponibili è
+limitato a server con piattaforme Intel o AMD e con un forte lock-in rispetto
+alla piattaforma scelta.
 
-Con un interesse crescente all'uso di architetture diverse da \texttt{x86\_64}
-in ambito server, diventa sensata l'idea di sviluppare un sistema per
-permettere l'utilizzo dei TEE in modo agnostico alla piattaforma sottostante.
+Con un interesse crescente nell'utilizzo di architetture diverse da x86\_64
+in ambito server, diventa sempre più importante sviluppare un sistema che
+consenta l'utilizzo dei TEE in modo indipendente dalla piattaforma
+hardware sottostante e dal TEE stesso.
+A questo scopo, gli sforzi di standardizzazione delle interfacce TEE da
+parte di GlobalPlatform rappresentano un grande contributo.
 
 \bigbreak \noindent
 
-Lo scopo di questa tesi è dunque il primo passo verso questo obiettivo,
-cioè sviluppare un canale di comunicazione tra una macchina virtuale e
-un generico TEE, in modo completamente agnostico alla piattaforma
+Lo scopo di questa tesi è quello di costituire il primo passo verso questo
+obiettivo, ovvero sviluppare un canale di comunicazione tra una macchina
+virtuale e un generico TEE, in modo completamente agnostico alla piattaforma
 hardware sottostante e al codice in esecuzione dentro al TEE.
 
 Il software sviluppato in questa tesi non vuole essere un prodotto finito,
@@ -332,20 +324,17 @@ gestita dal primo e un TEE collegato al secondo.
 
 \section{Struttura della tesi}
 \label{sec:struttura-tesi}
-La tesi è strutturata in quattro capitoli principali:
+La tesi è strutturata in tre capitoli principali:
 \begin{itemize}
     \item Nel \textbf{Capitolo \ref{chap:tee}} diamo una introduzione al
     concetto di Trusted Execution Environment, alle sua applicazioni
     e a vari concetti correlati.
     \item Nel \textbf{Capitolo \ref{chap:hardware-supporto-tee}} discutiamo
     brevemente di varie soluzioni hardware a supporto dei TEE, delle loro
-    caratteristiche e delle loro limitazioni.
+    caratteristiche e alcune vulnerabilità scoperte al riguardo.
     \item Nel \textbf{Capitolo \ref{chap:passthrough-tee-qemu-linux}}
     finalmente discutiamo del progetto di questa tesi, ovvero la creazione
     di un canale di comunicazione tra una macchina virtuale e un TEE.
-    \item Infine nel \textbf{Capitolo \ref{chap:testing}} descriviamo
-    come abbiamo testato il nostro prototipo e quali sono i risultati
-    ottenuti.
 \end{itemize}
 
 In aggiunta a questi capitoli troviamo due appendici \ref{app:faketee} e
@@ -425,8 +414,6 @@ comunque degli esempi che possono essere utili a comprendere quali sono
 i componenti fondamentali di un TEE GlobalPlatform e come collaborano
 tra di loro per l'implementazione.
 
-% FIXME: Considera tradurre il testo in questa figura
-% GPT TEE PP => Protection Profile
 \begin{figure}
     \centering
     \includegraphics[width=1\textwidth]{immagini/tee-system-architecture}
@@ -500,7 +487,7 @@ ruolo può essere svolto usando più sotto-componenti.
 \begin{itemize}
     \item \textit{Periferiche Fidate}: L'accesso a queste periferiche è
     consentito solamente dal TEE. Esempi di queste periferiche sono i
-    sensori biometrici oppure memorie segrete % FIXME: Sensori biometrici? Memorie segrete? non ne sono sicuro 
+    sensori biometrici. 
     \item \textit{Periferiche Fidate Condivise}: L'accesso a queste
     periferiche di default è consentito solamente dal TEE, ma questo può
     decidere temporaneamente di condividere l'accesso con il REE. Esempi di
@@ -582,33 +569,38 @@ componenti, il TEE e il REE.
 % Trusted Firmware-A, blablabla.
 
 \paragraph{Integrità e autenticità:}
-I benefici ottenibili tramite l'isolazione del TEE vengono annullati se
-l'integrità e l'autenticità del codice e assets all'interno del TEE non
-vengono garantite. Se così non fosse, un attaccante potrebbe modificare
-il codice del TEE mentre il dispositivo è spento per poi riaccenderlo con
-il codice compromesso.
+L'isolamento del TEE consente di garantire la protezione dei dati sensibili
+all'interno del dispositivo.
+Tuttavia, questi benefici possono essere annullati se l'integrità e
+l'autenticità del codice e degli assets all'interno del TEE non vengono
+garantite.
+Un attaccante, infatti, potrebbe modificare il codice del TEE mentre il
+dispositivo è spento, per poi riaccenderlo con del codice compromesso
+che intenzionalmente rivela i dati sensibili.
 
-Queste proprietà devono essere garantite nell'intero ciclo di vita del
-sistema, non è accettabile che esse non vengano assicurate fin dal primo boot,
-o che queste proprietà vengano temporaneamente non garantite, pena
-l'impossibilità di poter dichiarare il sistema come non compromesso.
+Per questo motivo, è necessario garantire l'integrità e l'autenticità del
+codice durante l'intero ciclo di vita del sistema.
+Non è accettabile che queste proprietà non vengano assicurate fin dal primo
+avvio o che vengano temporaneamente non garantite, pena l'impossibilità di
+dichiarare il sistema come non compromesso.
 
 Una soluzione per assicurare l'integrità e autenticità del codice consiste
-nell'implementare un meccanismo di autenticazione usando delle chiavi
+nell'implementare un meccanismo di autenticazione basato su chiavi
 private conosciute solamente da enti fidati.
-Ogni software, prima di poter essere caricato dentro il TEE, dovrà prima
+Ogni software, prima di poter essere caricato dentro il TEE, deve
 passare un processo di autenticazione che consiste nel confrontare un hash
 calcolato sul codice con un hash firmato incluso con il software.
-Questo hash deve essere firmato utilizzando una chiave privata riconosciuta
-dal TEE, in questo modo esso può verificare che un ente fidato ha approvato
-l'esecuzione del codice.
+Questo hash deve essere firmato utilizzando una chiave privata la cui
+corrispondente chiave pubblica è conosciuta dal TEE, in modo da poter
+verificare che un ente fidato ha approvato l'esecuzione del codice.
 
-Unica eccezione a questa regola è il primissimo software mandato in esecuzione
-sul sistema; questo non può essere autenticato perché non è ancora presente
-alcun software in esecuzione che possa effettuare il processo di verifica.
+L'unica eccezione a questa regola è il primissimo software mandato
+in esecuzione sul sistema; questo non può essere autenticato perché non
+è ancora presente alcun software in esecuzione che possa effettuare il
+processo di verifica.
 Per ovviare al problema, questo software viene caricato da una memoria
-impossibile da sovrascrivere, come ad esempio le PROM, in questo modo è
-possibile assumere comunque che il software non sia stato compromesso.
+impossibile da sovrascrivere, come ad esempio le PROM, in modo da
+poter assumere comunque che il software non sia stato compromesso.
 
 \begin{figure}
 \centering
@@ -634,9 +626,9 @@ da caricare. Come queste chiavi vengano ottenute dal firmware è un dettaglio
 implementativo, dunque altamente dipendente dal sistema.
 
 Per esempio, su PC che implementano \textit{UEFI Secure Boot} queste chiavi
-vengono spesse memorizzate su una piccola memoria inclusa nella scheda madre % FIXME: Cit. required
-oppure dentro un \textit{Trusted Platform Module}, % FIXME: Cit. required (si usano i TPM per questo scopo?)
-un piccolo chip dedicato a operazioni crittografiche.
+vengono spesse memorizzate su una piccola memoria (NV-RAM) inclusa
+nella scheda madre e accessibile
+solamente al firmware\cite{windows_secure_boot}.
 
 % FIXME: È un po' strano chiudere qui parlando di secure boot invece di TEE
 
