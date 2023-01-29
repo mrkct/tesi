@@ -346,26 +346,26 @@ nel caso si fosse interessati a riprodurre o continuare il nostro lavoro.
 \chapter{Trusted Execution Environment}
 \label{chap:tee}
 Un \textit{Trusted Execution Environment} (TEE) è un'area protetta in un
-dispositivo che può essere utilizzata per eseguire codice autenticato in modo
+dispositivo che consente di eseguire codice autenticato in modo
 più sicuro e attendibile rispetto al resto del sistema.
 
-I TEE stanno diventando sempre più importanti man mano che i dispositivi
-diventano più connessi e vulnerabili agli attacchi.
-Forniscono un modo per proteggere i dati e le operazioni sensibili
-dall'accesso o dalla modifica da parte di parti non autorizzate e possono
-essere utilizzati per rendere possibili una vasta gamma di applicazioni
+Con l'aumento della connessione e vulnerabilità dei dispositivi agli
+attacchi, i TEE stanno diventando sempre più importanti.
+Essi forniscono un modo per proteggere i dati e le operazioni sensibili
+dall'accesso o dalla modifica non autorizzate e possono
+essere utilizzati per una vasta gamma di applicazioni
 in molti ambiti, di cui parliamo in \ref{sec:applicazioni-tee}.
 
-Data l'importanza che i dispositivi mobile stanno assumendo nella nostra
-vita di tutti i giorni non dovrebbe sorprendere il fatto che i TEE sono
-presenti su praticamente tutti i cellulari, grazie anche agli sforzi
-pionieristici di ARM con la loro piattaforma \textit{TrustZone}.
+Con l'importanza crescente dei dispositivi mobili nella nostra
+vita quotidiana, non sorprende che i TEE siano presenti su praticamente
+tutti i cellulari, tramite la piattaforma \textit{TrustZone} di ARM.
 Gli esempi di TEE in questo ambito sono numerosi, alcuni nomi noti sono
-Samsung Knox, Qualcomm QSEE, Google Titan-M e Apple Secure Enclave.
+\textit{Samsung Knox}, \textit{Qualcomm QTEE}, \textit{Google Titan-M}
+e \textit{Apple Secure Enclave}.
 
-L'utilizzo dei TEE non è assolutamente prerogativa solo del mondo mobile.
-L'interesse verso i TEE sta crescendo anche in ambito IoT, Desktop e Server 
-dove iniziamo a vedere sul mercato le prime soluzioni che permettono di
+L'utilizzo dei TEE non è limitato al solo del mondo mobile,
+ma sta diventando sempre più importante anche in ambito IoT, Desktop e Server.
+Sul mercato si stanno vedendo sempre più soluzioni che permettono di 
 eseguire software in un ambiente protetto anche su queste piattaforme.
 
 In questo capitolo illustriamo le caratteristiche chiave dei TEE e come
@@ -375,22 +375,23 @@ vari tipi di dispositivi e sistemi.
 \section{TEE conformi GlobalPlatform}
 \label{sec:tee-conformi-globalplatform}
 I Trusted Execution Environment sono la combinazione di hardware e software
-dedicato allo scopo di creare un ambiente di computazione protetto e sicuro.
-Nonostante questa definizione, il termine "TEE" è piuttosto generico
-e viene applicato a una vasta gamma di prodotti che hanno garanzie di sicurezza
-e dettagli d'implementazione significativamente diversi.
+specificatamente progettati per creare un ambiente di computazione protetto e sicuro.
+Tuttavia, il termine "TEE" è piuttosto generico e viene utilizzato per
+descrivere una vasta gamma di prodotti che possono avere garanzie di
+sicurezza e dettagli di implementazione significativamente diversi.
 
-La mancanza di una definizione comune e standardizzata dei TEE non solo rischia
-di confondere i consumatori, ma può anche essere un ostacolo per gli sviluppatori
-interessati a creare applicazioni che possono essere eseguite su più TEE
-dato che devono gestire una vasta gamma di differenze in termini di come i
-TEE sono implementati e quali garanzie di sicurezza effettivamente offrono.
+La mancanza di una definizione comune e standardizzata dei TEE
+può causare confusione tra i consumatori e rappresentare un ostacolo per
+gli sviluppatori interessati a creare applicazioni che possono essere
+eseguite su più TEE,
+poichè devono gestire una vasta gamma di differenze nell'implementazione
+nelle garanzie di sicurezza effettivamente offerte.
 
-Allo scopo proprio di risolvere questi problemi, nel 2010 il consorzio
-GlobalPlatform ha pubblicato la prima versione dei documenti di specifica
-per i TEE, oggi arrivati alla versione 1.3 pubblicati nel 2020.
-Questi standard definiscono un set comune di guide linea e requisiti per la
-creazione di TEE progettati per essere interoperabili e sicuri.
+Per risolvere questi problemi, il consorzio GlobalPlatform pubblica
+dei documenti di specifica per i TEE, oggi arrivati alla
+versione 1.3 pubblicati nel 2020.
+Questi standard forniscono un insieme comune di linee guida e requisiti per
+la creazione di TEE progettati per essere interoperabili e sicuri.
 
 Più nel dettaglio, tra queste specifiche troviamo una architettura
 generica per i TEE, un profilo di sicurezza e delle interfacce per
@@ -403,16 +404,16 @@ GlobalPlatform.
 Seppur esistano ancora sul mercato soluzioni non conformi non è difficile
 prevedere che nel breve futuro la maggior parte dei TEE lo saranno.
 
-Per questo motivo e altri motivi la discussione in questa tesi sarà limitata
-ai TEE conformi GlobalPlatform.
+Pertanto, la discussione in questa tesi si concentrerà sui
+TEE conformi GlobalPlatform.
 
 \subsection{Architettura TEE}
 \label{subsec:architettura-tee}
 
-La specifica GlobalPlatform non detta una architettura per i TEE ma offre
-comunque degli esempi che possono essere utili a comprendere quali sono
-i componenti fondamentali di un TEE GlobalPlatform e come collaborano
-tra di loro per l'implementazione.
+La specifica GlobalPlatform non detta una architettura particolare per i
+TEE, ma offre comunque esempi che possono essere utili per comprendere
+quali sono i componenti fondamentali di un TEE GlobalPlatform e come
+questi componenti collaborano tra di loro.
 
 \begin{figure}
     \centering
@@ -427,9 +428,9 @@ tra di loro per l'implementazione.
 
 In \figurename~\ref{fig:tee-system-architecture} è illustrata una possibile
 architettura software di un sistema con un singolo TEE conforme
-GlobalPlatform. Questa è solo una delle tante possibili architetture, inoltre
-nulla vieta che un sistema possa avere più TEE, seppur nella pratica
-questo non è molto comune.
+GlobalPlatform. Tuttavia, questa è solo una delle molte possibili
+architetture e nulla vieta che un sistema possa avere più TEE, anche se
+questo non è molto comune nella pratica.
 
 In tale figura è possibile notare una barriera che divide il sistema in due
 mondi: il mondo del \textit{Trusted Execution Environment} (TEE) a destra
@@ -437,12 +438,12 @@ e il mondo del \textit{Regular Execution Environment} (REE) a sinistra, cioè
 il mondo a cui siamo abituati a lavorare con i sistemi operativi classici.
 
 In entrambi i mondi troviamo un sistema operativo che gestisce le risorse
-hardware e schedula l'esecuzione di processi. Un programma in esecuzione
-dentro il TEE prende il nome di \textit{Trusted Application}(TA) e può
-offrire dei servizi ad altre TA oppure alle applicazioni in esecuzione nel REE,
+hardware e schedula l'esecuzione dei processi. Un programma in esecuzione
+all'interno del TEE prende il nome di \textit{Trusted Application}(TA) e può
+offrire servizi ad altre TA o alle applicazioni in esecuzione nel REE,
 che prendono il nome di \textit{Client Application}(CA).
 
-Le TA all'interno del TEE possono far uso del \textit{Trusted Core Framework}
+Le TA all'interno del TEE possono far uso del \textit{Trusted Core Framework},
 che fornisce una interfaccia per operazioni comuni come il salvataggio
 di file in modo sicuro, l'accesso al timer e altre funzionalità descritte
 nella
@@ -458,10 +459,10 @@ di memoria tra CA e TA.
 
 \bigbreak \noindent
 
-Il flusso di esecuzione solito è il seguente: una CA richiede un servizio a
-una TA, per fare ciò utilizza la \textit{Client API} che astrae l'invio di un
-messaggio al \textit{TEE Communication Agent}.
-Questo primo messaggio apre una \textit{sessione} tra la CA e la TA, che
+Il flusso di esecuzione tipico in un sistema con un TEE conforme GlobalPlatform
+prevede che una Client Application richieda un servizio a
+una Trusted Application tramite l'utilizzo della \textit{Client API}.
+L'invio del primo messaggio apre una \textit{sessione} tra la CA e la TA, che
 indica l'inizio di uno o più \textit{Function Invocation}.
 Un messaggio di \textit{Function Invocation} contiene semplicemente un ID
 che identifica la funzione da invocare e degli eventuali parametri;
@@ -472,24 +473,24 @@ l'esito dell'operazione ed eventuali dati di ritorno.
 Queste chiamate sono sincrone, ma è possibile costruire delle chiamate
 asincrone tramite un meccanismo di polling.
 
-In entrambi i mondi troviamo dei \textit{Communication Agent}: questi 
+Entrambi i mondi del TEE e del REE dispongono di un proprio
+\textit{Communication Agent}: questi 
 hanno il compito d'inoltrare i messaggi tra CA e TA e, solo per il
 \textit{TEE Communication Agent}, anche tra TA a TA.
-I \textit{Communication Agent} possono prendere diverse forme nella pratica:
-possono essere processi, componenti del sistema operativo ma anche semplici
-librerie che vengono linkate alle applicazioni.
-Seppur nello schema siano visti come solo due componenti, nella realtà il loro
-ruolo può essere svolto usando più sotto-componenti.
+Questi agenti possono assumere diverse forme, come processi, componenti
+del sistema operativo o semplici librerie.
+Seppur nello schema siano visti come solo due componenti, nella realtà
+il loro ruolo può essere svolto usando più sotto-componenti.
 
 \bigbreak
 
 \noindent Infine, le periferiche hardware vengono suddivise in tre categorie:
 \begin{itemize}
     \item \textit{Periferiche Fidate}: L'accesso a queste periferiche è
-    consentito solamente dal TEE. Esempi di queste periferiche sono i
-    sensori biometrici. 
+    esclusivamente consentito al TEE. Esempi di queste periferiche sono i
+    sensori biometrici, come il lettore di impronte digitali. 
     \item \textit{Periferiche Fidate Condivise}: L'accesso a queste
-    periferiche di default è consentito solamente dal TEE, ma questo può
+    periferiche di default è consentito solamente al TEE, ma questo può
     decidere temporaneamente di condividere l'accesso con il REE. Esempi di
     queste periferiche sono il display e la tastiera.
     \item \textit{Periferiche Pubbliche}: L'accesso diretto a queste
@@ -500,16 +501,17 @@ ruolo può essere svolto usando più sotto-componenti.
 
 \subsection{Garanzie di sicurezza}
 \label{subsec:garanzie-sicurezza}
-I Trusted Execution Environment possono essere implementati in maniera
-diversa tra di loro, di conseguenza non sarebbe corretto considerarli tutti
+I Trusted Execution Environment possono essere implementati modi diversi
+tra di loro, di conseguenza non sarebbe corretto considerarli tutti
 uguali dal punto di vista della sicurezza.
 Per questo motivo, GlobalPlatform ha definito un set di proprietà che
-devono essere garantite da tutti i TEE, queste sono elencate nel
-\textit{Protection Profile}\cite{gp2020protectionprofile}.
-Un TEE per essere certificato deve garantire almeno queste proprietà, ma
-può garantire anche proprietà aggiuntive; questo vuol dire che rimane
-comunque sensata l'osservazione che non tutti i TEE sono uguali, seppur
-adesso sia possibile almeno stabilire una baseline minima. 
+tutti i TEE devono garantire, elencate nel
+\textit{"Protection Profile"}\cite{gp2020protectionprofile}.
+Un TEE, per essere certificato, deve garantire almeno queste proprietà, ma
+può garantire anche proprietà aggiuntive.
+Nonostante rimanga comunque sensata l'osservazione che non tutti i TEE
+sono uguali, grazie al "Protection Profile" è possibile stabilire una
+linea di base minima. 
 
 Una analisi dettagliata di questi documenti è fuori dallo scopo di questa
 tesi, ma in generale è possibile affermare che un TEE deve poter garantire
@@ -518,21 +520,19 @@ e confidenzialità sia del codice sia degli assets generati da esso.
 
 Le specifiche GlobalPlatform non restringono come queste proprietà devono
 essere raggiunte, seppur proponga alcune soluzioni pratiche.
-Nonostante ciò esistono comunque degli aspetti comuni alla maggior parte dei
+Tuttavia, esistono comunque degli aspetti comuni alla maggior parte dei
 TEE, come ad esempio l'uso di supporto hardware per realizzare l'isolamento
 oppure l'uso di firme digitali per garantire l'autenticità del codice.
 
-% FIXME: Sarebbe interessante una sotto-sezione "Cosa non garantiscono i TEE"
-%        (side-channel, attacchi di tipo hardware, ecc)
-
 \paragraph{Isolamento:}
 % TODO: Leggi per davvero l'articolo di rushby
-Per garantire la proprietà d'isolamento dal REE, \cite{sabt2015tee} nota
+Per garantire la proprietà d'isolamento dal REE,
+Sabt et al.\cite{sabt2015tee} nota
 che tutti i TEE implementano un \textit{separation kernel}
 \cite{rushby1981separationkernel}. 
 Un \textit{separation kernel} è un componente hardware e/o software fidato che
-ha il compito di separare il sistema in zone isolate che non possono
-interferire tra di loro e di mediare le comunicazioni tra di esse.
+separa il sistema in zone isolate che non possono
+interagire direttamente tra di loro e gestisce le comunicazioni tra di esse.
 % FIXME: Sembra tanto l'idea di microkernel, bisogna approfondire la differenza
 L'idea non è nuova, infatti venne proposta da Rushby nel 1981 dove propose
 di vedere ogni singola macchina come un sistema distribuito di componenti
@@ -549,34 +549,28 @@ Nei sistemi operativi oggi in uso, come Linux o Windows, la superficie di
 attacco è molto vasta a causa dell'enorme quantità di hardware che devono
 supportare e il numero elevato di servizi, anche non critici per la sicurezza,
 che offrono ai programmi utente. 
-% FIXME: Qualche dato sulla dimensione di Linux/Windows? 
-% Dati sugli exploit in quali parte del sistema(driver)?
 Un attaccante che riesce a penetrare nel kernel ottiene il massimo livello di
 controllo sulla macchina, diventa dunque sensata l'idea di separare quei
 servizi importanti per la sicurezza e d'isolarli dal resto del sistema in
 un ambiente sicuro.
 
-Per questo motivo è importante che il \textit{separation kernel} sia
-il più semplice possibile, in modo che sia verificabile facilmente che non
-contenga falle di sicurezza.
+Per questo motivo, è cruciale che il \textit{separation kernel} sia
+il più semplice possibile, in modo dapoterlo verificare facilmente per
+eventuali falle di sicurezza.
 Seppur sia possibile avere molteplici TEE sullo stesso sistema, nella pratica
 tutte le implementazioni si limitano a un singolo TEE, dunque il
 "sistema distribuito" immaginato da Rushby è composto solamente da due
 componenti, il TEE e il REE.
 
-% FIXME: Aggiungi e describi brevemente meglio esempi
-% Esempi pratici di \textit{separation kernel} sono ARM TrustZone e
-% Trusted Firmware-A, blablabla.
-
 \paragraph{Integrità e autenticità:}
-L'isolamento del TEE consente di garantire la protezione dei dati sensibili
-all'interno del dispositivo.
+L'isolamento del TEE consente di garantire la protezione dei dati
+in memoria durante l'esecuzione del codice.
 Tuttavia, questi benefici possono essere annullati se l'integrità e
 l'autenticità del codice e degli assets all'interno del TEE non vengono
 garantite.
 Un attaccante, infatti, potrebbe modificare il codice del TEE mentre il
 dispositivo è spento, per poi riaccenderlo con del codice compromesso
-che intenzionalmente rivela i dati sensibili.
+che intenzionalmente rivela informazioni importanti.
 
 Per questo motivo, è necessario garantire l'integrità e l'autenticità del
 codice durante l'intero ciclo di vita del sistema.
@@ -592,7 +586,9 @@ passare un processo di autenticazione che consiste nel confrontare un hash
 calcolato sul codice con un hash firmato incluso con il software.
 Questo hash deve essere firmato utilizzando una chiave privata la cui
 corrispondente chiave pubblica è conosciuta dal TEE, in modo da poter
-verificare che un ente fidato ha approvato l'esecuzione del codice.
+essere decrittato e confrontato con l'hash calcolato per
+verificare che un ente fidato abbia approvato quella specifica versione
+del software. 
 
 L'unica eccezione a questa regola è il primissimo software mandato
 in esecuzione sul sistema; questo non può essere autenticato perché non
@@ -613,24 +609,17 @@ poter assumere comunque che il software non sia stato compromesso.
 \end{figure}
 
 Questo meccanismo di autenticazione è molto simile a quello utilizzato per
-implementare il \textit{Secure Boot}; la differenza con quest ultimo è che
+implementare il \textit{Secure Boot}; la differenza con quest'ultimo è che
 nel \textit{Secure Boot} la catena di verifica del software termina con
-l'avvio del sistema operativo, questo perché \textit{Secure Boot} si prefigge
+l'avvio del sistema operativo, perché \textit{Secure Boot} si prefigge
 di autenticare solamente processo di avvio del sistema operativo.
-In un TEE, invece, si spinge più in avanti e si verificano anche i programmi
+In un TEE, invece, vengono verificati anche i programmi
 eseguiti al suo interno.
 
 In entrambi i casi, però, è necessario che il firmware di un dispositivo
 conosca le chiavi pubbliche per poter verificare la firma dei software
 da caricare. Come queste chiavi vengano ottenute dal firmware è un dettaglio
 implementativo, dunque altamente dipendente dal sistema.
-
-Per esempio, su PC che implementano \textit{UEFI Secure Boot} queste chiavi
-vengono spesse memorizzate su una piccola memoria (NV-RAM) inclusa
-nella scheda madre e accessibile
-solamente al firmware\cite{windows_secure_boot}.
-
-% FIXME: È un po' strano chiudere qui parlando di secure boot invece di TEE
 
 \section{Applicazioni dei TEE}
 \label{sec:applicazioni-tee}
@@ -641,7 +630,7 @@ applicazioni che non sarebbero possibili senza di essi.
 
 Oggi i TEE sono largamente diffusi in ambito mobile, seppur non sempre
 pubblicizzati, ma il loro utilizzo non è assolutamente limitato a tale ambito.
-Le loro applicazioni sono molteplici ma sfortunatamente la grande
+Le loro applicazioni sono molteplici, ma sfortunatamente la grande
 maggioranza dei produttori di dispositivi non supportano
 l'installazione di software aggiuntivo dentro il TEE dopo la
 configurazione iniziale.
@@ -748,7 +737,7 @@ Il livello più alto di protezione che questi sistemi offrono è basato sui TEE,
 che vengono usati per molteplici scopi tra cui: il provisioning di una chiave
 crittografica condivisa tra server e client, la verifica delle licenze digitali
 online e offline, la decrittazione degli stream audio/video e per mostrare
-a schermo il video senza però che applicazioni esterne al TEE possano leggerne
+a schermo il video senza che applicazioni esterne al TEE possano leggerne
 i contenuti.
 Per quest'ultima feature è necessario che sia presente un canale di
 comunicazione fidato tra TEE e display, cioè che non dipenda dal REE, in modo
@@ -765,8 +754,7 @@ nostra macchina per poterla gestire e monitorare; se da un lato questo solleva
 gli sviluppatori dal dover occuparsi di gestire le macchine, dall'altro ciò
 comporta un rischio di sicurezza.
 Infatti, se il cloud provider è in grado di controllare la nostra macchina,
-questo significa che può anche leggere i dati in memoria, che sono al sicuro
-solo quando la macchina è spenta o in transito.
+questo significa che può anche leggere i dati in memoria.
 
 La situazione diventa ancora più problematica quando consideriamo che su
 una singola macchina fisica i provider eseguono più macchine virtuali, ciascuna
@@ -784,11 +772,11 @@ software che sta eseguendo sia quello che è stato consegnato al provider.
 Questo è il problema della attestazione remota, per cui abbiamo già discusso
 in \ref{subsec:remote-attestation} come i TEE possono aiutare.
 
-La Confidential Computing Initiative\cite{confidential_computing_initiative}
+Il Confidential Computing Consortium\cite{confidential_computing_initiative}
 è un consorzio di grandi aziende nel mondo cloud che lavora a questo problema
-e che, al momento, trova nei TEE il modo per risolverlo.
+e, che al momento, trova nei TEE il modo per risolverlo.
 Lo scopo dell'organizzazione è proprio quello di supportare lo sviluppo
-di strumenti open source per garantire la s icurezza dei dati in memoria.
+di strumenti open source per garantire la sicurezza dei dati in memoria.
 Questo è un campo di ricerca molto attivo e con molti progetti in corso ma
 ancora poche soluzioni concrete e implementate.
 
@@ -800,8 +788,7 @@ possano essere utilizzati nelle applicazioni più disparate.
 
 \bigbreak \noindent
 
-% FIXME: Leggi meglio e comprendi l'articolo
-In Javet, Anciaux et all\cite{teeuses_edgeletcomputing} viene proposto di
+In Javet, Anciaux et al.\cite{teeuses_edgeletcomputing} viene proposto di
 utilizzare i TEE per realizzare un sistema di computazione "on the edge" sopra
 "Opportunistic Networks"(OppNet), ovvero reti che sfruttano i
 pattern di movimento degli utenti per creare reti temporanee.
@@ -838,89 +825,86 @@ intercettati e utilizzati per tracciare gli spostamenti delle persone.
 
 \section{Questioni etiche nell'uso dei TEE}
 \label{sec:etica-tee}
-I Trusted Execution Environment introducono una serie di questioni etiche
-non ancora affrontate.
+% FIXME: Fa schifo sta sezione
+I Trusted Execution Environment introducono una serie di questioni etiche.
 In letteratura nessuno ha ancora affrontato queste questioni rispetto ai TEE,
-ma dato che TEE e Confidential Computing possono essere visti come una
-evoluzione dei Trusted Platform Module (TPM) e del Trusted Computing 
-% FIXME: cit. required
-è possibile applicare le stesse considerazioni fatte per questi ultimi.
-Nonostante ciò le analisi presenti rimangono poche; Stallman in
-\cite{stallman2021tpm} fa notare che il concetto di Trusted Computing può
-essere usato per limitare le azioni dell'utente e, nel suo breve articolo,
-propone alcuni scenari in cui questo potrebbe accadere. 
+esistono però articoli riguardanti il concetto di \textit{Trusted Computing},
+che è una tecnologia che condivide alcuni aspetti con i TEE, in particolare
+l'idea che un sistema debba verificare a priori l'autenticità e l'integrità
+del software prima di eseguirlo.
 
-% + Una root of trust intagliata nell'hardware significa che non abbiamo il
-%   pieno controllo sul SW in esecuzione sulla nostra macchina
-Questo è vero; un TEE può garantire le sue proprietà di sicurezza solamente
-perché tutto il codice in esecuzione al suo interno è stato prima verificato
-e firmato da una entità fidata.
+I TEE tolgono il pieno controllo della macchina all'utente, in quanto una
+zona del sistema viene blindata e l'accesso ad essa è consentito solamente
+a parti autorizzate da chi può firmare le Trusted Application.
 Un singolo software insicuro può compromettere permanentemente la sicurezza
 di un TEE, e quindi di tutto il sistema; non è possibile dunque permettere
 l'esecuzione di qualunque software al suo interno.
 Questa responsabilità è troppo grande per essere affidata a un utente,
-in un certo senso dunque un TEE toglie all'utente la libertà di eseguire
-qualunque software sulla propria macchina, richiedendo prima che questo
-sia stato approvato da un ente già presente nel TEE.
+che può dunque soltanto eseguire software che è stato approvato da un
+ente fidato (ad esempio il produttore del dispositivo).
+Stallman, in \textit{"Can You Trust Your Computer?"}\cite{stallman2021tpm},
+osserva che le tecnologie di Trusted Computing, ma anche i TEE, non solo
+difendono il sistema da attacchi esterni, ma anche dall'utente stesso
+del sistema.
 
-% + Un TEE può avere controllo su tutto il computer senza che l'OS possa
-%   notarlo
-La situazione diventa ancora più problematica quando consideriamo che
-molte piattaforme hardware, come ARM TrustZone, permettono d'interferire
-con il sistema operativo in esecuzione sul REE. % FIXME: Cit. required
-Un TEE ha accesso diretto all'hardware per poter implementare le sue proprietà
-di sicurezza ma nulla gli impedisce, se non la buona volontà dei suoi
-sviluppatori, di abusare di questo accesso per poter spiare il REE senza che
-questo possa notarlo.
-Un TEE può quindi avere il controllo totale del sistema e, dato che garantisce
-la proprietà di confidenzialità sia delle memorie volatili che non, non è
-possibile ispezionare il suo codice e la sua memoria mentre è in esecuzione.
-
-% + La maggior parte dei vendor tiene un velo di segretezza rispetto ai
-%   propri TEE
-La maggior parte dei produttori non rilascia il codice sorgente dei propri TEE,
-ma anche se così non fosse questo non garantisce che il codice in esecuzione
-sia quello rilasciato, in quanto il TEE installato sul dispositivo potrebbe
-essere stato modificato prima dell'installazione.
+La maggior parte dei produttori non rilascia il codice sorgente
+dei propri TEE; ma anche se così fosse, ciò non garantisce che il codice
+in esecuzione sia quello rilasciato, in quanto il TEE installato sul
+dispositivo potrebbe essere stato modificato prima dell'installazione.
 Non è neanche possibile per un utente ricompilare il TEE e installarlo
-sul proprio dispositivo dato che, per design, la chiave per firmare il firmware
-non dovrebbe essere può essere esportata dal produttore.
+sul proprio dispositivo dato che, per design, la chiave per firmare
+il TEE non può essere estratta dal dispositivo.
+Di conseguenza, il rischio è che un produttore possa preinstallare del
+software sgradito all'utente sul suo dispositivo, e che questo software
+possa essere eseguito in un TEE, senza che l'utente possa fare nulla
+e alla sua insaputa.
 
-% + Sarebbe interessante studiare modi di garantire la root of trust
-%   mantenendo l'inspectability (codice Open source prob non basta)
-Un aspetto interessante, ma sfortunatamente non ancora esplorato in letteratura,
-è come permettere agli utilizzatori di un TEE di verificarne il codice senza
-comprometterne la sicurezza.
+Un aspetto interessante, ma sfortunatamente non ancora esplorato
+in letteratura, è come permettere agli utilizzatori di un TEE di
+verificarne il codice senza comprometterne la sicurezza.
 Seppur questo non risolva la questione della perdita di controllo sulla
-propria macchina, almeno permetterebbe di avere un'idea di cosa stia eseguendo
-il TEE.
+propria macchina, almeno permetterebbe di avere un'idea di cosa stia
+eseguendo il TEE.
+
+Un altro aspetto da considerare è che i TEE permettono di implementare
+applicazioni che possono facilitare l'instaurazione di un monopolio
+o anche di dubbia moralità.
+Ad esempio, tramite l'uso di chiavi crittografiche generate dentro
+il TEE, è possibile sviluppare un software di videoscrittura che
+rende apribili i documenti solamente tramite esso, rendendo impossibile
+qualunque sforzo di reverse-engineering. 
+Oppure, tramite i TEE è possibile sviluppare un software di messaggistica
+dove un capo in remoto può decidere se rendere inaccessibili certi messaggi
+inviati in precedenza, permettendo di cancellare prove compromettenti.
 
 \chapter{Hardware a supporto dei TEE}
 \label{chap:hardware-supporto-tee}
 Un TEE non può garantire le sue proprietà di sicurezza se non è supportato
-dall'hardware, in particolare la proprietà di isolazione dal resto del
-sistema considerato "non sicuro".
+da adeguato hardware, in particolare per quanto riguarda la proprietà di
+isolamento dal resto del sistema considerato "non sicuro".
 
-Non esiste una unica soluzione hardware per permettere che un TEE implementi
-queste proprietà; questo capitolo è dunque dedicato a una breve
-esplorazione di alcune delle proposte hardware presenti sul mercato.
+Non esiste una soluzione univoca per permettere che un TEE implementi
+queste proprietà; pertanto, in questo capitolo verranno esplorate
+brevemente alcune delle proposte hardware disponibili sul mercato.
 
 \section{ARM TrustZone}
 \label{sec:arm-trustzone}
-ARM TrustZone\cite{trustzone} è una etichetta introdotta da ARM nel 2004
-usata per indicare un insieme di funzionalità hardware per la
-sicurezza dei processori con profilo A (Application) e, di recente,
+ARM TrustZone\cite{trustzone} è una tecnologia introdotta da ARM nel 2004 che
+fornisce un insieme di funzionalità hardware per la sicurezza
+dei processori con profilo A (Application) e recentemente
 anche M (Microcontroller).
-Alcuni nomi di TEE famosi che fanno uso di TrustZone includono
-Samsung Knox, Qualcomm QSEE e OP-TEE.
+Alcuni esempi di TEE famosi che utilizzano TrustZone sono
+\textit{Samsung Knox}, \textit{Qualcomm QTEE} e \textit{OP-TEE}.
 
-Alla base di TrustZone è l'idea di virtualizzare il processore, che in
-ogni momento può trovarsi in uno di due stati:
-\emph{Secure} o \emph{Non-secure}.
-Questi stati possono accedere a memoria e periferiche diverse, e
-vengono isolati uno dall'altro da sistemi di protezione hardware.
-Le modalità di privilegio di ARM, che vanno da EL2(più alto)
-a EL0(più basso), vengono estese con le modalità S-EL0, S-EL1, EL3.
+L'idea alla base di TrustZone è quella di virtualizzare il
+processore, che può trovarsi in uno dei due stati:
+\emph{"Secure"} o \emph{"Non-secure"}.
+Questi stati possono accedere a memoria e periferiche diverse
+e sono isolati l'uno dall'altro tramite sistemi di protezione
+hardware.
+Le modalità di privilegio di ARM, che vanno da EL2 (più alto)
+a EL0 (più basso), vengono estese con le modalità
+S-EL0, S-EL1, EL3.
 A partire da ARMv8.4-A, TrustZone supporta anche il livello
 di privilegio S-EL2, ma rimane una feature opzionale.
 
@@ -937,21 +921,23 @@ di privilegio S-EL2, ma rimane una feature opzionale.
     \label{fig:arm-exception-levels}
 \end{figure}
 
-Il livello di privilegio EL3 è il livello più alto e viene usato dal firmware
-per configurare il sistema e gestire il passaggio di controllo tra il mondo
-\emph{Secure} e quello \emph{Non-secure}.
-In TrustZone, il livello EL3 rappresenta il \emph{Separation Kernel}
-che abbiamo descritto in precedenza.
+Il livello di privilegio EL3 è il livello più alto e viene utilizzato
+dal firmware per configurare il sistema e gestire la transizione
+tra il mondo \emph{Secure} e quello \emph{Non-secure} in TrustZone.
+In questo contesto, il livello EL3 rappresenta il
+\emph{Separation Kernel} descritto in precedenza.
 
 Il processore si avvia in questo livello eseguendo il firmware da una ROM.
-Tra i compiti di questo firmware è quello di partizionare la memoria in
-memoria "sicura" e "non sicura", e di configurare quali periferiche sono
-accessibili in modalità \emph{Secure} e quali in modalità \emph{Non-secure}.
-I dispositivi, che su ARM vengono acceduti tramite MMIO, hanno accesso a un
-bit speciale che indica se il processore è in modalità \emph{Secure} o
+Tra i compiti di questo firmware c'è quello di partizionare la memoria in
+"memoria sicura" e "memoria non sicura", e di configurare quali
+periferiche sono accessibili in modalità \emph{Secure} e quali
+in modalità \emph{Non-secure}.
+Le periferiche hanno accesso a un bit extra sul bus dati che
+indica se il processore è in modalità \emph{Secure} o
 \emph{Non-secure}.
-Tramite questo bit un dispositivo potrebbe decidere se
-rifiutarsi di essere utilizzato in modalità \emph{Non-secure}. 
+Tramite questo bit, dato che su ARM le periferiche comunicano tramite MMIO,
+una periferica potrebbe decidere se rifiutarsi di essere utilizzato
+in modalità \emph{Non-secure}. 
 
 Il firmware deve anche configurare un handler per l'istruzione
 \textit{Secure Monitor Call}(\texttt{smc}).
@@ -996,7 +982,6 @@ e rendere inaccessibile la modalità \emph{Secure}
 
 \section{Intel SGX}
 \label{sec:intel-sgx}
-% FIXME: Cita in qualche modo \cite{sgxexplained}
 Intel Software Guard Extensions (SGX) è una estensione
 dell'architettura x86\_64 introdotta nel 2015 con i processori
 Intel Core di sesta generazione.
@@ -1017,9 +1002,12 @@ per utilizzare un TEE su tali piattaforme.
 Le enclavi sono eseguibili solamente in \textit{protected mode}
 a livello di privilegio $3$(il più basso) e possono essere create
 solamente dal sistema operativo, per conto suo oppure di un'applicazione.
-All'avvio della macchina, il sistema operativo può designare una zona
+
+Constan e Devadas in \cite{sgxexplained} offrono una descrizione molto
+dettagliata di come funziona SGX:
+all'avvio della macchina, il sistema operativo può designare una zona
 di memoria contigua come \textit{Processor Reserved Memory} (PRM) impostando
-due registri e con una dimensione massima di 128MB e potenza di 2.
+due registri e con una dimensione massima di 128MB e potenza di $2$.
 
 Questa zona di memoria viene suddivisa in sottosezioni, tra cui troviamo
 la \textit{Enclave Page Cache}(EPC) e la
@@ -1031,16 +1019,16 @@ L'accesso a questa memoria è consentito solamente all'enclave a cui è
 assegnata la pagina corrispondente, altrimenti il processore leggerà tutti
 i bit a $1$.
 La EPMC è una tabella utilizzata da SGX per tracciare le pagine della EPC
-a quale enclave appartengono ed è inaccessibile a chinque, indipendentemente
+a quale enclave appartengono ed è inaccessibile a chiunque, indipendentemente
 dal livello di privilegio.
 
 La creazione di una enclave è compito del sistema operativo e
 avviene in tre fasi:
-inizialmente l'OS seleziona una pagina libera della EPC in cui scrive una
+inizialmente il SO seleziona una pagina libera della EPC in cui scrive una
 struttura dati chiamata \textit{SGX Enclave Control Structure}(SECS)
 contenente diversi parametri riguardo all'enclave. 
 Il sistema operativo chiama \texttt{ECREATE} passando questa pagina, che
-diventerà poi inacessibile a chiunque dato che SGX la utilizzerà per
+diventerà poi inaccessibile a chiunque dato che SGX la utilizzerà per
 salvare metadati riguardo l'enclave.
 L'indirizzo virtuale della SECS diventerà un identificatore per l'enclave.
 
@@ -1058,7 +1046,7 @@ il codice al suo interno.
 Per fare ciò il sistema operativo chiama \texttt{EINIT} passando
 un \textit{Init Token Structure}. Questo token può essere generato grazie
 a una enclave speciale fornita da Intel chiamata \textit{Launch Enclave}
-che può essere approvata locamente dalle CPU SGX perchè firmata con una
+che può essere approvata localmente dalle CPU SGX perchè firmata con una
 chiave installata nell'hardware.
 
 La Launch Enclave si appoggia a un servizio remoto alla quale
@@ -1075,7 +1063,7 @@ token d'inizializzazione.
 \medbreak \noindent
 
 Intel SGX è implementato quasi interamente in microcodice: 
-grazie a questa scelta anche se SGX nel tempo SGX ha sofferto
+grazie a questa scelta anche se SGX nel tempo ha sofferto
 di diverse vulnerabilità, Intel ha potuto risolverle rilasciando
 aggiornamenti puramente software.
 
@@ -1102,7 +1090,7 @@ tra host.
 Alla base del funzionamento di SEV sono un chip AES-128 installato sui
 bus di memoria, che si occupa della cifratura dei dati in memoria,
 e un processore ARM installato sulla scheda madre chiamato 
-\textit{Secure Processor}
+\textit{Secure Processor}(SP)
 \footnote{
     Precedentemente chiamato \textit{Platform Security Processor} (PSP).
 }(SP).
@@ -1110,16 +1098,14 @@ Questo processore aggiunto esegue un sistema operativo proprietario che
 ha vari compiti, come ad esempio generare e gestire le chiavi crittografiche
 usate per crittografare la memoria delle VM.
 
-Il \textit{Secure Processor} ha anche il compito di assicurare
-l'attestazione remota delle macchine virtuali.
 Il SP è in grado di generare un report di attestazione per ogni VM
-in esecuzione.
+in esecuzione, questo permette di implementare un sistema di
+attestazione remota.
 Questi report vengono inviati ai clienti, che vogliono aver modo di
 verificare che le VM in esecuzione su un server siano state create
 da un'immagine verificata e sono in esecuzione nell'ambiente desiderato.
-
-Un report di attestazione contiene informazioni come un hash dell'immagine
-della VM caricata dall'hypervisor, informazioni sulle tabelle di mapping
+Un report di attestazione contiene informazioni tra cui un hash dell'immagine
+della VM caricata dall'hypervisor, le tabelle di mapping della memoria
 impostate inizialmente per la VM, funzionalità di sicurezza abilitate
 sul sistema e versioni dei componenti hardware.
 Questo report viene firmato utilizzando una chiave privata installata nel
@@ -1132,7 +1118,7 @@ di AMD disponibile online.
 \medbreak
 
 Successivamente AMD ha rilasciato una versione aggiornata di SEV, chiamata
-SEV-ES (Encrypted State)\cite{sev_es}. Inizialmente SEV salvava i registri
+SEV-ES (Encrypted State)\cite{sev_es}. SEV salva i registri
 di una VM in chiaro dopo un context switch con l'hypervisor, questo è
 stato ritenuto un problema di sicurezza e dunque SEV-ES ha introdotto la
 crittografia anche degli stati dei registri.
@@ -1151,7 +1137,7 @@ precedenti.
 Una soluzione possibile per implementare un TEE è quella di utilizzare
 un intero secondo sistema, collegato solamente alle periferiche fidate.
 Chiaramente integrare un secondo \textit{System on a Chip}(SoC) dentro
-a un dispositivo è una soluzione più costosa ma possibile, particolarmente
+a un dispositivo è una soluzione più costosa, ma possibile, particolarmente
 in dispositivi di fascia premium.
 
 \bigbreak \noindent
@@ -1159,12 +1145,12 @@ in dispositivi di fascia premium.
 Apple, a partire dall'iPhone 5, include nei propri telefoni un sottosistema
 integrato nel processore che prende il nome di
 \textit{Secure Enclave}.
-Questo è un \textit{System on a Chip}, cioè contiene un processore
-e della memoria dedicata, che esegue il piccolo sistema operativo verificato
-formalmente, L4\cite{secure_enclave}.
+Questo è un SoC che esegue una versione modificata del
+microkernel L4\cite{secure_enclave}.
 Il chip \textit{Secure Enclave} è collegato solamente ad alcuni
 acceleratori crittografici e a un bus I2C per salvare dati in una zona di
-memoria non volatile dedicata; il suo scopo è quello di mantenere i dati
+memoria non volatile dedicata.
+Il suo scopo è quello di mantenere i dati
 degli utenti al sicuro in caso di compromissione del processore principale
 e implementare servizi come \textit{Touch ID} e \textit{Apple Pay}.
 
@@ -1176,7 +1162,7 @@ utilizza TrustZone per implementare un TEE.
 Affiancato a questo chip, ne troviamo un altro chiamato \textit{Titan M2}:
 questo è un \textit{System on a Chip} proprietario RISC-V dedicato a
 scopi simili a quelli di \textit{Secure Enclave}.   
-Nei propri telefoni Google utilizza l'area TrustZone solamente come
+Nei propri telefoni, Google utilizza l'area TrustZone solamente come
 intermezzo per la comunicazione con il chip \textit{Titan M2} e per
 implementare il meccanismo di \textit{Secure Boot} per il mondo
 non sicuro.
@@ -1189,20 +1175,20 @@ mentre è stato segnalato un singolo attacco\cite{attack_titanM} a
 
 \section{TEE RISC-V}
 \label{sec:risc-v}
-RISC-V è un ISA (Instruction Set Architecture) open source sviluppato
+RISC-V è un Instruction Set Architecture(ISA) open source sviluppato
 dalla RISC-V Foundation, una organizzazione senza scopo di lucro.
 Sviluppare hardware basato su RISC-V è gratuito e non richiede alcuna
 licenza, nasce per essere estensibile e inoltre gode di un buon supporto
 tramite toolchain e sistemi operativi.
 Questo ISA è molto interessante per i produttori di dispositivi perché
-permette loro di sviluppare hardware adattato per le loro esigenze
+permette loro di sviluppare hardware adattato per le loro esigenze,
 senza dover pagare licenze o scrivere completamente da zero un
 completo stack software.
 
 Queste caratteristiche hanno reso RISC-V un mondo dove diversi progetti
 collegati all'ambito TEE stanno nascendo.
 Molti di questi progetti si basano sull'estensione
-PMP (\textit{Physical Memory Protection}) che permette di definire un
+\textit{Physical Memory Protection}(PMP), che permette di definire un
 numero variabile(ma limitato dall'hardware) di aree di memoria fisica
 protette da accessi non autorizzati.
 Il funzionamento è simile a quello di SGX o TrustZone, senza però limiti
@@ -1251,7 +1237,7 @@ una progettazione tenendo conto della sicurezza fin dall'inizio,
 l'impiego di processi di code-review, l'uso di linguaggi di programmazione
 \textit{memory safe}, e l'uso di strumenti di fuzzing, verifica formale e
 analisi statica per trovare bug in anticipo sono tutte buone pratiche per
-la sicurezza del software.  
+la sicurezza del software.
 
 \bigbreak \noindent
 Per molte soluzioni hardware la gestione della cache è stata
@@ -1273,14 +1259,14 @@ tramite attacchi alla cache di tipo \textit{Prime+Probe},
 \textit{Flush+Reload} e altro.
 
 Su ARM TrustZone, Guanciale et al.\cite{aliasdriven} hanno dimostrato
-che creando molteplici mapping virtuali allo stesso indirizzo fisico
+che, creando molteplici mapping virtuali allo stesso indirizzo fisico,
 ma impostando politiche di caching incoerenti, è possibile non solo
-leggere dati dalla memoria sicura ma anche scrivere dati in alcuni casi.
+leggere dati dalla memoria sicura, ma anche scrivere dati in alcuni casi.
 
 Su AMD SEV, Mengyuan et all\cite{sev_tlb_poisoning} hanno trovato diverse
-vulnerabilità nella gestione del \textit{Translation Lookaside Buffer}(TLB),
+vulnerabilità nella gestione del \textit{Translation Lookaside Buffer},
 riuscendo non solo a leggere dati dalla memoria sicura di una VM, ma anche
-a forzarla ad eseguire una istruzione arbitraria.
+a forzarla a eseguire una singola istruzione arbitraria.
 
 Inoltre, seppur non sia una vulnerabilità del TEE, è stato
 dimostrato che la gestione separata della cache tra TEE e REE
@@ -1295,8 +1281,8 @@ di analisi.
 
 \bigbreak
 Un altro vettore di attacco è l'alimentazione del processore: questi
-fanno parte di una classe di attacchi chiamati \textit{fault attacks}
-e consistono nell'indurre l'hardware a commettere errori intenzionalmente
+fanno parte di una classe di attacchi chiamati \textit{fault attacks},
+e consistono nell'indurre l'hardware a commettere errori intenzionalmente,
 per poi sfruttarli per estrarre informazioni private.
 
 Un esempio di questo tipo di attacco sono
@@ -1312,13 +1298,13 @@ al \textit{Security Processor}, permettendo eventualmente di caricare un
 firmware malevolo per bypassare la cifratura delle VM.
 
 Intel e ARM hanno risolto questo problema rispettivamente ignorando le
-impostazioni di alimentazione mentre la CPU è dentro un enclave SGX e
+impostazioni di alimentazione mentre la CPU è dentro un enclave SGX, e
 rendendo il dispositivo di controllo dell'alimentazione accessibile
 solamente dal mondo \textit{Secure}.
 AMD non ha rilasciato alcuna dichiarazione al riguardo: tutti i processori
 AMD Epyc fino alla terza generazione sono confermati vulnerabili, non è
 stato ancora verificato se questa vulnerabilità è stata risolta nei
-processori di quarta generazione.  
+processori di quarta generazione.
 
 \chapter{Passthrough per TEE tra QEMU e Linux}
 \label{chap:passthrough-tee-qemu-linux}
