@@ -1003,7 +1003,7 @@ Le enclavi sono eseguibili solamente in \textit{protected mode}
 a livello di privilegio $3$(il più basso) e possono essere create
 solamente dal sistema operativo, per conto suo oppure di un'applicazione.
 
-Constan e Devadas in \cite{sgxexplained} offrono una descrizione molto
+Constan e Devadas in \cite{sgx_explained} offrono una descrizione molto
 dettagliata di come funziona SGX:
 all'avvio della macchina, il sistema operativo può designare una zona
 di memoria contigua come \textit{Processor Reserved Memory} (PRM) impostando
@@ -1308,21 +1308,23 @@ processori di quarta generazione.
 
 \chapter{Passthrough per TEE tra QEMU e Linux}
 \label{chap:passthrough-tee-qemu-linux}
-Al momento le opzioni per utilizzare un TEE in un ambiente virtualizzato
+Le opzioni per utilizzare un TEE in un ambiente virtualizzato
 sono piuttosto limitate.
-Le opzioni possibili ad oggi generalmente prevedono che il cliente di un
+Attualmente, queste prevedono che il cliente di un
 provider porti con se il proprio TEE e Trusted Application:
-questo se da un lato offre una grande flessibilità al cliente, dall'altro
+se da un lato ciò offre una grande flessibilità al cliente, dall'altro
 comporta non solo il dover gestire un TEE da zero per l'utente, ma spesso
-anche delle pesanti limitazioni tecniche per poter comunque garantire la
+anche un grande lock-in rispetto alla tecnologia utilizzata e, in alcuni
+casi, delle limitazioni tecniche per poter comunque garantire la
 co-tenancy del sistema.
 
-L'approccio che ci prestiamo di seguito è diverso e complementare a quello
-appena descritto: il TEE è gestito dal provider e offre delle Trusted
-Application preinstallate che possono essere utilizzate dai clienti.
-Questo approccio non richiede che i clienti portino con sè il proprio TEE
-e non permette a loro di eseguire le proprie Trusted Application, ma rimuove
-quei limiti tecnici che impedivano di garantire la co-tenancy del sistema.
+Proponiamo un approccio alternativo e complementare: il TEE è gestito dal
+provider e offre applicazioni affidabili preinstallate per i clienti.
+Con questo metodo, i clienti non devono portare con sé il proprio TEE e
+non possono eseguire le proprie applicazioni affidabili, ma vengono
+eliminate le limitazioni tecniche per garantire la co-tenancy del sistema.
+Inoltre, utilizzando l'interfaccia GlobalPlatform, questo approccio è
+indipendente dalla tecnologia sottostante al TEE.
 
 È importante notare che questo approccio non è necessariamente in conflitto
 con quello precedente: un provider può offrire sia un TEE gestito da lui
@@ -1332,13 +1334,13 @@ che un'opzione per portare con sè il proprio TEE.
 
 In questo capitolo descriviamo come abbiamo realizzato questa soluzione;
 iniziando con il background necessario per poi arrivare a discutere la nostra
-implementazione, realizzata estendendo QEMU e Linux.
+implementazione, realizzata estendendo QEMU e Linux, e i risultati ottenuti.
 
 \section{Il sottosistema TEE per Linux}
 \label{sec:sottosistema-tee-per-linux}
-Dalla versione del kernel 4.12 Linux supporta un sottosistema TEE
+Dalla versione 4.12, il kernel Linux supporta un sottosistema TEE
 \cite{linux_tee_subsystem}
-per l'uso da parte degli utenti (user space) e per l'implementazione
+per l'uso da parte degli utenti (user-space) e per l'implementazione
 di driver.
 
 Questo sottosistema si occupa della registrazione dei driver TEE, della
@@ -1354,18 +1356,19 @@ implementare anche driver per TEE che non seguono questo standard.
 
 \subsection{Interfaccia user-space}
 \label{subsec:interfaccia-user-space}
-Se un TEE e il suo driver corrispondente sono presenti nel sistema allora
+Se un TEE e il suo driver corrispondente sono presenti nel sistema,
 il sottosistema TEE crea un device file \texttt{/dev/teeX} e
 \texttt{/dev/teeprivX} che rappresentano rispettivamente una interfaccia
 per la comunicazione da \textit{Client Application}(CA) a TEE e una
-interfaccia per fare polling di messaggi asincroni da parte del TEE.
+interfaccia per un \textit{supplicant}, un processo che esegue operazioni
+in user-space per conto del TEE.
 
 Queste interfacce sono utilizzabili tramite la system call \textit{ioctl}
 e sono descritte nel file \texttt{linux/tee.h}.
 La system call \textit{ioctl}(\textit{Input/Output Control})
 è una system call generica che permette di
-eseguire operazioni su un device file; questa system call
-prende tre parametri:
+eseguire operazioni su un device file.
+Questa system call prende tre parametri:
 il descrittore del device file, il codice dell'operazione da eseguire e
 un puntatore a un buffer contenente degli eventuali parametri da passare
 all'operazione.
@@ -1421,12 +1424,12 @@ Queste sono:
 Ognuna di queste operazioni, a eccezione di \texttt{TEE\_IOC\_VERSION},
 oltre a un set di argomenti, può accettare anche degli argomenti extra
 specifici per il TEE che si sta utilizzando.
-Questi argomenti extra possono essere dei semplici interi a 64 bit oppure
+Questi argomenti extra possono essere dei semplici interi a $64$ bit oppure
 dei riferimenti a buffer di memoria condivisi.
 
 Il flusso tipico di operazione di una CA è il seguente:
 \begin{enumerate}
-    \item La CA apre il device file \texttt{/dev/tee0}, per esempio, usando
+    \item La CA apre il device file, di solito \texttt{/dev/tee0}, usando
         \texttt{open}.
     \item La CA apre una sessione con una \textit{Trusted Application}
         facendo una \textit{ioctl} con \texttt{TEE\_IOC\_OPEN\_SESSION}
@@ -1434,34 +1437,34 @@ Il flusso tipico di operazione di una CA è il seguente:
         come argomento, riempita opportunamente con l'UUID
         (conosciuto a priori) 
         della \textit{Trusted Application} a cui vuole collegarsi, 
-        ed altri argomenti opzionali.
+        e altri argomenti opzionali.
     \item Se la sessione viene aperta con successo, la struttura passata come
         argomento viene riempita con l'ID della sessione.
-    \item La CA invoca una funzione della \textit{Trusted Application} facendo
-        una \textit{ioctl} con \texttt{TEE\_IOC\_INVOKE} e passando una
+    \item La CA invoca una funzione della \textit{Trusted Application} tramite
+        una \textit{ioctl} con \texttt{TEE\_IOC\_INVOKE}, e passando una
         struttura \texttt{tee\_ioctl\_invoke\_arg} come argomento, riempita
         opportunamente con l'ID della sessione, l'ID della funzione da
         invocare e altri argomenti opzionali.
     \item Se l'invocazione va a buon fine, la struttura passata come argomento
         viene riempita con i risultati dell'invocazione.
-    \item LA CA ripete i punti 3 e 4 per invocare altre funzioni della
+    \item LA CA ripete i punti $3$ e $4$ per invocare altre funzioni della
         \textit{Trusted Application}.
-    \item La CA chiude la sessione con la \textit{Trusted Application} facendo
-        una \textit{ioctl} con \texttt{TEE\_IOC\_CLOSE\_SESSION} e passando
+    \item La CA chiude la sessione con la \textit{Trusted Application} tramite
+        una \textit{ioctl} con \texttt{TEE\_IOC\_CLOSE\_SESSION}, e passando
         una struttura \texttt{tee\_ioctl\_close\_session\_arg} come argomento,
         riempita opportunamente con l'ID della sessione.
-    \item La CA chiude il device file \texttt{/dev/tee0} usando \texttt{close}.
+    \item La CA chiude il device file aperto al punto $1$ usando \texttt{close}.
 \end{enumerate}
 
 \bigbreak \noindent
 
 L'uso diretto di queste interfacce non è consigliato.
-Invece, gli sviluppatori di CA dovrebbero preferire l'uso di una libreria come
-\texttt{libteec} che offre un'interfaccia che rispetta la specifica
-GlobalPlatform TEE Client API\cite{gp2020internalapi} 
+Invece, gli sviluppatori di CA dovrebbero preferire l'uso di una libreria, come
+\texttt{libteec}, che offra un'interfaccia che rispetta la specifica
+GlobalPlatform TEE Client API\cite{gp2020internalapi},
 e che internamente usa
 le interfacce del sottosistema TEE.
-Questo approccio permette poi di utilizzare lo stesso codice anche su
+Questo approccio permette di utilizzare lo stesso codice anche su
 piattaforme diverse da Linux.
 
 \subsection{Interfaccia kernel-space}
@@ -1470,8 +1473,8 @@ Il sottosistema TEE di Linux offre anche una interfaccia kernel-space per
 gli sviluppatori di TEE che vogliono integrare il proprio TEE con Linux.
 Questa interfaccia permette loro di implementare un driver in modo
 relativamente semplice, inoltre offre anche una serie di funzioni
-utili per la gestione di alcune operazioni comuni come il caricamento
-di file dal REE oppure l'implementazione di un allocatore per la memoria
+utili per la gestione di alcune operazioni comuni; ad esempio il caricamento
+di file dal REE, oppure l'implementazione di un allocatore per la memoria
 condivisa tra TEE e REE.
 
 Questo sottosistema è spesso compilato come un modulo del kernel opzionale,
@@ -1491,16 +1494,14 @@ Molte di queste funzioni hanno una corrispondenza univoca con le
 il sottosistema TEE assiste gli sviluppatori nella loro
 implementazione effettuando, per esempio, la conversione dei parametri
 passati da kernel-space a user-space e viceversa.
-% TODO: Ricorda che il driver non sta facendo operazioni complesse,
-%       sta solo inoltrando le richieste al TEE
 
 Il sottosistema TEE richiede inoltre che gli sviluppatori
 implementino delle funzioni per l'allocazione, de-allocazione e
 sincronizzazione di pool di memoria condivisa tra TEE e kernel-space.
-
 Da questo pool di memoria il sottosistema TEE soddisfa le richieste
-di allocazione di blocchi di memoria condivisa; questa memoria è la base
-con cui una CA e una TA possono scambiare dati di dimensioni non banali.
+di allocazione di blocchi di memoria condivisa.
+Questa memoria è la base con cui una CA e una TA possono scambiare
+dati di dimensioni non banali.
 
 Il set minimo di funzioni che un driver deve implementare è il seguente:
 \begin{itemize}
@@ -1554,7 +1555,7 @@ possono usare le funzioni \texttt{tee\_device\_alloc} e
 le callback alle funzioni implementate, per registrare il loro TEE
 e renderlo disponibile alle applicazioni user-space.
 
-Questa operazione viene effettuata una sola volta per ogni TEE, e
+Questa operazione viene effettuata una sola volta per ogni TEE e
 generalmente avviene all'inizializzazione del driver.
 Di contrasto, durante la deinizializzazione del driver, sarà necessario
 fare l'opposto dell'inizializzazione e deregistrare il TEE usando
@@ -1565,7 +1566,8 @@ fare l'opposto dell'inizializzazione e deregistrare il TEE usando
 Implementare un driver in Linux può essere fatto generalmente in due modi:
 in-tree o out-of-tree. Il primo modo richiede di compilare il driver insieme
 all'intero kernel, mentre il secondo permette di compilare il driver come un
-modulo separato che può essere caricato in runtime.
+modulo separato, seppur bisogna comunque utilizzare una toolchain uguale a
+quella utilizzata per compilare il kernel.
 Il modo in cui il driver è compilato non influenza il modo in cui viene
 utilizzato, ma in generale è preferibile compilare il driver come un modulo
 perché più semplice da gestire e perché permette di aggiornare il driver
@@ -1577,48 +1579,60 @@ Open Portable Trusted Execution Environment (OP-TEE)\cite{optee}
 è un progetto open source
 che implementa un TEE per sistemi ARM basati su TrustZone.
 OP-TEE nasce nel 2013 dalla collaborazione tra Linaro e STMicroelectronics
-per fornire un TEE open source per i loro prodotti; oggi OP-TEE è sotto
-il controllo di \textit{TrustedFirmware}, una collaborazione tra varie
-aziende che ha lo scopo di fornire delle implementazioni di riferimento
-per lo sviluppo di software sicuro su piattaforme ARM.
+per fornire un TEE open source per i loro prodotti.
+Oggi OP-TEE è sotto il controllo di \textit{TrustedFirmware}, una
+collaborazione tra varie aziende che ha lo scopo di fornire delle
+implementazioni di riferimento per lo sviluppo di software sicuro
+su piattaforme ARM.
 
-OP-TEE, tra i pochi TEE open source disponibili, è l'unico attivamente
-sviluppato e, grazie alla sua documentazione e al suo build system, non
-è difficile preparare un ambiente per sviluppare al suo interno.
+OP-TEE, tra i pochi TEE open source disponibili, si distingue per
+essere l'unico che viene attivamente sviluppato.
+La sua documentazione completa e il suo build system rendono molto facile
+preparare un ambiente di sviluppo per Trusted Application e
+per il TEE stesso.
 
 OP-TEE è stato progettato per essere compatibile con la specifica
 GlobalPlatform, di conseguenza è possibile notare una certa somiglianza
 tra la sua architettura software (raffigurata in
-\figurename~\ref{fig:tee-system-architecture})
+\figurename~\ref{fig:optee-system-architecture})
 e quella di un TEE GlobalPlatform
 (in \figurename~\ref{fig:tee-system-architecture}).
-Al momento di questa tesi OP-TEE implementa la specifica GlobalPlatform v1.1,
+Al momento di questa tesi, OP-TEE implementa la specifica GlobalPlatform v1.1,
 inoltre è tra i due TEE\footnote{
         L'altro TEE per cui è implementato un driver Linux è
         l'AMD Platform Security Processor
 } per cui è implementato un driver per il sottosistema TEE per Linux.
 
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{immagini/optee-system-architecture}
+    \caption{
+        Architettura software di OP-TEE.
+        Da \textit{"TEE Subsystem - OP-TEE Driver"}\cite{linux_tee_subsystem}
+    }
+    \label{fig:optee-system-architecture}
+\end{figure}
+
 OP-TEE include un supporto sperimentale alla virtualizzazione
 \cite{optee_virtualization}: in questo
 modello è possibile creare dei gruppi di TA isolate dal resto del TEE,
 dove ognuno di questi gruppi rappresenta il TEE di una VM.
-Questo modello però comporta delle limitazioni, la principale è che
-per evitare un attacco di tipo Denial of Service (DoS) OP-TEE impedisce
+Questo modello però comporta delle limitazioni, la principale è che,
+per evitare un attacco di tipo Denial of Service (DoS), OP-TEE impedisce
 un uso dinamico della memoria alle TA, a cui viene assegnata una quantità
 di memoria prefissata, statica e uguale per tutti.
 
 Per questi motivi OP-TEE è stato scelto come TEE da utilizzare
 come riferimento per la realizzazione del nostro progetto, è
-importante però notare che l'implementazione realizzata non è però
-legata a OP-TEE in particolare e dovrebbe funzionare con qualsiasi
+importante però notare che, nonostante ciò, l'implementazione realizzata
+non è legata a OP-TEE in particolare, e dovrebbe funzionare con qualsiasi
 TEE disponibile nel kernel Linux.
 
 \section{Implementazione}
 \label{sec:implementazione}
 Il nostro obiettivo è quello di implementare un passthrough per il TEE,
-cioè vogliamo che la macchina virtuale possa mandare richieste al TEE
-presente sull'host.
-
+cioè un sistema tramite la quale una macchina virtuale possa mandare
+richieste al TEE presente sulla macchina che la ospita, cioè l'host.
 Per fare questo abbiamo bisogno di un modo per comunicare tra la macchina
 virtuale e l'host, dunque di creare un canale di comunicazione tra i due
 mondi e dedicato al TEE.
@@ -1656,10 +1670,10 @@ scritture da parte del guest nella zona di memoria
 passano il controllo dalla VM all'hypervisor, che prende il controllo e
 permette di inoltrare il messaggio scritto dal guest.
 
-Questa zona di memoria è suddivisa in registri, questi sono utilizzati
+Questa zona di memoria è suddivisa in registri, che sono utilizzati
 per implementare un semplice protocollo a messaggi che imita il funzionamento
 dell'interfaccia user-space del sottosistema TEE di Linux.
-I registri sono:
+I registri che abbiamo definito sono:
 
 \begin{table}
     \centering
@@ -1731,10 +1745,10 @@ Il driver al caricamento chiama la funzione \texttt{ioremap} per ri-mappare
 l'area di memoria del device virtuale in una zona di memoria virtuale
 accessibile dal kernel.
 
-In generale il driver non è particolarmente complesso, il suo compito è
-quello di ricevere delle richieste dal sottosistema TEE di Linux, convertirle
-in messaggi compatibili con il protocollo descritto più avanti e infine
-mandare questi messaggi al device virtuale.
+In generale, il driver non è particolarmente complesso.
+Il suo compito è quello di ricevere delle richieste dal sottosistema TEE
+di Linux, convertirle in messaggi compatibili con il protocollo descritto
+più avanti, e infine mandare questi messaggi al device virtuale.
 
 Durante l'invio dei messaggi, il driver deve fare attenzione a utilizzare
 meccanismi di sincronizzazione, come un semplice lock, per evitare che due
@@ -1743,7 +1757,7 @@ provando a comunicare con il device virtuale.
 
 \subsection{Protocollo}
 \label{subsection:protocollo}
-Il protocollo di comunicazione tra host e guest è molto semplice ed è
+Il protocollo di comunicazione tra host e guest è molto semplice, ed è
 stato progettato per essere il più possibile simile alle operazioni
 supportate dai device file TEE reali.
 
@@ -1809,12 +1823,12 @@ aggiunte per aiutare l'hypervisor e per allineare i dati ai 16 byte.
 
 Una modifica condivisa da molti messaggi è il campo \texttt{fd}
 (\textit{File Descriptor}). Questo campo ha una semantica simile a quella
-dei file descriptor in Linux, seppur in questo caso serva al driver per decidere
-quale connessione aperta tra hypervisor e TEE inoltrare il messaggio.
+dei file descriptor in Linux, seppur in questo caso serva al driver per
+decidere a quale connessione aperta tra hypervisor e TEE inoltrare il messaggio.
 
-Un valore \texttt{fd} valido è un valore maggiore o uguale a zero e letto
+Un valore \texttt{fd} valido è un valore maggiore o uguale a zero, letto
 tramite il registro \texttt{OPEN} del device virtuale.
-Messaggi che fanno parte della stessa connessione ci si aspetta che avranno
+Messaggi che fanno parte della stessa connessione devono avere
 lo stesso valore di \texttt{fd}.
 
 \bigbreak \noindent
@@ -1826,11 +1840,10 @@ buffer di memoria condivisi, in particolare il loro ID
 (unico all'interno del guest), la loro dimensione allocata e
 l'indirizzo fisico in cui si trovano.
 Questo messaggio è inviato dal driver prima di inviare un altro messaggio
-che fa riferimento a questi buffer, questo è necessario per assicurarsi
-che l'hypervisor possa decidere il corrispondente buffer di memoria dentro al TEE.
-
+che fa riferimento a questi buffer, ciò è necessario per assicurarsi
+che l'hypervisor possa decidere il corrispondente buffer di memoria
+dentro al TEE.
 Questo problema è descritto più nel dettaglio in \ref{subsection:hypervisor}.
-
 
 \paragraph{GetVersion}:
 
@@ -1843,8 +1856,8 @@ Questo problema è descritto più nel dettaglio in \ref{subsection:hypervisor}.
 
 Il messaggio \texttt{GetVersion} è identificato da \texttt{type} uguale a
 $0$ ed è il messaggio più semplice tra quelli presenti.
-Il mittente prepara un payload di dimensione $16$ byte tutti a zero, e lo
-manda al destinatario che si occuperà di riempire il payload con le
+Il mittente prepara un payload di dimensione $16$ byte tutti a zero e lo
+manda al destinatario, che si occuperà di riempire il payload con le
 informazioni riguardo al TEE.
 I valori ritornati non sono garantiti essere gli stessi che si ottengono 
 tramite la chiamata \textit{ioctl} \texttt{TEE\_IOC\_VERSION} del
@@ -1856,7 +1869,7 @@ Ad esempio, la nostra implementazione non supporta
 l'uso dei \textit{registered shared memory buffers}, cioè la possibilità per
 un client di "promuovere" un buffer allocato normalmente a buffer di memoria
 condivisa con il TEE.
-Per questo motivo un client interno a una VM che chiede informazioni riguardo
+Per questo motivo, un client interno a una VM che chiede informazioni riguardo
 al TEE leggerà sempre il bit \texttt{TEE\_GEN\_CAP\_REG\_MEM} di
 \texttt{gen\_caps} a zero, anche se il TEE fisico in realtà supporta la
 funzionalità.
@@ -1946,7 +1959,7 @@ primo di questi interi definisce il tipo dell'argomento e gli
 altri tre sono dei valori dipendenti dal tipo.
 
 Se un parametro è di tipo \textit{memref}, cioè è un buffer di memoria
-condivisa con il TEE, è necessario che prima del suo utilizzo il client
+condivisa con il TEE, è necessario che, prima del suo utilizzo, il client
 lo abbia segnalato all'hypervisor tramite il messaggio
 \textit{EnsureMemoryBuffersAreSynchronized}.
 
@@ -1976,7 +1989,7 @@ macchina virtuale non corrisponde necessariamente allo stesso buffer
 all'esterno della VM.
 
 Questo messaggio segnala all'hypervisor l'allocazione di uno o più buffer di
-memoria e l'ID locale corrispondente a tale buffer.
+memoria, e l'ID locale corrispondente a tale buffer.
 Grazie a queste informazioni l'hypervisor potrà tradurre gli ID locali nei
 parametri degli altri messaggi negli ID corretti al di fuori della VM.
 
@@ -2015,7 +2028,7 @@ e l'ID (locale al guest) del buffer di memoria da liberare.
 Il lato dell'hypervisor è dove si nasconde la parte più complessa del progetto.
 
 L'hypervisor deve, per prima cosa, implementare il device virtuale.
-Per fare ciò mantiene uno "stato" dei registri che viene aggiornato a ogni
+Per fare ciò, mantiene uno "stato" dei registri che viene aggiornato a ogni
 scrittura da parte del guest nella zona di MMIO del device.
 Una scrittura all'offset del registro \texttt{SEND\_COMMAND} indica il momento
 in cui l'hypervisor deve gestire un messaggio del protocollo.
@@ -2023,12 +2036,12 @@ in cui l'hypervisor deve gestire un messaggio del protocollo.
 Implementare la maggior parte dei messaggi del protocollo è concettualmente
 semplice, dato che hanno spesso una corrispondenza diretta con una
 \textit{ioctl}.
-Ad alto livello dunque uno dei ruoli dell'hypervisor è quello di ricevere
+Ad alto livello, uno dei ruoli dell'hypervisor è quello di ricevere
 i messaggi, fare le rispettive \textit{ioctl} e riscrivere nella memoria
 dell'host il risultato.
 
 Il problema principale è che i dati passati dal guest all'hypervisor sono
-valori validi solo all'interno della VM, dunque fare una \textit{ioctl}
+valori validi solo all'interno della VM. Eseguire una \textit{ioctl}
 usando direttamente quei valori non funzionerebbe.
 
 Un esempio di questo problema sono i descrittori di file utilizzati nella
@@ -2045,7 +2058,7 @@ operativo, dunque lo stesso buffer è identificato da valori diversi dentro
 e fuori la VM.
 
 Anche in questo caso è necessario dunque mantenere una tabella di traduzioni
-tra questi valori, e tradurre gli ID presenti nei messaggi prima di inoltrarli
+tra questi valori e tradurre gli ID presenti nei messaggi prima di inoltrarli
 all'altro mondo.
 
 Costruire questa tabella delle traduzioni degli ID per i buffer di memoria è
@@ -2082,7 +2095,7 @@ questo motivo abbiamo scelto una strada molto più semplice, seppur
 inefficiente.
 
 Lo standard GlobalPlatform riconosce che non sempre è possibile implementare
-un  meccanismo di memoria condivisa, condividendo la vera memoria fisica,
+un meccanismo di memoria condivisa, condividendo la vera memoria fisica,
 cioè senza copie.
 In queste situazioni la soluzione è quella di mantenere due buffer di memoria
 diversi, ma di uguali dimensioni, uno per il TEE e uno per il REE.
@@ -2136,11 +2149,11 @@ e caricato il nostro driver per il passthrough TEE.
 Per verificare la correttezza del nostro prototipo abbiamo usato due set di
 test cases.
 
-Il primo set sono i programmi di esempio forniti da OPTEE: sono piccoli
-programmi userspace e Trusted Application a scopo didattico e che testano le
+Il primo set sono i programmi di esempio forniti da OP-TEE: sono piccoli
+programmi user-space e Trusted Application a scopo didattico e che testano le
 funzionalità offerte dall'interfaccia GlobalPlatform e che fanno uso di
 \textit{libteec} per comunicare con il TEE, una libreria wrapper
-dell'interfaccia userspace del sottosistema TEE di Linux.
+dell'interfaccia user-space del sottosistema TEE di Linux.
 Questi programmi includono il classico "Hello World", una implementazione
 dell'algoritmo AES, un programma che salva e recupera dati dallo storage
 sicuro offerto dal TEE, un programma che genera blocchi di dati
@@ -2245,8 +2258,9 @@ porta con se alcuni limiti tecnici per poterne garantire la sicurezza
 e un grande lock-in rispetto alla tecnologia usata.
 
 La soluzione proposta in questa tesi utilizza un approccio diverso che
-permette di evitare questi limiti ed è agnostico al TEE sottostante:
-invece di dover portare con sé un TEE, i clienti possono utilizzare un TEE
+permette di evitare questi limiti ed è agnostica al TEE e all'architettura
+sottostante:
+invece di dover portare con sé un TEE, i clienti possono utilizzarne uno
 configurato dal vendor con una serie di servizi preinstallati.
 
 La nostra proposta non è in conflitto con quelle già presenti sul mercato;
@@ -2255,7 +2269,7 @@ se gestire un TEE da soli, con tutti i vantaggi e svantaggi che ne derivano,
 oppure utilizzare un TEE preconfigurato dal vendor, con un lock-in minore
 ma con meno flessibilità.
 
-Abbiamo dimostrato la fattibilità del nostro approccio tramite un prototipo
+Abbiamo dimostrato la fattibilità del nostro approccio tramite un prototipo,
 implementato modificando l'hypervisor QEMU e il sistema operativo Linux.
 Infine abbiamo messo alla prova la nostra implementazione tramite la test
 suite \textit{xtest} e il TEE \textit{OP-TEE}.
@@ -2284,28 +2298,27 @@ potrebbero essere utili per implementare ottimizzazioni.
 
 \bigbreak \noindent
 
-Una limitazione significativa della nostra implementazione attuale data dalle
+Una limitazione significativa della nostra implementazione attuale è data dalle
 periferiche \textit{trusted}: al momento non è presente alcun meccanismo per
 permettere la virtualizzazione di queste periferiche all'interno della VM.
-Una interessante direzione di ricerca come permettere la virtualizzazione
-di queste periferiche senza comprometterne la sicurezza
+Potrebbe essere interessante studiare come permettere la virtualizzazione
+di queste periferiche, senza comprometterne la sicurezza.
 
 \bigbreak \noindent
 
-Infine in ambito cloud computing, una sfida interessante è quella di permettere
+Infine, in ambito cloud computing, una sfida interessante è quella di permettere
 il trasferimento di una VM che fa uso di un TEE da un server fisico ad un altro.
 Per design, i dati salvati dentro un TEE sono legati strettamente alle chiavi
 dentro esso, e quindi non possono essere trasferiti direttamente da un
 server ad un altro.
-
-Può essere interessante dunque esplorare come realizzare questo spostamento
-in modo sicuro e trasparente per l'utente.
+Esplorare come realizzare questo spostamento,
+in modo sicuro e trasparente per l'utente, potrebbe essere una direzione di ricerca.
 
 \appendix
 \chapter{FakeTEE: Simulatore di TEE per lo sviluppo}
 \label{app:faketee}
 Sviluppare applicazioni che utilizzano un Trusted Execution Environment può
-essere difficile non solo per l'attenzione necessaria a non violare
+essere difficile, non solo per l'attenzione necessaria a non violare
 le restrizioni imposte dal TEE, ma anche per l'assenza di un ambiente di
 sviluppo che permetta di testare il software in un ambiente controllato.
 
@@ -2321,17 +2334,17 @@ l'esperienza di sviluppo con questa soluzione può essere frustrante per
 diversi motivi, tra cui: la necessità di dover gestire un secondo sistema
 operativo durante lo sviluppo, dover avviare una macchina virtuale per ogni
 test, la necessità di cross-compilare il software per la macchina virtuale
-e dover spostare ripetutamente file tra la macchina virtuale e il sistema
+e il dover spostare ripetutamente file tra la macchina virtuale e il sistema
 host.
 
 In questo progetto abbiamo sviluppato un modulo del kernel di Linux chiamato
 "FakeTEE" per evitare questa strada. FakeTEE si aggancia al sottosistema TEE
-di Linux e finge di essere un TEE reale precaricato con delle
+di Linux e finge di essere un TEE reale, precaricato con delle
 Trusted Application scritte direttamente nel suo codice.
 
 FakeTEE ovviamente non può assolutamente offrire alcuna garanzia di sicurezza
 perché non è un TEE reale, ma è utile per lo sviluppo di software che
-interagisce con un TEE, in quanto non solo permette di testare il software
+interagiscono con un TEE, in quanto non solo permette di testare il software
 direttamente sul proprio sistema sprovvisto di TEE, ma logga una serie di
 informazioni utili al debugging sulla console del sistema.
 
@@ -2348,7 +2361,7 @@ facilmente modificate o sostituite con altre applicazioni.
 Questa appendice descrive come impostare un ambiente di sviluppo e testing
 per il nostro progetto utilizzando il TEE open-source OP-TEE.
 Queste istruzioni assumono che si abbia già clonato tutti i repository
-elencati in \ref{app:repository} e che si abbia già compilato OP-TEE e
+elencati in \ref{app:repository}, e che si abbia già compilato OP-TEE e
 preparato un ambiente virtualizzato dove è possibile provarlo.
 
 Alla fine di queste istruzioni si avrà un ambiente con due macchine virtuali,

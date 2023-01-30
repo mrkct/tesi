@@ -21,3 +21,5 @@ tupla
 guest
 hypervisor
 prototipazione
+device
+passthrough
