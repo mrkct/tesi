@@ -1,0 +1,32 @@
+name: Build LaTeX document
+on: [push]
+jobs:
+  build_latex:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Git repository
+        uses: actions/checkout@v2
+      - name: lualatex riassunto
+        uses: dante-ev/latex-action@latest
+        with:
+          root_file: riassunto.tex
+          compiler: lualatex
+          args: -interaction=nonstopmode -shell-escape
+      - name: bibtex riassunto
+        uses: dante-ev/latex-action@latest
+        with:
+          root_file: riassunto.aux
+          compiler: bibtex
+          args: 
+      - name: lualatex riassunto
+        uses: dante-ev/latex-action@latest
+        with:
+          root_file: riassunto.tex
+          compiler: lualatex
+          args: -interaction=nonstopmode -shell-escape
+      - name: Upload PDF to releases
+        uses: svenstaro/upload-release-action@v2
+        with:
+          file: riassunto.pdf
+          asset_name: riassunto.pdf
+          overwrite: true
