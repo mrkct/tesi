@@ -2361,57 +2361,76 @@ facilmente modificate o sostituite con altre applicazioni.
 Questa appendice descrive come impostare un ambiente di sviluppo e testing
 per il nostro progetto utilizzando il TEE open-source OP-TEE.
 Queste istruzioni assumono che si abbia già clonato tutti i repository
-elencati in \ref{app:repository}, e che si abbia già compilato OP-TEE e
+elencati in \ref{app:codice-sorgente}, e che si abbia già compilato OP-TEE e
 preparato un ambiente virtualizzato dove è possibile provarlo.
+A tale scopo, si consiglia di seguire le istruzioni presenti nella
+documentazione di OP-TEE.
 
 Alla fine di queste istruzioni si avrà un ambiente con due macchine virtuali,
-una dentro l'altra, dove quella più esterna emula un TEE con OP-TEE mentre
+una dentro l'altra, dove quella più esterna emula un TEE con OP-TEE, mentre
 quella interna contiene un passthrough che gli permette di accedere al TEE
-emulato.
+emulato. Sia nella VM esterna, che in quella interna, sarà possibile eseguire
+la test suite \texttt{xtest}.
+
+\medbreak
 
 Il primo passo consiste nel compilare la versione modificata di QEMU per
 poterla utilizzare dentro la VM che emula il TEE.
-QEMU non è un software particolarmente complesso da compilare, ma richiede
-delle librerie \textit{shared}\footnote{
-    Al momento di scrittura creare un binario statico di QEMU per Linux
-    non è supportato
-} che probabilmente non sono presenti sul sistema.
+Per fare ciò, entrare nella cartella \texttt{qemu-tee-passthrough} e
+seguire le istruzioni presenti nella documentazione di QEMU,
+stando attenti a installare le librerie necessarie in versione arm64
+e utilizzando la stessa toolchain utilizzata da OP-TEE per compilare i
+software user-space.
 
-OP-TEE utilizza un sistema di build basato su \textit{buildroot}, che
-permette di compilare QEMU con tutte le librerie necessarie.
-Possiamo dunque entrare nella cartella \texttt{out-br}
+Una volta fatto ciò, serve preparare il sistema Linux da eseguire dentro la
+VM interna. Un modo semplice consiste nell'utilizzare Buildroot, uno
+strumento per la creazione di immagini Linux personalizzate.
+Buildroot contiene una configurazione di default per la macchina "virt"
+di QEMU, che è la macchina virtuale che utilizzeremo per eseguire la
+VM interna.
+Una volta terminato il processo di build, si dovrebbe ottenere un file
+\texttt{Image}, cioè il kernel Linux, e un file \texttt{rootfs.ext2} con
+l'immagine del file system.
 
-Per fare questo abbiamo bisogno di trovare la toolchain utilizzata per
-compilare i software user-space presenti nel setup di default OP-TEE.
-Questa normalmente si trova nella cartella 
-% Vogliamo avere QEMU-moddato che gira un Linux dentro QEMU che emula il TEE
-% 1. Bisogna avere OP-TEE + Linux compilato e funzionante.
-% 2. Scoprire la toolchain utilizzata per compilare la userland dentro OPTEE
-%    Questa è solitamente dentro la cartella `build/out-br/host/bin'
-% 3. Utilizzando tale toolchain, bisogna compilare qemu-tee-passthrough
-% 4. Per fare ciò bisogna fare configure e make passando il path della toolchain.
-%    Esempio: <configure>
-% 5. Il binario di QEMU modificato si trova nella cartella build/*, questo programma
-%    dovrà essere eseguito dentro QEMU+OPTEE.
-%    Per fare questo creiamo una cartella, per esempio nella root del progetto OPTEE,
-%    che condivideremo con la VM. Chiamiamola `shared-folder` e copiamo l'intera cartella
-%    build li dentro.
-% 6. Facciamo partire QEMU con OPTEE passando l'opzione VIRTFS=y, una volta dentro diamo
-%    il comando `mount -t 9p -o trans virtio /mnt/host' e dovremmo poter accedere ai file
-%    da dentro la VM
-% 7. Per testare se abbiamo compilato QEMU correttamente, diamo ./build/qemu-system-aarch64 -v
-%    Se stampa la versione allora siamo ok
-% 8. Adesso abbiamo bisogno di un sistema Linux da eseguire dentro questa seconda VM, insieme
-%    anche al driver e ai test da eseguire.
-%    Scarichiamo Buildroot, copiamo la configurazione da defconfig_qemu_virt e diamo
-%    `make defconfig_qemu_virt'. Il default va bene, diamo okay e compiliamo.
-% 9. Segnamo il path dei sorgenti Linux scaricati da Buildroot, cloniamo il driver e
-%    impostiamo la variabile d'ambiente LINUX_PATH a tale path, infine diamo `make all'
-%    Esempio: `LINUX_PATH=/home/marco/Desktop/buildroot20.04/out/linux make all'
-% 10. Se tutto è andato okay, allora avremo un file .ko che è il nostro driver da caricare.
-%     Copiamolo all'interno della cartella 'shared'
-% 11. Infine dobbiamo compilare i test, 
-% 3. Preparare un sistema Linux parallelo da caricare dentro la V
+A questo punto, bisogna compilare il driver per il passthrough.
+Per farlo, entrare nella cartella \texttt{linux-tee-passthrough-driver}
+e lanciare il comando \texttt{make} utilizzando come toolchain la stessa
+utilizzata da Buildroot per compilare il sistema al punto precedente.
+Per configurare la toolchain da utilizzare è possibile modificare il file
+\texttt{Makefile} e impostare le variabili relative.
+Una volta terminato, si dovrebbe ottenere un file \texttt{driver.ko}.
+
+Questo driver dovrà essere caricato nella VM interna, dunque è necessario
+copiarlo dentro il rootfs appena generato. Per farlo, basta montare l'immagine
+\texttt{rootfs.ext2} e copiare il file \texttt{driver.ko} dentro la cartella
+\texttt{/root}.
+
+\medbreak
+
+Questi tre file sono i componenti necessari per ottenere un sistema con
+passthrough; per compilare anche la test suite \texttt{xtest} è necessario
+entrare nella cartella \texttt{optee\_test} e compilarla utilizzando la stessa
+toolchain usata al punto precedente.
+Alla fine del processo si otterrà un file eseguibile chiamato \texttt{xtest},
+che, una volta eseguito, farà partire tutti i test.
+
+\medbreak
+
+Come ultimo passo, bisogna mettere insieme tutti i componenti.
+Per fare ciò, creare una cartella nella root di OP-TEE dove verranno condivisi
+i file tra la macchina host e la VM esterna.
+Dentro questa cartella, copiare i file \texttt{Image}, \texttt{rootfs.ext2}
+e la cartella di build di \texttt{qemu-tee-passthrough}.
+Seguendo le istruzioni presenti nella documentazione di OP-TEE, lanciare
+la VM esterna con i rispettivi flag per abilitare la condivisione della cartella.
+
+\medbreak
+
+Dentro la VM, navigare nella cartella condivisa e lanciare \texttt{qemu-tee-passthrough}
+con le opzioni \texttt{-machine virt, -kernel Image, -initrd rootfs.ext2}.
+Dentro la VM interna, caricare il driver per il passthrough con \texttt{insmod ./driver.ko}
+e infine lanciare \texttt{xtest}.
+A questo punto dovrebbero essere eseguiti tutti i test.
 
 \chapter{Codice sorgente}
 \label{app:codice-sorgente}
