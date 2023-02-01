@@ -1695,7 +1695,7 @@ I registri che abbiamo definito sono:
     \label{table:registri-device}
 \end{table}
 
-In \ref{subsection:interfaccia-user-space} abbiamo descritto nel dettaglio
+In \ref{subsec:interfaccia-user-space} abbiamo descritto nel dettaglio
 come l'interfaccia user-space del sottosistema TEE di Linux funziona.
 In breve, un programma apre il device file del TEE, effettua delle
 \textit{ioctl} e poi lo chiude.
@@ -1783,14 +1783,14 @@ interpretare il resto del messaggio, raffigurata in
 
 Il campo \texttt{type} permette di identificare come interpretare il
 contenuto di \texttt{payload}, questo valore deve dunque essere uno di quelli
-in \tablename~\ref{tab:valid-message-types}.
+descritti più avanti nei corrispondenti messaggi.
 Dato che alcuni messaggi possono contenere un numero variabile
 (ma comunque limitato) di argomenti, il campo \texttt{payload\_size} indica
 la dimensione in byte del campo \texttt{payload} seguente.
 
 In base al tipo di messaggio inviato esistono dei vincoli sui valori
 accettabili per il campo \texttt{payload\_size}.
-Questi vincoli sono descritti in \tablename~\ref{tab:valid-payload-sizes}.
+Questi vincoli sono descritti in \tablename~\ref{tab:dimensioni-valide-payload}.
 
 \begin{table}
     \centering
