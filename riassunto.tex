@@ -44,8 +44,8 @@ della sicurezza in ambienti di computazione separati.
 
 Questa è l'idea alla base dei \textit{Trusted Execution Environment(TEE)},
 creare un ambiente di computazione nel processore isolato dal resto del
-mondo non sicuro e dedicato solamente a quei software con requisiti di
-sicurezza stringenti.
+mondo non sicuro\cite{sabt2015tee}, e dedicato solamente a quei software
+con requisiti di sicurezza stringenti.
 Normalmente un software è completamente esposto a tutto il codice
 presente nel sistema con un livello di privilegio superiore;
 i TEE si separano da questa gerarchia isolando la propria memoria e i propri
@@ -53,11 +53,13 @@ dati dal resto del sistema affidandosi a una base hardware e software
 molto piccola.
 
 I TEE sono molto diffusi in ambito mobile, dove vengono utilizzati per
-isolare servizi come l'autenticazione di dati biometrici oppure la gestione
-di pagamenti digitali, ma inizia a esserci un crescente interesse al loro
-uso anche in ambito cloud per motivi di maggiore sicurezza, normative dati e 
-per la possibilità di accertarsi che il software in esecuzione sul server
-sia effettivamente quello che ci si aspetta.
+isolare servizi come l'autenticazione di dati biometrici\cite{androidbiometrics}
+oppure la gestione di pagamenti digitali\cite{secure_payments}, ma inizia a esserci
+un crescente interesse al loro
+uso anche in ambito cloud\cite{confidential_computing_consortium} per
+motivi di maggiore sicurezza,
+normative dati e per la possibilità di accertarsi che il software
+in esecuzione sul server sia effettivamente quello che ci si aspetta.
 
 Gli sforzi finora fatti in questo ambito sono stati rivolti verso permettere
 ai clienti di portare i propri interi TEE; questa soluzione offre una grande
@@ -71,24 +73,26 @@ proprietarie di Intel e AMD.
 
 Questa tesi si propone di studiare un modello alternativo dove il provider
 di servizi cloud offre un TEE con dei servizi pre-installati offerti ai
-clienti
+clienti.
 Questo modello, seppur meno flessibile, è più semplice per il cliente e non
 è in contrasto con il modello precedente, offrendo un'alternativa
 ai clienti che non vogliono gestire il proprio TEE.
 Inoltre, con la standardizzazione dell'interfaccia esterna TEE da parte di
-dell'organizzazione GlobalPlatform, è anche possibile evitare il lock-in
-rispetto a un TEE specifico o a una architettura in particolare.
+dell'organizzazione GlobalPlatform\cite{gp2020clientapi}, è anche possibile
+evitare il lock-in rispetto a un TEE specifico o a una
+architettura in particolare.
 
 Per dimostrare la fattibilità di questo modello abbiamo sviluppato un
 prototipo estendendo l'hypervisor QEMU e utilizzando il sottosistema
-TEE di Linux.
-Questo ha richiesto di progettare un device virtuale, con un relativo protocollo
-di comunicazione a messaggi, che permetta la comunicazione tra una macchina
-virtuale e il TEE della macchina host, oltre a sviluppare un driver Linux
-per questo nuovo device.
+TEE di Linux\cite{linux_tee_subsystem}.
+Questo ha richiesto di progettare un device virtuale, con un relativo
+protocollo di comunicazione a messaggi, che permetta la comunicazione
+tra una macchina virtuale e il TEE della macchina host, oltre a
+sviluppare un driver Linux per questo nuovo device.
 
 Per verificare la correttezza del nostro prototipo abbiamo integrato
-\textit{xtest} con il nostro prototipo, una test suite di circa 10000 test
+\textit{xtest}\cite{xtest} con il nostro prototipo, una test suite di
+circa 10000 test
 utilizzati da \textit{TrustedFirmware} per verificare la correttezza del
 TEE open-source OP-TEE.
 Grazie a questa test suite, abbiamo inoltre misurato le performance: 
@@ -96,16 +100,18 @@ seppur non eccezionali, anche se accettabili per determinati contesti,
 abbiamo identificato che le cause sono problemi puramente ingegneristici e
 non dovuti a limitazioni intrinseche del modello operativo.
 
+\medbreak
+
 Questo non è che un primo passo verso l'integrazione di tale modello in un
 ambiente cloud.
 Rimangono infatti da risolvere alcuni problemi, ad esempio come gestire
-lo spostamento delle computazioni 
+lo spostamento delle macchine virtuali tra server diversi, portando con
+se lo stato del TEE. 
 Sarebbe inoltre interessante integrare questo modello in un hypervisor di
 tipo 1 e verificare il suo funzionamento in un ambiente reale. 
 
 In conclusione, crediamo che il nostro prototipo sia fattibile e che possa
 essere un buon punto di partenza per un'implementazione completa.
-
 
 \bibliographystyle{unsrt}
 \bibliography{bibliografia}
