@@ -8,12 +8,12 @@
 
 \usepackage{graphicx}				% Funzioni avanzate per le immagini
 \usepackage{hologo}					% Bibtex logo with \hologo{BibTeX}
-%\usepackage{epsfig}				% Permette immagini in EPS
-%\usepackage{xcolor}				% Gestione avanzata dei colori
+\usepackage{epsfig}				    % Permette immagini in EPS
+\usepackage{xcolor}				    % Gestione avanzata dei colori
 \usepackage{amssymb,amsmath,amsthm} % Simboli matematici
 \usepackage{listings}				% Scrittura di codice
 \usepackage{url}					% Visualizza e rendere interattii gli URL
-\usepackage{hyperref}				% Rende interattivi i collegamenti interni
+\usepackage[pdfa]{hyperref}			% Rende interattivi i collegamenti interni
 \usepackage{tikz}                   % Permette di disegnare inline
 \usepackage{import}
 \usepackage{float}
@@ -89,8 +89,8 @@ della sicurezza in ambienti di computazione separati.
 
 Questa è l'idea alla base dei \textit{Trusted Execution Environment(TEE)},
 creare un ambiente di computazione nel processore isolato dal resto del
-mondo non sicuro e dedicato solamente a quei software con requisiti di
-sicurezza stringenti.
+mondo non sicuro\cite{sabt2015tee}, e dedicato solamente a quei software
+con requisiti di sicurezza stringenti.
 Normalmente un software è completamente esposto a tutto il codice
 presente nel sistema con un livello di privilegio superiore;
 i TEE si separano da questa gerarchia isolando la propria memoria e i propri
@@ -98,11 +98,13 @@ dati dal resto del sistema affidandosi a una base hardware e software
 molto piccola.
 
 I TEE sono molto diffusi in ambito mobile, dove vengono utilizzati per
-isolare servizi come l'autenticazione di dati biometrici oppure la gestione
-di pagamenti digitali, ma inizia a esserci un crescente interesse al loro
-uso anche in ambito cloud per motivi di maggiore sicurezza, normative dati e 
-per la possibilità di accertarsi che il software in esecuzione sul server
-sia effettivamente quello che ci si aspetta.
+isolare servizi come l'autenticazione di dati biometrici\cite{androidbiometrics}
+oppure la gestione di pagamenti digitali\cite{secure_payments}, ma inizia a esserci
+un crescente interesse al loro
+uso anche in ambito cloud\cite{confidential_computing_consortium} per
+motivi di maggiore sicurezza,
+normative dati e  per la possibilità di accertarsi che il software
+in esecuzione sul server sia effettivamente quello che ci si aspetta.
 
 Gli sforzi finora fatti in questo ambito sono stati rivolti verso permettere
 ai clienti di portare i propri interi TEE; questa soluzione offre una grande
@@ -121,9 +123,9 @@ Questo modello, seppur meno flessibile, è più semplice per il cliente e non
 è in contrasto con il modello precedente. Questo offre un alternativa
 ai clienti che non vogliono gestire il proprio TEE.
 Inoltre, con la standardizzazione dell'interfaccia esterna TEE da parte di
-dell'organizzazione GlobalPlatform e la creazione del sottosistema TEE
-di Linux, è anche possibile evitare il lock-in rispetto a un TEE specifico
-o a una architettura in particolare.
+dell'organizzazione GlobalPlatform\cite{gp2020clientapi}, è anche possibile
+evitare il lock-in rispetto a un TEE specifico o a una
+architettura in particolare.
 
 Per dimostrare la fattibilità di questo modello abbiamo sviluppato un
 prototipo estendendo l'hypervisor QEMU, scrivendo un driver Linux e
