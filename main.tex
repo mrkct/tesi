@@ -294,14 +294,20 @@ memoria durante l'esecuzione, non esiste ancora una soluzione standard.
 
 Per far fronte a questa sfida, è stata fondata il
 Confidential Computing Consortium (CCC), un gruppo di aziende che si sono
-unite per sviluppare soluzioni per garantire
-la sicurezza dei dati e del codice in ambito cloud computing
-mentre sono in memoria.
+unite per sviluppare e promuovere l'uso dei TEE in ambito cloud
+allo scopo di diffondere quello che chiamano \textit{Confidential Computing}.
 
-Il CCC trova nei TEE un ottimo strumento per garantire la sicurezza dei dati
-e del codice, tuttavia, il supporto attualmente disponibili è
-limitato a server con piattaforme Intel o AMD e con un forte lock-in rispetto
-alla piattaforma scelta.
+Il Confidential Computing protegge i dati in memoria eseguendo operazioni
+su di essi solamente dentro enclavi sicure come i TEE, rendendoli
+inaccessibili anche agli stessi sviluppatori dei software.
+L'interesse per questo paradigma è in particolare dato da quelle organizzazioni
+che gestiscono dati sensibili come informazioni personali, dati finanziari o
+di salute, e che hanno dunque alti requisiti in termini di confidenzialità
+e integrità dei dati.
+
+Il supporto attualmente disponibile per il Confidential Computing è
+limitato a server con piattaforme Intel o AMD, in alcuni casi con un
+forte lock-in rispetto alla piattaforma scelta.
 
 Con un interesse crescente nell'utilizzo di architetture diverse da x86\_64
 in ambito server, diventa sempre più importante sviluppare un sistema che
