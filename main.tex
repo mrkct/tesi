@@ -9,7 +9,7 @@
 \usepackage{graphicx}				% Funzioni avanzate per le immagini
 \usepackage{hologo}					% Bibtex logo with \hologo{BibTeX}
 \usepackage{epsfig}				    % Permette immagini in EPS
-\usepackage{xcolor}				    % Gestione avanzata dei colori
+\usepackage{xcolor}                 % Gestione avanzata dei colori
 \usepackage{amssymb,amsmath,amsthm} % Simboli matematici
 \usepackage{listings}				% Scrittura di codice
 \usepackage{url}					% Visualizza e rendere interattii gli URL
@@ -19,6 +19,9 @@
 \usepackage{float}
 \usepackage{xstring}                % Permette di usare la funzione \IfInteger
 \usepackage{array}                  % Permette di usare colonne "m" dentro table
+\usepackage{multirow}               % Permette di creare tabelle con righe multiple
+\usepackage{caption}                % Roba per le figure side-by-side
+\usepackage{subcaption}             % Roba per le figure side-by-side
 \graphicspath{{immagini/}}
 
 \usetikzlibrary{positioning}
@@ -1344,6 +1347,29 @@ In questo capitolo descriviamo come abbiamo realizzato questa soluzione;
 iniziando con il background necessario per poi arrivare a discutere la nostra
 implementazione, realizzata estendendo QEMU e Linux, e i risultati ottenuti.
 
+\begin{figure}
+    \centering
+
+    \begin{subfigure}{\columnwidth}
+        \centering
+        \includegraphics[width=0.8\linewidth]{immagini/common-cloud-tee-model}
+        \caption{In questo modello ogni VM ha il proprio TEE, che può essere
+            utilizzato per eseguire Trusted Application firmate dai clienti.}
+        \label{fig:our-cloud-tee-model}
+    \end{subfigure}
+
+    \begin{subfigure}{\columnwidth}
+        \centering
+        \includegraphics[width=0.53\linewidth]{immagini/our-cloud-tee-model}
+        \caption{Il nostro modello proposto, dove un TEE è condiviso tra più VM.}
+        \label{fig:our-cloud-tee-model}
+    \end{subfigure}
+    \caption{
+        Confronto tra il modello di TEE adottato dai provider cloud
+        e il nostro modello proposto.
+    }
+\end{figure}
+
 \section{Il sottosistema TEE per Linux}
 \label{sec:sottosistema-tee-per-linux}
 Dalla versione 4.12, il kernel Linux supporta un sottosistema TEE
@@ -1441,7 +1467,8 @@ Il flusso tipico di operazione di una CA è il seguente:
         \texttt{open}.
     \item La CA apre una sessione con una \textit{Trusted Application}
         facendo una \textit{ioctl} con \texttt{TEE\_IOC\_OPEN\_SESSION}
-        e passando una struttura \texttt{tee\_ioctl\_open\_session\_arg}
+        e passando una struttura \\
+        \texttt{tee\_ioctl\_open\_session\_arg}
         come argomento, riempita opportunamente con l'UUID
         (conosciuto a priori) 
         della \textit{Trusted Application} a cui vuole collegarsi, 
@@ -1459,7 +1486,8 @@ Il flusso tipico di operazione di una CA è il seguente:
         \textit{Trusted Application}.
     \item La CA chiude la sessione con la \textit{Trusted Application} tramite
         una \textit{ioctl} con \texttt{TEE\_IOC\_CLOSE\_SESSION}, e passando
-        una struttura \texttt{tee\_ioctl\_close\_session\_arg} come argomento,
+        una struttura \\
+        \texttt{tee\_ioctl\_close\_session\_arg} come argomento,
         riempita opportunamente con l'ID della sessione.
     \item La CA chiude il device file aperto al punto $1$ usando \texttt{close}.
 \end{enumerate}
@@ -1528,10 +1556,12 @@ Il set minimo di funzioni che un driver deve implementare è il seguente:
         l'implementazione de-inizializza le risorse allocate per questa
         specifica istanza del device file.
     \item \texttt{open\_session}: Chiamata quando un utente esegue una
-        \textit{ioctl} \texttt{TEE\_IOC\_OPEN\_SESSION} sul device file,
+        \textit{ioctl} \\
+        \texttt{TEE\_IOC\_OPEN\_SESSION} sul device file,
         l'implementazione ha il compito di aprire una sessione con il TEE.
     \item \texttt{close\_session}: Chiamata quando un utente esegue una
-        \textit{ioctl} \texttt{TEE\_IOC\_CLOSE\_SESSION} sul device file,
+        \textit{ioctl} \\
+        \texttt{TEE\_IOC\_CLOSE\_SESSION} sul device file,
         l'implementazione ha il compito di chiudere una sessione con il TEE.
     \item \texttt{invoke\_func}: Chiamata quando un utente esegue una
         \textit{ioctl} \texttt{TEE\_IOC\_INVOKE} sul device file,
@@ -1657,7 +1687,18 @@ inoltrando e ricevendo le richieste dal device virtuale.
 
 Host e macchina virtuale comunicano utilizzando questo device e implementano
 un semplice protocollo di comunicazione a messaggi; questi messaggi
-riflettono le richieste che il guest può fare al TEE. 
+riflettono le richieste che il guest può fare al TEE.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics{immagini/tee-passthrough-schema}
+    \caption{
+        Schema di funzionamento del sistema di passthrough per il TEE.
+        I componenti colorati sono le aggiunte implementate per
+        questo progetto.
+    }
+    \label{fig:tee-passthrough-schema}
+\end{figure}
 
 \subsection{Device virtuale}
 Il device virtuale è stato implementato estendendo la macchina ARM
@@ -2157,6 +2198,13 @@ e caricato il nostro driver per il passthrough TEE.
 Per verificare la correttezza del nostro prototipo abbiamo usato due set di
 test cases.
 
+\begin{figure}
+    \centering
+    \includegraphics{immagini/testing-architecture}
+    \caption{Schema dell'architettura di test}
+    \label{fig:architettura-di-test}
+\end{figure}
+
 Il primo set sono i programmi di esempio forniti da OP-TEE: sono piccoli
 programmi user-space e Trusted Application a scopo didattico e che testano le
 funzionalità offerte dall'interfaccia GlobalPlatform e che fanno uso di
@@ -2171,21 +2219,18 @@ Questi piccoli programmi, seppur utilizzino tutte le feature dell'interfaccia
 TEE e siano stati di aiuto durante lo sviluppo del prototipo, chiaramente
 hanno un utilizzo limitato per la verifica funzionale del prototipo.
 
-Il secondo set è la suite \textit{xtest}, un insieme di poco meno di
-$10000$ test sviluppati dal progetto OP-TEE. 
+Il secondo set è la suite \textit{xtest}, un insieme di
+$46174$ test, suddivisi in $99$ categorie, sviluppati dal progetto OP-TEE. 
 Questa suite nasce per testare le funzionalità di OP-TEE, ma utilizzando
 l'interfaccia del sottosistema TEE di Linux la gran parte dei test è
 applicabile a qualunque TEE che implementi un driver Linux. 
-Su XXXX test, solamente XXX falliscono, ma questi sono tutti test che
-fanno uso di funzionalità specifiche di OP-TEE che sono al di fuori
-dell'interfaccia TEE standard e dunque fuori dallo scopo del nostro
-progetto.
 
 Infine, abbiamo inoltre effettuato dei semplici test delle performance,
 nonostante ribadiamo che la nostra implementazione sia intenzionalmente
 primitiva e inefficiente.
 Per misurare le performance abbiamo usato il comando Unix \textit{time}
-eseguendo l'intera suite di test \textit{xtest}.
+eseguendo l'intera suite di test \textit{xtest} con tutti i test
+abilitati(\textit{-l 15}).
 Noi siamo interessati all'overhead del passthrough, dunque leggeremo la
 misura \textit{"sys"}, che indica il tempo speso in kernel mode dal computer
 per servire un processo. 
@@ -2197,56 +2242,41 @@ lo stesso test eseguendo direttamente i test case sulla VM host
 (cioè la VM esterna), che accede direttamente al TEE senza passare dal
 nostro passthrough.
 
-\begin{table}[ht]
+\begin{table}[h]
     \centering
-    \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|}
-        \hline
-        \textbf{Test} & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & \textbf{Media} \\
-        \hline
-        \textbf{Base} & x & x & x & x & x & x & x & x & x & x  & \textbf{x} \\
-        \hline
-        \textbf{Passthrough} & x & x & x & x & x & x & x & x & x & x & \textbf{x} \\
-        \hline
-        \textbf{Overhead} & x & x & x & x & x & x & x & x & x & x & \textbf{x} \\
-        \hline
+    
+    \begin{tabular}{cccccc}
+    \multicolumn{1}{c|}{}  & \multicolumn{2}{c|}{\textbf{Senza Passthrough}} & \multicolumn{2}{c|}{\textbf{Con Passthrough}} &  \\
+    \multicolumn{1}{c|}{\multirow{-2}{*}{\textbf{Test}}} &
+      \multicolumn{1}{c|}{\textbf{Media}} &
+      \multicolumn{1}{c|}{\textbf{Dev. Std}} &
+      \multicolumn{1}{c|}{\textbf{Media}} &
+      \multicolumn{1}{c|}{\textbf{Dev. Std}} &
+      \multirow{-2}{*}{\textbf{Overhead}} \\ \hline
+        \texttt{xtest -l 15}    & 1221,416  & 7,876 & 1319,174 & 12,790 & 8,003\% \\
+        \texttt{hello\_world}   & 34,989    & 0.132 & 35.581 & 0.400 & 1,71\% \\
     \end{tabular}
-    \label{tab:performance}
     \caption{
         Confronto tra tempi di esecuzione con e senza passthrough su
         tutti i test di \textit{xtest}.
     }
+    \label{tab:performance}
 \end{table}
 
-Chiaramente i tempi di esecuzione utilizzando il passthrough sono più alti.
+Chiaramente i tempi di esecuzione utilizzando il passthrough sono più alti,
+seppur potenzialmente accettabili in determinati casi.
 Il sospetto è che questo sia dovuto principalmente per l'implementazione
 inefficiente della sincronizzazione dei buffer di memoria condivisa.
-Infatti, se dividiamo i test case in due categorie, quelli che fanno
-uso di memoria condivisa e quelli che non lo fanno, e ripetiamo i test
-(riportati in \tablename~\ref{tab:performance-no-shmem}) si nota che
-i tempi di esecuzione sono dei secondi sono molto simili ai tempi
-senza passthrough.
 
-\begin{table}
-    \centering
-    \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|}
-        \hline
-        \textbf{Test} & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & \textbf{Media} \\
-        \hline
-        \textbf{Base} & x & x & x & x & x & x & x & x & x & x  & \textbf{x} \\
-        \hline
-        \textbf{Passthrough} & x & x & x & x & x & x & x & x & x & x & \textbf{x} \\
-        \hline
-        \textbf{Overhead} & x & x & x & x & x & x & x & x & x & x & \textbf{x} \\
-        \hline
-    \end{tabular}
-    \label{tab:performance-no-shmem}
-    \caption{
-       Confronto tra tempi di esecuzione con e senza passthrough solo
-       sui test di \textit{xtest} che non usano shared memory.
-    }
-\end{table}
+Per confermare questa ipotesi, abbiamo condotto una prova con un programma
+semplice che non usa memoria condivisa ma solo l'invio di valori elementari.
+Abbiamo adattato il programma \textit{hello\_world}, fornito come esempio
+da OP-TEE, per inviare $10000$ un valore semplice a una Trusted Application,
+che incrementa il valore e lo restituisce.
+La tabella delle prestazioni mostra che l'overhead del passthrough eseguendo
+questo programma è minimo, inferiore al 2\%.
 
-L'uso di test case per confrontare le performance non necessariamente
+L'uso di questi test case per confrontare le performance non necessariamente
 riflette dei carichi di lavoro reali, ma è un modo semplice per avere
 un'idea delle prestazioni.
 
