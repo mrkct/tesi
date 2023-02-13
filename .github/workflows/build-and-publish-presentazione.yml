@@ -1,0 +1,20 @@
+name: Build and Publish Presentazione
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Git repository
+        uses: actions/checkout@v2
+      - name: Marp build
+        uses: docker://marpteam/marp-cli
+        with:
+          args: presentazione.md -o presentazione.pdf --allow-local-files --html
+        env:
+          MARP_USER: root:root
+      - name: Upload PDF to releases
+        uses: svenstaro/upload-release-action@v2
+        with:
+          file: presentazione.pdf
+          asset_name: presentazione.pdf
+          overwrite: true
